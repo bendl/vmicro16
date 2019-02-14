@@ -22,6 +22,16 @@
 `define VMICRO16_OP_ARITH_SSUB   5'b10000
 `define VMICRO16_OP_ARITH_SSUBI  5'b0????
 `define VMICRO16_OP_BR           5'b01000
+// TODO: wasted upper nibble bits in BR
+`define VMICRO16_OP_BR_U         8'h00
+`define VMICRO16_OP_BR_E         8'h01
+`define VMICRO16_OP_BR_NE        8'h02
+`define VMICRO16_OP_BR_G         8'h03
+`define VMICRO16_OP_BR_GE        8'h04
+`define VMICRO16_OP_BR_L         8'h05
+`define VMICRO16_OP_BR_LE        8'h06
+`define VMICRO16_OP_BR_S         8'h07
+`define VMICRO16_OP_BR_NS        8'h08
 `define VMICRO16_OP_CMP          5'b01001
 `define VMICRO16_OP_SETC         5'b01010
 

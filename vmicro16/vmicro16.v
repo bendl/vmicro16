@@ -100,6 +100,7 @@ module vmicro16_dec (
         output [11:0] imm12,
         output [4:0]  simm5,
 
+        // This can be freely increased without affecting the isa
         output reg [4:0] alu_op,
 
         output reg   has_imm8,
@@ -190,6 +191,49 @@ module vmicro16_dec (
             `VMICRO16_OP_SW:
                      is_mem = 1'b1;
             default: is_mem = 1'b0;
+        endcase
+endmodule
+
+
+module vmicro16_alu # (
+    parameter OP_WIDTH   = 5,
+    parameter DATA_WIDTH = 16
+) (
+        input clk, // TODO: make clocked
+
+        input      [OP_WIDTH-1:0]   op,
+        input      [DATA_WIDTH-1:0] d1, // rs1/dst
+        input      [DATA_WIDTH-1:0] d2, // rs2
+        output reg [DATA_WIDTH-1:0] q
+);
+        always @(*)
+        case (op)
+            `VMICRO16_ALU_LW,
+            `VMICRO16_ALU_SW:           q = d2;
+
+            `VMICRO16_ALU_BIT_OR:       q = d1 | d2;
+            `VMICRO16_ALU_BIT_XOR:      q = d1 ^ d2;
+            `VMICRO16_ALU_BIT_AND:      q = d1 & d2;
+            `VMICRO16_ALU_BIT_NOT:      q = ~(d2);
+            `VMICRO16_ALU_BIT_LSHFT:    q = d1 << d2;
+            `VMICRO16_ALU_BIT_RSHFT:    q = d1 >> d2;
+
+            `VMICRO16_ALU_MOV:          q = d2;
+            `VMICRO16_ALU_MOVI:         q = d2;
+            `VMICRO16_ALU_MOVI_L:       q = d2;
+
+            `VMICRO16_ALU_ARITH_UADD:   q = d1 + d2;
+            `VMICRO16_ALU_ARITH_USUB:   q = d1 - d2;
+            // TODO: ALU should have simm5 as input
+            `VMICRO16_ALU_ARITH_UADDI:  q = d1 + d2;
+            
+            `VMICRO16_ALU_ARITH_SADD:   q = $signed(d1) + $signed(d2);
+            `VMICRO16_ALU_ARITH_SSUB:   q = $signed(d1) - $signed(d2);
+            // TODO: ALU should have simm5 as input
+            `VMICRO16_ALU_ARITH_SSUBI:  q = $signed(d1) + $signed(d2);
+
+            // TODO: Parameterise
+            default:                    q = 16'hXXXX;
         endcase
 endmodule
 

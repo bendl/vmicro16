@@ -40,3 +40,45 @@ module vmicro16_bram # (
                 end
         end
 endmodule
+
+
+module vmicro16_regs # (
+        parameter CELL_WIDTH    = 16,
+        parameter CELL_DEPTH    = 8,
+        parameter CELL_SEL_BITS = 3,
+        parameter CELL_DEFAULTS = 0,
+        parameter DEBUG_NAME    = ""
+) (
+        input clk, input reset,
+        // ID/EX stage reg reads
+        // Dual port register reads
+        input  [CELL_SEL_BITS-1:0] rs1, // port 1
+        output [CELL_WIDTH-1:0]    rd1,
+        input  [CELL_SEL_BITS-1:0] rs2, // port 2
+        output [CELL_WIDTH-1:0]    rd2,
+        // EX/WB final stage write back
+        input                      we,
+        input [CELL_SEL_BITS-1:0]  ws1,
+        input [CELL_WIDTH-1:0]     wd
+);
+        reg [CELL_WIDTH-1:0] regs [0:CELL_DEPTH-1] /*verilator public_flat*/;
+        
+        // Initialise registers with default values
+        //   Really only used for special registers used by the soc
+        // TODO: How to do this on reset?
+        initial if (CELL_DEFAULTS) $readmemh(CELL_DEFAULTS, regs);
+
+        integer i;
+        always @(posedge clk) 
+                if (reset) 
+                        if (CELL_DEFAULTS) $readmemh(CELL_DEFAULTS, regs); // TODO:
+                        else for(i = 0; i < CELL_DEPTH; i = i + 1) regs[i] <= 16'h00; 
+                else if (we) begin
+                        $display("%s: Writing %h to reg[%d]", DEBUG_NAME, wd, ws1);
+                        regs[ws1] <= wd;
+                end
+
+        // TODO: Should reading be continuous? Or 1 clock delayed?
+        assign rd1 = regs[rs1];
+        assign rd2 = regs[rs2];
+endmodule

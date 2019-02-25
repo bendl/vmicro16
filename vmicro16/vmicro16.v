@@ -379,34 +379,67 @@ module vmicro16_ifid (
                 end
         end
 endmodule
-/*
+
 module vmicro16_idex (
-        input idex_clk,
-        input idex_reset,
+        input clk,
+        input reset,
         
-        input      [15:0] ifid_pc, output reg [15:0] idex_pc,
+        input      [15:0] ifid_pc,    output reg [15:0] idex_pc,
+        input      [15:0] ifid_instr, output reg [15:0] idex_instr,
 
-        input      [15:0] reg_rd1, output reg [15:0] idex_rd1,
-        input      [15:0] reg_rd2, output reg [15:0] idex_rd2,
+        output reg [4:0] idex_op,
 
-        input      [7:0]  dec_imm8,
-        input      [4:0]  dec_simm5,
+        // register data pipe
+        output reg [15:0] idex_rd1,
+        output reg [15:0] idex_rd2,
+        
+        output [2:0]  reg_rs1, output [2:0] reg_rs2,
+        input  [15:0] reg_rd1, input [15:0] reg_rd2,
+
+        // computed rd3 data
         output reg [15:0] idex_rd3,
 
-        input      [2:0] dec_rs1,  output reg [2:0] idex_rs1,
-        input      [2:0] dec_rs2,  output reg [2:0] idex_rs2,
-        input      [4:0] dec_op,   output reg [4:0] idex_r_opcode,
+        // register select pipe
+        output reg [2:0] idex_rs1,
+        output reg [2:0] idex_rs2,
 
-        input dec_has_imm8,
-        input dec_is_jmp,    output reg idex_is_jmp,
-        input dec_is_we,     output reg idex_is_we,
-        input dec_is_mem,    output reg idex_is_mem,
-        input dec_is_mem_we, output reg idex_is_mem_we,
+        output reg idex_has_br,
+        output reg idex_has_we,
+        output reg idex_has_mem,
+        output reg idex_has_mem_we,
         
         input stall, input jmping,
-        input ifid_valid, output reg idex_valid
-);
+        input ifid_valid, output reg idex_valid,
 
+        output reg [4:0] exme_op
+);
+        wire dec_has_imm8;
+        wire dec_has_br;
+        wire dec_has_simm5;
+        wire dec_has_we;
+        wire dec_has_mem;
+        wire dec_has_mem_we;
+        wire [4:0] dec_exme_op;
+        wire [7:0] dec_imm8;
+        wire [4:0] dec_simm5;
+        wire [4:0] dec_op;
+        vmicro16_dec decoder (
+                .instr          (ifid_instr),
+                .opcode         (dec_op),
+                .rd             (reg_rs1),
+                .ra             (reg_rs2),
+                .imm8           (dec_imm8),
+                .has_imm8       (dec_has_imm8   ),
+                .simm5          (dec_simm5      ),
+                .has_br         (dec_has_br     ),
+                .has_we         (dec_has_we      ),
+                //.has_bad        (dec_has_bad     ),
+                .has_mem        (dec_has_mem     ),
+                .has_mem_we     (dec_has_mem_we  ),
+                .exme_op        (dec_exme_op)
+        );
+        
+        // Clock values through the pipeline
         always @(posedge clk)
         if (!reset) begin
                 if(!stall) begin
@@ -414,14 +447,15 @@ module vmicro16_idex (
                         idex_pc  <= ifid_pc; // Only for simulation
                         idex_rd1 <= reg_rd1; // clock the decoder outputs into regs
                         idex_rd2 <= reg_rd2; // clock the decoder outputs into regs
-                        idex_rs1 <= dec_rs1; // destination register
-                        idex_rs2 <= dec_rs2; // operand register
+                        idex_rs1 <= reg_rs1; // destination register
+                        idex_rs2 <= reg_rs2; // operand register
                         // store decoded instr
-                        idex_r_opcode  <= dec_op;
-                        idex_is_jmp    <= dec_is_jmp;
-                        idex_is_we     <= dec_is_we;
-                        idex_is_mem    <= dec_is_mem;
-                        idex_is_mem_we <= dec_is_mem_we;
+                        idex_op         <= dec_op;
+                        exme_op         <= dec_exme_op;
+                        idex_has_br     <= dec_has_br;
+                        idex_has_we     <= dec_has_we;
+                        idex_has_mem    <= dec_has_mem;
+                        idex_has_mem_we <= dec_has_mem_we;
 
                         if ((dec_op == `VMICRO16_OP_SW) || (dec_op == `VMICRO16_OP_LW))
                                               idex_rd3 <= reg_rd2 + { {11{dec_imm8[4]}}, dec_simm5 };
@@ -431,13 +465,14 @@ module vmicro16_idex (
                 idex_valid <= stall ? 1'b0 : (ifid_valid && !jmping);
         end else begin
                 idex_valid     <= 1'b0;
-                idex_is_we     <= 1'b0;
-                idex_is_mem    <= 1'b0;
-                idex_is_mem_we <= 1'b0;
+                idex_has_we     <= 1'b0;
+                idex_has_mem    <= 1'b0;
+                idex_has_mem_we <= 1'b0;
         end
 
 endmodule
 
+/*
 module vmicro16_exme (
         input clk,
         input reset,
@@ -586,8 +621,6 @@ module vmicro16_cpu (
         reg jmping = 0;
         reg stall  = 0;
 
-        wire [2:0] dec_rs1;
-        wire [2:0] dec_rs2;
         wire [4:0] dec_op;
         wire [7:0] dec_imm8;
         wire       dec_has_imm8;
@@ -610,34 +643,70 @@ module vmicro16_cpu (
         reg  [15:0] wb_d = 0;
         vmicro16_regs # (
                 .CELL_WIDTH(16),
-                .CELL_DEPTH(8)
+                .CELL_DEPTH(8),
+                .CELL_DEFAULTS("../../test_regs.txt")
         ) regs (
                 .clk    (clk), 
                 .reset  (reset),
-                .rs1    (dec_rs1),
+
+                .rs1    (reg_rs1),
                 .rd1    (reg_rd1),
-                .rs2    (dec_rs2),
+
+                .rs2    (reg_rs2),
                 .rd2    (reg_rd2),
+                
                 .we     (wb_we_w),
                 .ws1    (wb_rs1),
                 .wd     (wb_d)
         );
-        vmicro16_dec decoder (
-                .instr          (ifid_instr),
-                .opcode         (dec_op),
-                .rd             (dec_rs1),
-                .ra             (dec_rs2),
-                .imm8           (dec_imm8),
-                .has_imm8       (dec_has_imm8   ),
-                .simm5          (dec_simm5      ),
-                .has_br         (dec_is_br     ),
-                .has_we         (dec_is_we      ),
-                //.has_bad        (dec_is_bad     ),
-                .has_mem        (dec_is_mem     ),
-                .has_mem_we     (dec_is_mem_we  ),
-                .exme_op        (exme_op)
+
+        
+        wire [15:0] idex_pc;
+        wire [15:0] idex_instr;
+        wire [2:0]  idex_rs1;
+        wire [2:0]  idex_rs2;
+        wire [15:0] idex_rd1;
+        wire [15:0] idex_rd2;
+        wire [15:0] idex_rd3;
+        wire [2:0]  reg_rs1;
+        wire [2:0]  reg_rs2;
+        vmicro16_idex stage_idex (
+                .clk             (clk), 
+                .reset           (reset), 
+
+                .ifid_pc         (ifid_pc), 
+                .idex_pc         (idex_pc), 
+
+                .ifid_instr      (ifid_instr), 
+                .idex_instr      (idex_instr), 
+
+                .reg_rs1         (reg_rs1),
+                .reg_rs2         (reg_rs2),
+                .reg_rd1         (reg_rd1), 
+                .reg_rd2         (reg_rd2), 
+
+                .idex_rd1        (idex_rd1), 
+                .idex_rd2        (idex_rd2), 
+                .idex_rd3        (idex_rd3), 
+                
+                .idex_rs1        (idex_rs1), 
+                .idex_rs2        (idex_rs2), 
+
+                .idex_has_br     (idex_has_br), 
+                .idex_has_we     (idex_has_we), 
+                .idex_has_mem    (idex_has_mem), 
+                .idex_has_mem_we (idex_has_mem_we), 
+                
+                .stall           (stall), 
+                .jmping          (jmping), 
+                
+                .ifid_valid      (ifid_valid), 
+                .idex_valid      (idex_valid), 
+
+                .exme_op         (exme_op)
         );
 
+        
         // stage_ifid
         vmicro16_ifid stage_ifid (
                 .clk            (clk), 

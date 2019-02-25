@@ -331,21 +331,37 @@ module vmicro16_alu # (
 endmodule
 
 module vmicro16_ifid (
-        input ifid_clk,
-        input ifid_reset,
-        input ifid_stall,
+        input clk,
+        input reset,
+        input stall,
         
         input mewb_valid,
         input jmping,
 
+        input [15:0] wb_jmp_target,
+
         output reg        ifid_valid,
-        output reg        pc,
+        output reg [15:0] ifid_pc,
         output reg [15:0] ifid_instr
 );
-        always @(posedge ifid_clk) begin
+        reg [7:0] mem_cache [0:31];
+        integer i;
+        initial begin
+        $display("Resetting mem");
+        for(i = 0; i < 32; i = i + 1) mem_cache[i] = 8'h00;
+        mem_cache[32-1] = { 8'hAA };
+        mem_cache[0]  = {`VMICRO16_OP_MOVI, 3'h3}; mem_cache[1]  = { 8'h01 };
+        //mem_cache[2]  = {`VMICRO16_OP_ARITH_U, 3'h3}; mem_cache[3]  = { 3'h0, 5'b00010 };
+        end
+
+        reg [15:0] pc;
+        initial pc = 0;
+
+        always @(posedge clk) begin
                 if (reset) begin
                         ifid_valid <= 0;
                         ifid_instr <= 0;
+                        ifid_pc    <= 0;
                         pc         <= 0;
                 end else begin
                         ifid_valid <= !jmping;
@@ -356,14 +372,14 @@ module vmicro16_ifid (
                         else if (!stall) begin
                                 // TODO: vmicro16_mmu is single port
                                 //       so we require a cache to do this
-                                ifid_instr <= {tmem[pc], tmem[pc+1]};
+                                ifid_instr <= {mem_cache[pc], mem_cache[pc+1]};
                                 ifid_pc    <= pc; // Only for simulation
                                 pc         <= pc + 16'h2;
                         end
                 end
         end
 endmodule
-
+/*
 module vmicro16_idex (
         input idex_clk,
         input idex_reset,
@@ -561,10 +577,78 @@ module vmicro16_wb (
         end
         
 endmodule
+*/
 
 module vmicro16_cpu (
         input clk,
         input reset
 );
+        reg jmping = 0;
+        reg stall  = 0;
+
+        wire [2:0] dec_rs1;
+        wire [2:0] dec_rs2;
+        wire [4:0] dec_op;
+        wire [7:0] dec_imm8;
+        wire       dec_has_imm8;
+        wire [4:0] dec_simm5;
+        wire       dec_is_br;
+        wire       dec_is_we;
+        wire       dec_is_mem;
+        wire       dec_is_mem_we;
+        wire       dec_is_bad;
+        wire [4:0] exme_op;
+
+        wire [15:0] ifid_pc;
+        wire [15:0] ifid_instr;
+        reg [15:0] wb_jmp_target = 0;
+
+        wire [15:0] reg_rd1;
+        wire [15:0] reg_rd2;
+        reg         wb_we_w = 0;
+        reg  [2:0]  wb_rs1 = 0;
+        reg  [15:0] wb_d = 0;
+        vmicro16_regs # (
+                .CELL_WIDTH(16),
+                .CELL_DEPTH(8)
+        ) regs (
+                .clk    (clk), 
+                .reset  (reset),
+                .rs1    (dec_rs1),
+                .rd1    (reg_rd1),
+                .rs2    (dec_rs2),
+                .rd2    (reg_rd2),
+                .we     (wb_we_w),
+                .ws1    (wb_rs1),
+                .wd     (wb_d)
+        );
+        vmicro16_dec decoder (
+                .instr          (ifid_instr),
+                .opcode         (dec_op),
+                .rd             (dec_rs1),
+                .ra             (dec_rs2),
+                .imm8           (dec_imm8),
+                .has_imm8       (dec_has_imm8   ),
+                .simm5          (dec_simm5      ),
+                .has_br         (dec_is_br     ),
+                .has_we         (dec_is_we      ),
+                //.has_bad        (dec_is_bad     ),
+                .has_mem        (dec_is_mem     ),
+                .has_mem_we     (dec_is_mem_we  ),
+                .exme_op        (exme_op)
+        );
+
+        // stage_ifid
+        vmicro16_ifid stage_ifid (
+                .clk            (clk), 
+                .reset          (reset), 
+                .stall          (stall), 
+                .jmping         (jmping), 
+                .wb_jmp_target  (wb_jmp_target),
+                .mewb_valid     (1), 
+                .ifid_valid     (ifid_valid), 
+                .ifid_pc        (ifid_pc), 
+                .ifid_instr     (ifid_instr)
+        );
 
 endmodule

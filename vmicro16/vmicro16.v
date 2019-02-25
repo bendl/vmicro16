@@ -6,6 +6,7 @@
 /* verilator lint_off BLKSEQ */
 /* verilator lint_off WIDTH */
 
+// Include Vmicro16 ISA containing definitions for the bits
 `include "vmicro16_isa.v"
 
 // This module aims to be a SYNCHRONOUS, WRITE_FIRST BLOCK RAM
@@ -37,7 +38,6 @@ module vmicro16_bram # (
                         $display("bram: W mem[%h] <= %h", mem_addr, mem_in);
                 end else begin
                         mem_out <= mem[mem_addr];
-                        //$display("bram: R mem[%h]", mem[mem_addr]);
                 end
         end
 
@@ -173,7 +173,6 @@ module vmicro16_regs # (
                 end
         endgenerate
 endmodule
-
 
 // Decoder is hard to parameterise as it's very closely linked to the ISA.
 module vmicro16_dec # (
@@ -331,3 +330,241 @@ module vmicro16_alu # (
         endcase
 endmodule
 
+module vmicro16_ifid (
+        input ifid_clk,
+        input ifid_reset,
+        input ifid_stall,
+        
+        input mewb_valid,
+        input jmping,
+
+        output reg        ifid_valid,
+        output reg        pc,
+        output reg [15:0] ifid_instr
+);
+        always @(posedge ifid_clk) begin
+                if (reset) begin
+                        ifid_valid <= 0;
+                        ifid_instr <= 0;
+                        pc         <= 0;
+                end else begin
+                        ifid_valid <= !jmping;
+                        if (mewb_valid && jmping) begin
+                                $display("Jumping to %h", wb_jmp_target);
+                                pc <= wb_jmp_target;
+                        end 
+                        else if (!stall) begin
+                                // TODO: vmicro16_mmu is single port
+                                //       so we require a cache to do this
+                                ifid_instr <= {tmem[pc], tmem[pc+1]};
+                                ifid_pc    <= pc; // Only for simulation
+                                pc         <= pc + 16'h2;
+                        end
+                end
+        end
+endmodule
+
+module vmicro16_idex (
+        input idex_clk,
+        input idex_reset,
+        
+        input      [15:0] ifid_pc, output reg [15:0] idex_pc,
+
+        input      [15:0] reg_rd1, output reg [15:0] idex_rd1,
+        input      [15:0] reg_rd2, output reg [15:0] idex_rd2,
+
+        input      [7:0]  dec_imm8,
+        input      [4:0]  dec_simm5,
+        output reg [15:0] idex_rd3,
+
+        input      [2:0] dec_rs1,  output reg [2:0] idex_rs1,
+        input      [2:0] dec_rs2,  output reg [2:0] idex_rs2,
+        input      [4:0] dec_op,   output reg [4:0] idex_r_opcode,
+
+        input dec_has_imm8,
+        input dec_is_jmp,    output reg idex_is_jmp,
+        input dec_is_we,     output reg idex_is_we,
+        input dec_is_mem,    output reg idex_is_mem,
+        input dec_is_mem_we, output reg idex_is_mem_we,
+        
+        input stall, input jmping,
+        input ifid_valid, output reg idex_valid
+);
+
+        always @(posedge clk)
+        if (!reset) begin
+                if(!stall) begin
+                        // Move previous stage regs into this stage
+                        idex_pc  <= ifid_pc; // Only for simulation
+                        idex_rd1 <= reg_rd1; // clock the decoder outputs into regs
+                        idex_rd2 <= reg_rd2; // clock the decoder outputs into regs
+                        idex_rs1 <= dec_rs1; // destination register
+                        idex_rs2 <= dec_rs2; // operand register
+                        // store decoded instr
+                        idex_r_opcode  <= dec_op;
+                        idex_is_jmp    <= dec_is_jmp;
+                        idex_is_we     <= dec_is_we;
+                        idex_is_mem    <= dec_is_mem;
+                        idex_is_mem_we <= dec_is_mem_we;
+
+                        if ((dec_op == `VMICRO16_OP_SW) || (dec_op == `VMICRO16_OP_LW))
+                                              idex_rd3 <= reg_rd2 + { {11{dec_imm8[4]}}, dec_simm5 };
+                        else if(dec_has_imm8) idex_rd3 <= { {8{dec_imm8[7]}}, dec_imm8 };
+                        else                  idex_rd3 <= reg_rd2;
+                end
+                idex_valid <= stall ? 1'b0 : (ifid_valid && !jmping);
+        end else begin
+                idex_valid     <= 1'b0;
+                idex_is_we     <= 1'b0;
+                idex_is_mem    <= 1'b0;
+                idex_is_mem_we <= 1'b0;
+        end
+
+endmodule
+
+module vmicro16_exme (
+        input clk,
+        input reset,
+
+        input [15:0] idex_pc,  output reg [15:0] exme_pc,
+
+        input [15:0] alu_q,    output reg [15:0] exme_d,
+        input [15:0] idex_rd1, output reg [15:0] exme_d2,
+    
+        input [2:0] idex_rs1,  output reg [2:0] exme_rs1,
+        input [2:0] idex_rs2,  output reg [2:0] exme_rs2,
+    
+        input idex_is_jmp,     output reg exme_is_jmp,
+        input idex_is_we,      output reg exme_is_we,
+        input idex_is_mem,     output reg exme_is_me,
+        input idex_is_mem_we,  output reg exme_is_mem_we,
+        input idex_valid,
+        input jmping,          output reg exme_valid,
+        
+        output reg [15:0] exme_jmp_target
+);
+        always @(posedge clk)
+        if (!reset) begin
+                // Move previous stage regs into this stage
+                exme_pc         <= idex_pc; // Only for simulation
+                // exme_d contains the result data value or 
+                //   address for LW/SW
+                exme_d          <= alu_q;
+                exme_d2         <= idex_rd1;
+                // exme_rs contains the destination register for
+                //   the data value or memory after it's fetched
+                exme_rs1        <= idex_rs1;
+                exme_rs2        <= idex_rs2;
+
+                exme_is_jmp     <= idex_is_jmp;
+                exme_is_we      <= idex_is_we;
+                exme_is_mem     <= idex_is_mem;
+                exme_is_mem_we  <= idex_is_mem_we;
+
+                exme_valid      <= idex_valid && !jmping;
+                
+                // Relative PC jmp target, PC = PC + rd1
+                exme_jmp_target <= (idex_is_jmp) ? 
+                                        (idex_pc + idex_rd1) : 
+                                        1'b0;
+        end else begin
+                exme_valid     <= 1'b0;
+                exme_d         <= 16'h0;
+                exme_d2        <= 16'h0;
+                exme_is_mem    <= 1'b0;
+                exme_is_mem_we <= 1'b0;
+        end
+endmodule
+
+module vmicro16_mewb (
+        input clk,
+        input reset,
+
+        input [15:0] exme_pc,  output reg [15:0] mewb_pc,
+        
+        input [15:0] exme_d, 
+        input [15:0] mem_out,  output reg [15:0] mewb_d,
+        
+        input [15:0] exme_d2,  output reg [15:0] mewb_d2,
+        input [2:0]  exme_rs1, output reg [2:0]  mewb_rs1,
+
+        input exme_jmp_target, output reg mewb_jmp_target,
+        input exme_is_mem,     output reg mewb_is_mem,
+        input exme_is_mem_we,  output reg mewb_is_mem_we,
+        input exme_is_jmp,     output reg mewb_is_jmp,
+        input exme_is_we,      output reg mewb_is_we,
+
+        input mem_valid,
+        input exme_valid,      output reg mewb_valid
+);
+        // MEWB stage
+        always @(posedge clk)
+        if (!reset) begin
+                if (exme_valid) begin
+                        // Move previous stage regs into this stage
+                        mewb_pc         <= exme_pc; // Only for simulation
+                        if (exme_is_mem) mewb_d <= mem_out;
+                        else             mewb_d <= exme_d;
+                        
+                        mewb_d2         <= exme_d2;
+                        mewb_rs1        <= exme_rs1;
+                        mewb_jmp_target <= exme_jmp_target;
+
+                        mewb_is_mem     <= exme_is_mem;
+                        mewb_is_mem_we  <= exme_is_mem_we;
+                        mewb_is_jmp     <= exme_is_jmp;
+                        mewb_is_we      <= exme_is_we;
+                        
+                        if (exme_is_mem) 
+                                if (exme_is_mem_we)
+                                        $display("mmu: SW: RAM[%h] <= r[%h] (%h)",
+                                                exme_d, exme_rs1, exme_d2);
+                                else
+                                        $display("mmu: LW: r[%h] <= RAM[%h]",
+                                                exme_rs1, exme_d);
+                end
+                mewb_valid <= exme_valid && !jmping && mem_valid;
+        end else begin
+                mewb_valid     <= 1'b0;
+                mewb_is_we     <= 1'b0;
+                mewb_is_mem    <= 1'b0;
+                mewb_is_mem_we <= 1'b0;
+        end
+endmodule
+
+module vmicro16_wb (
+        input clk,
+        input reset,
+
+        input [15:0] mewb_d,          output reg [15:0] wb_d,
+        input [2:0]  mewb_is_rs1,     output reg [2:0]  wb_rs1,
+        input        mewb_is_we,      output reg        wb_we,
+        input        mewb_is_jmp,     output reg        wb_is_jmp,
+        input [15:0] mewb_jmp_target, output reg [15:0] wb_jmp_target,
+        input mewb_valid, 
+        input jmping,                 output reg wb_valid
+);
+        // WB stage
+        always @(posedge clk)
+        if (!reset) begin
+                if (mewb_valid) begin
+                        wb_d          <= mewb_d;
+                        wb_we         <= mewb_is_we;
+                        wb_rs1        <= mewb_rs1;
+                        wb_is_jmp     <= mewb_is_jmp;
+                        wb_jmp_target <= mewb_jmp_target;
+                end
+                wb_valid <= mewb_valid && !jmping;
+        end else begin
+                wb_valid <= 1'b0;
+                wb_we    <= 1'b0;
+        end
+        
+endmodule
+
+module vmicro16_cpu (
+        input clk,
+        input reset
+);
+
+endmodule

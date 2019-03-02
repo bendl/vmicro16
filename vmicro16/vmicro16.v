@@ -194,7 +194,7 @@ module vmicro16_dec # (
         output [4:0]                simm5,
 
         // This can be freely increased without affecting the isa
-        output reg [ALU_OP_WIDTH-1:0] exme_op,
+        output reg [ALU_OP_WIDTH-1:0] alu_op,
 
         output reg has_imm8,
         output reg has_imm12,
@@ -216,36 +216,36 @@ module vmicro16_dec # (
 
         // exme_op
         always @(*) case (opcode)
-            default:                      exme_op = `VMICRO16_ALU_BAD;
-            `VMICRO16_OP_NOP:             exme_op = `VMICRO16_ALU_NOP;
+            default:                      alu_op = `VMICRO16_ALU_BAD;
+            `VMICRO16_OP_NOP:             alu_op = `VMICRO16_ALU_NOP;
         
-            `VMICRO16_OP_LW:              exme_op = `VMICRO16_ALU_LW;
-            `VMICRO16_OP_SW:              exme_op = `VMICRO16_ALU_SW;
+            `VMICRO16_OP_LW:              alu_op = `VMICRO16_ALU_LW;
+            `VMICRO16_OP_SW:              alu_op = `VMICRO16_ALU_SW;
 
-            `VMICRO16_OP_MOV:             exme_op = `VMICRO16_ALU_MOV;
-            `VMICRO16_OP_MOVI:            exme_op = `VMICRO16_ALU_MOVI;
-            `VMICRO16_OP_MOVI_L:          exme_op = `VMICRO16_ALU_MOVI_L; 
+            `VMICRO16_OP_MOV:             alu_op = `VMICRO16_ALU_MOV;
+            `VMICRO16_OP_MOVI:            alu_op = `VMICRO16_ALU_MOVI;
+            `VMICRO16_OP_MOVI_L:          alu_op = `VMICRO16_ALU_MOVI_L; 
              
             `VMICRO16_OP_BIT:         casez (simm5)
-                `VMICRO16_OP_BIT_OR:      exme_op = `VMICRO16_ALU_BIT_OR;
-                `VMICRO16_OP_BIT_XOR:     exme_op = `VMICRO16_ALU_BIT_XOR;
-                `VMICRO16_OP_BIT_AND:     exme_op = `VMICRO16_ALU_BIT_AND;
-                `VMICRO16_OP_BIT_NOT:     exme_op = `VMICRO16_ALU_BIT_NOT;
-                `VMICRO16_OP_BIT_LSHFT:   exme_op = `VMICRO16_ALU_BIT_LSHFT;
-                `VMICRO16_OP_BIT_RSHFT:   exme_op = `VMICRO16_ALU_BIT_RSHFT;
-                default:                  exme_op = `VMICRO16_ALU_BAD; endcase
+                `VMICRO16_OP_BIT_OR:      alu_op = `VMICRO16_ALU_BIT_OR;
+                `VMICRO16_OP_BIT_XOR:     alu_op = `VMICRO16_ALU_BIT_XOR;
+                `VMICRO16_OP_BIT_AND:     alu_op = `VMICRO16_ALU_BIT_AND;
+                `VMICRO16_OP_BIT_NOT:     alu_op = `VMICRO16_ALU_BIT_NOT;
+                `VMICRO16_OP_BIT_LSHFT:   alu_op = `VMICRO16_ALU_BIT_LSHFT;
+                `VMICRO16_OP_BIT_RSHFT:   alu_op = `VMICRO16_ALU_BIT_RSHFT;
+                default:                  alu_op = `VMICRO16_ALU_BAD; endcase
 
             `VMICRO16_OP_ARITH_U:     casez (simm5)
-                `VMICRO16_OP_ARITH_UADD:  exme_op = `VMICRO16_ALU_ARITH_UADD;
-                `VMICRO16_OP_ARITH_USUB:  exme_op = `VMICRO16_ALU_ARITH_USUB;
-                `VMICRO16_OP_ARITH_UADDI: exme_op = `VMICRO16_ALU_ARITH_UADDI;
-                default:                  exme_op = `VMICRO16_ALU_BAD; endcase
+                `VMICRO16_OP_ARITH_UADD:  alu_op = `VMICRO16_ALU_ARITH_UADD;
+                `VMICRO16_OP_ARITH_USUB:  alu_op = `VMICRO16_ALU_ARITH_USUB;
+                `VMICRO16_OP_ARITH_UADDI: alu_op = `VMICRO16_ALU_ARITH_UADDI;
+                default:                  alu_op = `VMICRO16_ALU_BAD; endcase
             
             `VMICRO16_OP_ARITH_S:     casez (simm5)
-                `VMICRO16_OP_ARITH_SADD:  exme_op = `VMICRO16_ALU_ARITH_SADD;
-                `VMICRO16_OP_ARITH_SSUB:  exme_op = `VMICRO16_ALU_ARITH_SSUB;
-                `VMICRO16_OP_ARITH_SSUBI: exme_op = `VMICRO16_ALU_ARITH_SSUBI; 
-                default:                  exme_op = `VMICRO16_ALU_BAD; endcase
+                `VMICRO16_OP_ARITH_SADD:  alu_op = `VMICRO16_ALU_ARITH_SADD;
+                `VMICRO16_OP_ARITH_SSUB:  alu_op = `VMICRO16_ALU_ARITH_SSUB;
+                `VMICRO16_OP_ARITH_SSUBI: alu_op = `VMICRO16_ALU_ARITH_SSUBI; 
+                default:                  alu_op = `VMICRO16_ALU_BAD; endcase
         endcase
 
         // Register writes
@@ -409,9 +409,7 @@ module vmicro16_idex (
         output reg idex_has_mem_we,
         
         input stall, input jmping,
-        input ifid_valid, output reg idex_valid,
-
-        output reg [4:0] exme_op
+        input ifid_valid, output reg idex_valid
 );
         wire dec_has_imm8;
         wire dec_has_br;
@@ -419,7 +417,7 @@ module vmicro16_idex (
         wire dec_has_we;
         wire dec_has_mem;
         wire dec_has_mem_we;
-        wire [4:0] dec_exme_op;
+        wire [4:0] alu_op;
         wire [7:0] dec_imm8;
         wire [4:0] dec_simm5;
         wire [4:0] dec_op;
@@ -436,7 +434,7 @@ module vmicro16_idex (
                 //.has_bad        (dec_has_bad     ),
                 .has_mem        (dec_has_mem     ),
                 .has_mem_we     (dec_has_mem_we  ),
-                .exme_op        (dec_exme_op)
+                .alu_op         (alu_op)
         );
         
         // Clock values through the pipeline
@@ -450,8 +448,7 @@ module vmicro16_idex (
                         idex_rs1 <= reg_rs1; // destination register
                         idex_rs2 <= reg_rs2; // operand register
                         // store decoded instr
-                        idex_op         <= dec_op;
-                        exme_op         <= dec_exme_op;
+                        idex_op         <= alu_op;
                         idex_has_br     <= dec_has_br;
                         idex_has_we     <= dec_has_we;
                         idex_has_mem    <= dec_has_mem;
@@ -464,36 +461,50 @@ module vmicro16_idex (
                 end
                 idex_valid <= stall ? 1'b0 : (ifid_valid && !jmping);
         end else begin
-                idex_valid     <= 1'b0;
+                idex_valid      <= 1'b0;
                 idex_has_we     <= 1'b0;
                 idex_has_mem    <= 1'b0;
                 idex_has_mem_we <= 1'b0;
+                idex_rd1        <= 1'b0;
+                idex_rd2        <= 1'b0;
+                idex_rd3        <= 1'b0;
         end
 
 endmodule
 
-/*
+
 module vmicro16_exme (
         input clk,
         input reset,
 
         input [15:0] idex_pc,  output reg [15:0] exme_pc,
 
-        input [15:0] alu_q,    output reg [15:0] exme_d,
+        input [4:0]  idex_op,  output reg [4:0]  exme_op,
+                               output reg [15:0] exme_d,
         input [15:0] idex_rd1, output reg [15:0] exme_d2,
+        input [15:0] idex_rd3,
     
         input [2:0] idex_rs1,  output reg [2:0] exme_rs1,
         input [2:0] idex_rs2,  output reg [2:0] exme_rs2,
     
         input idex_is_jmp,     output reg exme_is_jmp,
         input idex_is_we,      output reg exme_is_we,
-        input idex_is_mem,     output reg exme_is_me,
+        input idex_is_mem,     output reg exme_is_mem,
         input idex_is_mem_we,  output reg exme_is_mem_we,
         input idex_valid,
         input jmping,          output reg exme_valid,
         
         output reg [15:0] exme_jmp_target
 );
+        // ALU
+        wire [15:0] alu_q;
+        vmicro16_alu alu (
+                .op(idex_op), 
+                .d1(idex_rd1), 
+                .d2(idex_rd3), 
+                .q(alu_q)
+        );
+
         always @(posedge clk)
         if (!reset) begin
                 // Move previous stage regs into this stage
@@ -583,6 +594,7 @@ module vmicro16_mewb (
         end
 endmodule
 
+/*
 module vmicro16_wb (
         input clk,
         input reset,
@@ -621,26 +633,27 @@ module vmicro16_cpu (
         reg jmping = 0;
         reg stall  = 0;
 
-        wire [4:0] dec_op;
-        wire [7:0] dec_imm8;
-        wire       dec_has_imm8;
-        wire [4:0] dec_simm5;
-        wire       dec_is_br;
-        wire       dec_is_we;
-        wire       dec_is_mem;
-        wire       dec_is_mem_we;
-        wire       dec_is_bad;
-        wire [4:0] exme_op;
+        wire [4:0]  dec_op;
+        wire [7:0]  dec_imm8;
+        wire        dec_has_imm8;
+        wire [4:0]  dec_simm5;
+        wire        dec_is_br;
+        wire        dec_is_we;
+        wire        dec_is_mem;
+        wire        dec_is_mem_we;
+        wire        dec_is_bad;
 
         wire [15:0] ifid_pc;
         wire [15:0] ifid_instr;
-        reg [15:0] wb_jmp_target = 0;
+        reg  [15:0] wb_jmp_target = 0;
 
         wire [15:0] reg_rd1;
         wire [15:0] reg_rd2;
         reg         wb_we_w = 0;
         reg  [2:0]  wb_rs1 = 0;
         reg  [15:0] wb_d = 0;
+        wire [2:0]  reg_rs1;
+        wire [2:0]  reg_rs2;
         vmicro16_regs # (
                 .CELL_WIDTH(16),
                 .CELL_DEPTH(8),
@@ -660,6 +673,19 @@ module vmicro16_cpu (
                 .wd     (wb_d)
         );
 
+        // stage_ifid
+        vmicro16_ifid stage_ifid (
+                .clk            (clk), 
+                .reset          (reset), 
+                .stall          (stall), 
+                .jmping         (jmping), 
+                .wb_jmp_target  (wb_jmp_target),
+                .mewb_valid     (1), 
+                .ifid_valid     (ifid_valid), 
+                .ifid_pc        (ifid_pc), 
+                .ifid_instr     (ifid_instr)
+        );
+
         
         wire [15:0] idex_pc;
         wire [15:0] idex_instr;
@@ -668,8 +694,7 @@ module vmicro16_cpu (
         wire [15:0] idex_rd1;
         wire [15:0] idex_rd2;
         wire [15:0] idex_rd3;
-        wire [2:0]  reg_rs1;
-        wire [2:0]  reg_rs2;
+        wire [4:0]  idex_op;
         vmicro16_idex stage_idex (
                 .clk             (clk), 
                 .reset           (reset), 
@@ -703,21 +728,44 @@ module vmicro16_cpu (
                 .ifid_valid      (ifid_valid), 
                 .idex_valid      (idex_valid), 
 
-                .exme_op         (exme_op)
+                .idex_op         (idex_op)
         );
 
-        
-        // stage_ifid
-        vmicro16_ifid stage_ifid (
-                .clk            (clk), 
-                .reset          (reset), 
-                .stall          (stall), 
-                .jmping         (jmping), 
-                .wb_jmp_target  (wb_jmp_target),
-                .mewb_valid     (1), 
-                .ifid_valid     (ifid_valid), 
-                .ifid_pc        (ifid_pc), 
-                .ifid_instr     (ifid_instr)
+        // NEW
+        wire [15:0] exme_pc;
+        wire [4:0]  exme_op;
+        wire [15:0] exme_d;
+        wire [15:0] exme_d2;
+        // PASS
+        wire [2:0]  exme_rs1;
+        wire [2:0]  exme_rs2;
+        wire        exme_is_jmp;
+        wire        exme_is_we;
+        wire        exme_is_mem;
+        wire        exme_is_mem_we;
+        wire        exme_valid;
+        wire [15:0] exme_jmp_target;
+        vmicro16_exme stage_exme (
+                .clk             (clk), 
+                .reset           (reset), 
+                // Status registers
+                .jmping          (jmping),
+                // Pass through registers
+                .idex_pc         (idex_pc),        .exme_pc         (exme_pc),
+                .idex_rs1        (idex_rs1),       .exme_rs1        (exme_rs1), 
+                .idex_rs2        (idex_rs2),       .exme_rs2        (exme_rs2), 
+                .idex_is_jmp     (idex_is_jmp),    .exme_is_jmp     (exme_is_jmp),
+                .idex_is_we      (idex_is_we),     .exme_is_we      (exme_is_we),
+                .idex_is_mem     (idex_is_mem),    .exme_is_mem     (exme_is_mem), 
+                .idex_is_mem_we  (idex_is_mem_we), .exme_is_mem_we  (exme_is_mem_we), 
+                .idex_valid      (idex_valid),     .exme_valid      (exme_valid),
+                // ALU ops
+                .idex_op         (idex_op),        .exme_op         (exme_op), //PASS
+                .exme_d          (exme_d),         
+                .idex_rd1        (idex_rd1),       .exme_d2         (exme_d2), //PASS
+                .idex_rd3        (idex_rd3),
+                .exme_jmp_target (exme_jmp_target)
         );
+
 
 endmodule

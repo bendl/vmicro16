@@ -286,6 +286,12 @@ module vmicro16_dec # (
             `VMICRO16_OP_SW:            has_mem = 1'b1;
             default:                    has_mem = 1'b0;
         endcase
+        
+        // Requires external memory write
+        always @(*) case (opcode)
+            `VMICRO16_OP_SW:            has_mem_we = 1'b1;
+            default:                    has_mem_we = 1'b0;
+        endcase
 endmodule
 
 
@@ -326,7 +332,10 @@ module vmicro16_alu # (
             `VMICRO16_ALU_ARITH_SSUBI:  q = $signed(d1) + $signed(d2);
 
             // TODO: Parameterise
-            default:                    q = {(DATA_WIDTH-1){1'bX}};
+            default: begin
+                        $display("ALU: unknown op: %h", op);
+                        q = {(DATA_WIDTH-1){1'bZZZZ}};
+                end
         endcase
 endmodule
 
@@ -430,10 +439,10 @@ module vmicro16_idex (
                 .has_imm8       (dec_has_imm8   ),
                 .simm5          (dec_simm5      ),
                 .has_br         (dec_has_br     ),
-                .has_we         (dec_has_we      ),
+                .has_we         (dec_has_we     ),
                 //.has_bad        (dec_has_bad     ),
-                .has_mem        (dec_has_mem     ),
-                .has_mem_we     (dec_has_mem_we  ),
+                .has_mem        (dec_has_mem    ),
+                .has_mem_we     (dec_has_mem_we ),
                 .alu_op         (alu_op)
         );
         
@@ -482,15 +491,16 @@ module vmicro16_exme (
         input [4:0]  idex_op,  output reg [4:0]  exme_op,
                                output reg [15:0] exme_d,
         input [15:0] idex_rd1, output reg [15:0] exme_d2,
+        // input [15:0] idex_rd2,
         input [15:0] idex_rd3,
     
         input [2:0] idex_rs1,  output reg [2:0] exme_rs1,
         input [2:0] idex_rs2,  output reg [2:0] exme_rs2,
     
-        input idex_is_jmp,     output reg exme_is_jmp,
-        input idex_is_we,      output reg exme_is_we,
-        input idex_is_mem,     output reg exme_is_mem,
-        input idex_is_mem_we,  output reg exme_is_mem_we,
+        input idex_has_br,      output reg exme_has_br,
+        input idex_has_we,      output reg exme_has_we,
+        input idex_has_mem,     output reg exme_has_mem,
+        input idex_has_mem_we,  output reg exme_has_mem_we,
         input idex_valid,
         input jmping,          output reg exme_valid,
         
@@ -518,23 +528,23 @@ module vmicro16_exme (
                 exme_rs1        <= idex_rs1;
                 exme_rs2        <= idex_rs2;
 
-                exme_is_jmp     <= idex_is_jmp;
-                exme_is_we      <= idex_is_we;
-                exme_is_mem     <= idex_is_mem;
-                exme_is_mem_we  <= idex_is_mem_we;
+                exme_has_br      <= idex_has_br;
+                exme_has_we      <= idex_has_we;
+                exme_has_mem     <= idex_has_mem;
+                exme_has_mem_we  <= idex_has_mem_we;
 
                 exme_valid      <= idex_valid && !jmping;
                 
                 // Relative PC jmp target, PC = PC + rd1
-                exme_jmp_target <= (idex_is_jmp) ? 
+                exme_jmp_target <= (idex_has_br) ? 
                                         (idex_pc + idex_rd1) : 
                                         1'b0;
         end else begin
                 exme_valid     <= 1'b0;
                 exme_d         <= 16'h0;
                 exme_d2        <= 16'h0;
-                exme_is_mem    <= 1'b0;
-                exme_is_mem_we <= 1'b0;
+                exme_has_mem    <= 1'b0;
+                exme_has_mem_we <= 1'b0;
         end
 endmodule
 
@@ -550,14 +560,18 @@ module vmicro16_mewb (
         input [15:0] exme_d2,  output reg [15:0] mewb_d2,
         input [2:0]  exme_rs1, output reg [2:0]  mewb_rs1,
 
-        input exme_jmp_target, output reg mewb_jmp_target,
-        input exme_is_mem,     output reg mewb_is_mem,
-        input exme_is_mem_we,  output reg mewb_is_mem_we,
-        input exme_is_jmp,     output reg mewb_is_jmp,
-        input exme_is_we,      output reg mewb_is_we,
+        input      [15:0] exme_jmp_target, 
+        output reg [15:0] mewb_jmp_target,
+
+        input exme_has_br,     output reg mewb_has_br,
+        input exme_has_we,      output reg mewb_has_we,
+        input exme_has_mem,     output reg mewb_has_mem,
+        input exme_has_mem_we,  output reg mewb_has_mem_we,
 
         input mem_valid,
-        input exme_valid,      output reg mewb_valid
+        input exme_valid,      output reg mewb_valid,
+
+        input jmping
 );
         // MEWB stage
         always @(posedge clk)
@@ -565,20 +579,21 @@ module vmicro16_mewb (
                 if (exme_valid) begin
                         // Move previous stage regs into this stage
                         mewb_pc         <= exme_pc; // Only for simulation
-                        if (exme_is_mem) mewb_d <= mem_out;
-                        else             mewb_d <= exme_d;
+                        
+                        if (exme_has_mem) mewb_d <= mem_out;
+                        else              mewb_d <= exme_d;
                         
                         mewb_d2         <= exme_d2;
                         mewb_rs1        <= exme_rs1;
                         mewb_jmp_target <= exme_jmp_target;
 
-                        mewb_is_mem     <= exme_is_mem;
-                        mewb_is_mem_we  <= exme_is_mem_we;
-                        mewb_is_jmp     <= exme_is_jmp;
-                        mewb_is_we      <= exme_is_we;
+                        mewb_has_br      <= exme_has_br;
+                        mewb_has_we      <= exme_has_we;
+                        mewb_has_mem     <= exme_has_mem;
+                        mewb_has_mem_we  <= exme_has_mem_we;
                         
-                        if (exme_is_mem) 
-                                if (exme_is_mem_we)
+                        if (exme_has_mem) 
+                                if (exme_has_mem_we)
                                         $display("mmu: SW: RAM[%h] <= r[%h] (%h)",
                                                 exme_d, exme_rs1, exme_d2);
                                 else
@@ -587,10 +602,11 @@ module vmicro16_mewb (
                 end
                 mewb_valid <= exme_valid && !jmping && mem_valid;
         end else begin
-                mewb_valid     <= 1'b0;
-                mewb_is_we     <= 1'b0;
-                mewb_is_mem    <= 1'b0;
-                mewb_is_mem_we <= 1'b0;
+                mewb_valid      <= 1'b0;
+                mewb_has_br     <= 1'b0;
+                mewb_has_we     <= 1'b0;
+                mewb_has_mem    <= 1'b0;
+                mewb_has_mem_we <= 1'b0;
         end
 endmodule
 
@@ -600,9 +616,9 @@ module vmicro16_wb (
         input reset,
 
         input [15:0] mewb_d,          output reg [15:0] wb_d,
-        input [2:0]  mewb_is_rs1,     output reg [2:0]  wb_rs1,
-        input        mewb_is_we,      output reg        wb_we,
-        input        mewb_is_jmp,     output reg        wb_is_jmp,
+        input [2:0]  mewb_has_rs1,    output reg [2:0]  wb_rs1,
+        input        mewb_has_we,     output reg        wb_we,
+        input        mewb_has_br,     output reg        wb_is_br,
         input [15:0] mewb_jmp_target, output reg [15:0] wb_jmp_target,
         input mewb_valid, 
         input jmping,                 output reg wb_valid
@@ -612,9 +628,9 @@ module vmicro16_wb (
         if (!reset) begin
                 if (mewb_valid) begin
                         wb_d          <= mewb_d;
-                        wb_we         <= mewb_is_we;
+                        wb_we         <= mewb_has_we;
                         wb_rs1        <= mewb_rs1;
-                        wb_is_jmp     <= mewb_is_jmp;
+                        wb_has_br     <= mewb_has_br;
                         wb_jmp_target <= mewb_jmp_target;
                 end
                 wb_valid <= mewb_valid && !jmping;
@@ -626,6 +642,121 @@ module vmicro16_wb (
 endmodule
 */
 
+
+module vmicro16_mmu # (
+        parameter MEM_WIDTH    = 16,
+        parameter MEM_DEPTH    = 1024,
+
+        parameter MEM_RVAL     = 16'h00CC
+) (
+        input clk,
+        input reset,
+
+        output valid,
+
+        input req,
+
+        input  [15:0] mem_addr,
+        input  [15:0] mem_in,
+        input         mem_we,
+        input  [1:0]  mem_whl, // TODO: apply to mem_out
+        output reg [15:0] mem_out,
+
+        // wishbone peripheral master
+        output reg    wb_mosi_stb_o_regs,
+        //output wb_stb_o_xx,
+        output reg    wb_mosi_cyc_o,
+        output [15:0] wb_mosi_addr_o,
+        output        wb_mosi_we_o,
+        output [15:0] wb_mosi_data_o, // seperate data_o and data_i buses
+        input  [15:0] wb_miso_data_i, // seperate data_o and data_i buses
+        
+        input         wb_miso_ack_i
+);
+        wire [15:0] bram_out;
+
+        ////////////////////////////////
+        //        TODO: CLEANUP
+        ////////////////////////////////
+        reg active = 0;
+        always @(*)
+        if (req) begin
+                active = 1'b1;
+        end else if (wb_miso_ack_i) begin
+                active = 1'b0;
+        end else 
+                active = active;
+
+        ////////////////////////////////
+        //        TODO: CLEANUP
+        ////////////////////////////////
+        always @(*)
+        if (reset) 
+                mem_out = 16'h0;
+        else if(active && wb_mosi_stb_o_regs) begin
+                wb_mosi_cyc_o = 1'b1;
+                if (wb_miso_ack_i) begin
+                        mem_out = wb_miso_data_i;
+                end
+        end else if (active) begin
+                mem_out = bram_out;
+        end else begin
+                wb_mosi_cyc_o = 1'b0;
+                // TODO: mem_out isn't valid in this state, output high z or 0?
+                mem_out = 16'hZZ;
+        end
+
+        // bram memory is always single clk, wb is unknown
+        assign valid = active ? wb_miso_ack_i : 1'b1;
+
+        ////////////////////////////////
+        //        TODO: CLEANUP
+        ////////////////////////////////
+        // Virtual memory translator
+        always @(*) begin
+                // zero all peripherals
+                wb_mosi_stb_o_regs = 0;
+
+                if (req) begin
+                        // enable peripherals when their address is selected
+                        casez(mem_addr)
+                                15'h01??: wb_mosi_stb_o_regs = 1'b1;
+                                default:  wb_mosi_stb_o_regs = 1'b0;
+                        endcase
+                end
+        end
+
+        wire   wb_active      = wb_mosi_cyc_o; // deprecated
+        wire   wb_stb         = wb_mosi_stb_o_regs;// || req;
+        //assign wb_mosi_cyc_o  = wb_stb;
+        assign wb_mosi_we_o   = wb_active ? mem_we   : 1'b0;
+        assign wb_mosi_addr_o = wb_active ? mem_addr : 16'h00;
+        assign wb_mosi_data_o = wb_active ? mem_in   : 16'h00;
+
+        //assign mem_out        = wb_active ? wb_miso_data_i : bram_out;
+
+
+        // TODO: Should this be inside the mmu or outside?
+        wire bram_we = mem_we && !wb_active;
+        vmicro16_bram # (
+                .MEM_WIDTH(MEM_WIDTH), // TODO: mem 16b or 8b wide?
+                .MEM_DEPTH(MEM_DEPTH)
+        ) bram (
+                .clk            (clk), 
+                .reset          (reset), 
+                // port 1
+                .mem_addr       (mem_addr), 
+                .mem_in         (mem_in), 
+                .mem_we         (bram_we), 
+                .mem_out        (bram_out)
+        );
+
+        // reset must be held long for atleast MEM_SIZE clocks
+        // to fully erase the bram. 
+        //   E.g. Xilinx bram 1024 cells = 1024 clocks = ~21us
+        // TODO: implement with a dfa
+endmodule
+
 module vmicro16_cpu (
         input clk,
         input reset
@@ -633,15 +764,17 @@ module vmicro16_cpu (
         reg jmping = 0;
         reg stall  = 0;
 
+        
+
         wire [4:0]  dec_op;
         wire [7:0]  dec_imm8;
         wire        dec_has_imm8;
         wire [4:0]  dec_simm5;
-        wire        dec_is_br;
-        wire        dec_is_we;
-        wire        dec_is_mem;
-        wire        dec_is_mem_we;
-        wire        dec_is_bad;
+        wire        dec_has_br;
+        wire        dec_has_we;
+        wire        dec_has_mem;
+        wire        dec_has_mem_we;
+        wire        dec_has_bad;
 
         wire [15:0] ifid_pc;
         wire [15:0] ifid_instr;
@@ -695,6 +828,10 @@ module vmicro16_cpu (
         wire [15:0] idex_rd2;
         wire [15:0] idex_rd3;
         wire [4:0]  idex_op;
+        wire        idex_has_br;
+        wire        idex_has_mem;
+        wire        idex_has_mem_we;
+        wire        idex_has_we;
         vmicro16_idex stage_idex (
                 .clk             (clk), 
                 .reset           (reset), 
@@ -739,10 +876,10 @@ module vmicro16_cpu (
         // PASS
         wire [2:0]  exme_rs1;
         wire [2:0]  exme_rs2;
-        wire        exme_is_jmp;
-        wire        exme_is_we;
-        wire        exme_is_mem;
-        wire        exme_is_mem_we;
+        wire        exme_has_br;
+        wire        exme_has_we;
+        wire        exme_has_mem;
+        wire        exme_has_mem_we;
         wire        exme_valid;
         wire [15:0] exme_jmp_target;
         vmicro16_exme stage_exme (
@@ -751,20 +888,95 @@ module vmicro16_cpu (
                 // Status registers
                 .jmping          (jmping),
                 // Pass through registers
-                .idex_pc         (idex_pc),        .exme_pc         (exme_pc),
-                .idex_rs1        (idex_rs1),       .exme_rs1        (exme_rs1), 
-                .idex_rs2        (idex_rs2),       .exme_rs2        (exme_rs2), 
-                .idex_is_jmp     (idex_is_jmp),    .exme_is_jmp     (exme_is_jmp),
-                .idex_is_we      (idex_is_we),     .exme_is_we      (exme_is_we),
-                .idex_is_mem     (idex_is_mem),    .exme_is_mem     (exme_is_mem), 
-                .idex_is_mem_we  (idex_is_mem_we), .exme_is_mem_we  (exme_is_mem_we), 
-                .idex_valid      (idex_valid),     .exme_valid      (exme_valid),
+                .idex_pc         (idex_pc),          .exme_pc         (exme_pc),
+                .idex_rs1        (idex_rs1),         .exme_rs1        (exme_rs1), 
+                .idex_rs2        (idex_rs2),         .exme_rs2        (exme_rs2), 
+                .idex_has_br     (idex_has_br),      .exme_has_br     (exme_has_br),
+                .idex_has_we     (idex_has_we),      .exme_has_we     (exme_has_we),
+                .idex_has_mem    (idex_has_mem),     .exme_has_mem    (exme_has_mem), 
+                .idex_has_mem_we (idex_has_mem_we),  .exme_has_mem_we (exme_has_mem_we), 
+                .idex_valid      (idex_valid),       .exme_valid      (exme_valid),
                 // ALU ops
-                .idex_op         (idex_op),        .exme_op         (exme_op), //PASS
+                .idex_op         (idex_op),          .exme_op         (exme_op), //PASS
                 .exme_d          (exme_d),         
-                .idex_rd1        (idex_rd1),       .exme_d2         (exme_d2), //PASS
+                .idex_rd1        (idex_rd1),         .exme_d2         (exme_d2), //PASS
                 .idex_rd3        (idex_rd3),
                 .exme_jmp_target (exme_jmp_target)
+        );
+
+        
+
+        wire mem_valid;
+        wire [15:0] mem_out;
+        //                     If SW, use calculated address
+        wire [15:0] mem_addr = exme_has_mem ? exme_d : 16'h00;
+        //                     If SW, use register value
+        wire [15:0] mem_in   = exme_has_mem ? exme_d2 : exme_d;
+        wire        mem_we   = reset ? 1'b0 : (exme_has_mem_we & exme_valid);
+        wire [1:0]  mem_whl  = 2'b00; // TODO: implement in ISA
+        vmicro16_mmu mmu (
+                .clk            (clk), 
+                .reset          (reset), 
+
+                .req            (exme_has_mem && exme_valid),
+                .valid          (mem_valid),
+
+                .mem_addr       (mem_addr), 
+                .mem_in         (mem_in), 
+                .mem_we         (mem_we), 
+                .mem_whl        (mem_whl),
+                .mem_out        (mem_out),
+
+                // wishbone master interface
+                // TODO: Add to top level cpu
+                .wb_mosi_stb_o_regs (wb_mosi_stb_o_regs),
+                .wb_mosi_cyc_o      (wb_mosi_cyc_o),
+                .wb_mosi_we_o       (wb_mosi_we_o),
+                .wb_mosi_addr_o     (wb_mosi_addr_o),
+                .wb_mosi_data_o     (wb_mosi_data_o),
+                .wb_miso_data_i     (wb_miso_data_i),
+                .wb_miso_ack_i      (wb_miso_ack_i)
+        );
+
+        wire [15:0] mewb_pc;
+        wire [15:0] mewb_d;
+        wire [15:0] mewb_d2;
+        wire [2:0]  mewb_rs1;
+        wire [15:0] mewb_jmp_target;
+        wire        mewb_has_mem;
+        wire        mewb_has_mem_we;
+        wire        mewb_has_br;
+        wire        mewb_has_we;
+        wire        mewb_valid;
+        vmicro16_mewb stage_mewb (
+                .clk             (clk), 
+                .reset           (reset), 
+
+                .jmping          (jmping),
+
+                .mem_out         (mem_out), 
+                .mem_valid       (mem_valid),
+
+                .exme_pc         (exme_pc), 
+                .mewb_pc         (mewb_pc), 
+                .exme_d          (exme_d), 
+                .mewb_d          (mewb_d), 
+                .exme_d2         (exme_d2), 
+                .mewb_d2         (mewb_d2), 
+                .exme_rs1        (exme_rs1), 
+                .mewb_rs1        (mewb_rs1), 
+                .exme_jmp_target (exme_jmp_target), 
+                .mewb_jmp_target (mewb_jmp_target), 
+                .exme_has_br     (exme_has_br), 
+                .mewb_has_br     (mewb_has_br), 
+                .exme_has_we     (exme_has_we), 
+                .mewb_has_we     (mewb_has_we),  
+                .exme_has_mem    (exme_has_mem), 
+                .mewb_has_mem    (mewb_has_mem), 
+                .exme_has_mem_we (exme_has_mem_we), 
+                .mewb_has_mem_we (mewb_has_mem_we), 
+                .exme_valid      (exme_valid), 
+                .mewb_valid      (mewb_valid)
         );
 
 

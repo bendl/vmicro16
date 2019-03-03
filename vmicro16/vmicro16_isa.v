@@ -35,6 +35,7 @@
 `define VMICRO16_OP_BR_NS        8'h08
 `define VMICRO16_OP_CMP          5'b01001
 `define VMICRO16_OP_SETC         5'b01010
+`define VMICRO16_OP_HALT         5'b01011
 
 // microcode operations
 `define VMICRO16_ALU_BIT_OR      5'h00

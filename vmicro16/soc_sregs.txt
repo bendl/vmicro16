@@ -5,5 +5,4 @@ aaad
 aaae
 aaaf
 aaba
-
-aabb
+0000

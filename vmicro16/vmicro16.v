@@ -216,8 +216,7 @@ module vmicro16_dec # (
         assign imm12  = instr[11:0];
         assign simm5  = instr[4:0];
         // Special opcodes
-        assign halt   = (opcode == `VMICRO16_OP_HALT) || 
-                        (opcode == `VMICRO16_OP_NOP);
+        assign halt   = (opcode == `VMICRO16_OP_HALT);
 
         // exme_op
         always @(*) case (opcode)
@@ -375,7 +374,11 @@ module vmicro16_ifid (
         mem_cache[14] = {`VMICRO16_OP_MOVI, 3'h7}; mem_cache[15] = { 8'h07 };
         mem_cache[16] = {`VMICRO16_OP_HALT, 3'h0}; mem_cache[17] = { 8'h00 };
         */
-        mem_cache[0]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[1]  = {3'h7, 1'b0, 4'h1};
+        mem_cache[0]  = {`VMICRO16_OP_MOVI,    3'h0}; mem_cache[1]  = { 8'h00 };
+        mem_cache[2]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[3]  = {3'h7, 1'b0, 4'h1};
+        mem_cache[4]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[5]  = {3'h7, 1'b0, 4'h3};
+        mem_cache[6]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[7]  = {3'h7, 1'b0, 4'h5};
+        mem_cache[8]  = {`VMICRO16_OP_HALT,    3'h0}; mem_cache[9]  = {8'h00};
         end
 
         reg [15:0] pc;
@@ -418,6 +421,7 @@ module vmicro16_idex (
         output reg [15:0] idex_rd2,
         
         // not clocked
+        output [4:0] dec_op,
         output [2:0]  reg_rs1, output [2:0] reg_rs2,
         input  [15:0] reg_rd1, input [15:0] reg_rd2,
         output dec_has_imm8,
@@ -433,6 +437,8 @@ module vmicro16_idex (
         output reg idex_has_we,
         output reg idex_has_mem,
         output reg idex_has_mem_we,
+
+        output dec_halt,
         
         input stall, input jmping,
         input ifid_valid, output reg idex_valid
@@ -445,8 +451,6 @@ module vmicro16_idex (
         wire [4:0] alu_op;
         wire [7:0] dec_imm8;
         wire [4:0] dec_simm5;
-        wire [4:0] dec_op;
-        wire dec_halt;
         vmicro16_dec decoder (
                 .instr          (ifid_instr),
                 .opcode         (dec_op),
@@ -492,9 +496,7 @@ module vmicro16_idex (
                         else
                                 idex_rd3 <= reg_rd2;
                 end
-                idex_valid <= stall ? 1'b0 : 
-                                        (ifid_valid && !jmping) &&
-                                        (ifid_valid && !dec_halt);
+                idex_valid <= stall ? 1'b0 : (ifid_valid && !jmping);
         end else begin
                 idex_valid      <= 1'b0;
                 idex_has_we     <= 1'b0;
@@ -822,6 +824,7 @@ module vmicro16_cpu (
                            stall_mewb | 
                            stall_wb   |
                            stall_mem  |
+                           dec_halt   |
                            !mem_valid;
         wire jmping     = (wb_valid && wb_has_br) ? 1'b1 : 1'b0;
 
@@ -876,6 +879,7 @@ module vmicro16_cpu (
         wire        idex_has_mem;
         wire        idex_has_mem_we;
         wire        idex_has_we;
+        wire        dec_halt;
         vmicro16_idex stage_idex (
                 .clk             (clk), 
                 .reset           (reset), 
@@ -887,6 +891,7 @@ module vmicro16_cpu (
                 .idex_instr      (idex_instr), 
 
                 // not clocked
+                .dec_op          (dec_op),
                 .reg_rs1         (reg_rs1),
                 .reg_rs2         (reg_rs2),
                 .reg_rd1         (reg_rd1), 
@@ -905,6 +910,8 @@ module vmicro16_cpu (
                 .idex_has_mem    (idex_has_mem), 
                 .idex_has_mem_we (idex_has_mem_we), 
                 
+                .dec_halt        (dec_halt),
+
                 .stall           (stall), 
                 .jmping          (jmping), 
                 

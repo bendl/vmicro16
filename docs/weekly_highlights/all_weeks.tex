@@ -185,6 +185,7 @@ MSc (Eng) Embedded Systems Engineering
     \hline
     Date & Week & Changes \\
 	\specialrule{2pt}{-2pt}{0pt}
+	03/03/2019 & 1 & Week 2 report. \\ \hline
 	25/02/2019 & 1 & Initial week 1 report. \\ \hline
     \end{tabularx}
     \caption{Document revisions.}
@@ -196,9 +197,54 @@ MSc (Eng) Embedded Systems Engineering
 {\hypersetup{linkcolor=black}
 \tableofcontents
 }
+\section{Weekly Reports}
 \newpage
 
-\section{Weekly Report 1}
+\subsection{Weekly Report 2}
+\begin{table}[H]
+\def\arraystretch{1.5}%  1 is the default, change whatever you need
+    \begin{tabularx}{\textwidth}{|X|p|}
+    \hline 
+	\multicolumn{1}{|c|}{\textbf{Weekly Report 2 -- 03/03/19}}
+    \\ \specialrule{2pt}{-2pt}{0pt}	
+	\textbf{Active project stage:}\\
+	(ON-TIME) Stage 2.3 -- (CORE) Local memory impl \& integration \\
+	(ON-TIME) Stage 3.1 -- (CORE) Memory mapped register layout \& impl \\
+	
+	\\ \hline
+	\textbf{Review of work undertaken:}\newline
+	\textbf{(ON-TIME) Stage 2.3 -- (CORE) Local memory impl \& integration}\newline
+	The new decoder has been integrated into the pipeline and basic instruction sequences have been verified.\\
+	
+	\textbf{(ON-TIME) Stage 3.1 -- (CORE) Memory mapped register layout}\newline
+	An internal wishbone master interface has been implemented and is controlled by the MMU.\newline
+	A wishbone slave interface has been added to the inputs/outputs of the SoC module. Interaction between cores is still under design, although it will not use Wishbone.
+	
+	\\ \hline
+	\textbf{Risks and Challenges:}\\
+	{\color{red} RC2: Multiple tests and deadlines for other modules.}
+	\\ \hline
+	
+	\textbf{Plan of work for the next week:}\newline
+    Stage 2.3 -- (CORE) Local memory impl \& integration\newline
+    Stage 3.1 -- (CORE) Memory mapped register layout
+	\\ \hline
+	
+	
+	\textbf{Date(s) of supervisory meeting(s) since last Highlight:}\newline
+	26/02/19 -- Weekly highlight meeting
+	\\ \hline
+	
+	
+	\textbf{Notes from supervisory meeting(s) held since last Highlight:}\newline
+	Discussion about target FPGAs: It was decided to target Xilinx Spartan 6 with ISE and Altera Cyclone V with Quartus.
+	\\ \hline
+    \end{tabularx}
+    %\caption{Document revisions.}
+\end{table}
+\newpage
+
+\subsection{Weekly Report 1}
 \begin{table}[H]
 \def\arraystretch{1.5}%  1 is the default, change whatever you need
     \begin{tabularx}{\textwidth}{|X|p|}
@@ -263,7 +309,10 @@ MSc (Eng) Embedded Systems Engineering
 
 \newpage
 \section{Risks and Challenges}
-{\color{red} Urgent risks}\newline
+{\color{red} Urgent risks:}
+\begin{itemize}
+\item{{\color{red} RC2: Multiple tests and deadlines for other modules.}}
+\end{itemize}
 {\color{orange} New risks}\newline
 {\color{brown} Existing risks}\newline
 {\color{gray} Resolved risks}

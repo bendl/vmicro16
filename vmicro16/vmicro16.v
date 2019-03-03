@@ -788,7 +788,17 @@ endmodule
 
 module vmicro16_cpu (
         input clk,
-        input reset
+        input reset,
+
+        // wishbone peripheral master interface
+        //   driven by mmu
+        output        wb_mosi_stb_o_regs,    // ...
+        output        wb_mosi_cyc_o,
+        output        wb_mosi_we_o,
+        output [15:0] wb_mosi_addr_o,
+        output [15:0] wb_mosi_data_o, // seperate data_o and data_i buses
+        input  [15:0] wb_miso_data_i, // seperate data_o and data_i buses
+        input         wb_miso_ack_i
 );
         wire [4:0]  dec_op;
         wire [7:0]  dec_imm8;
@@ -836,8 +846,7 @@ module vmicro16_cpu (
         wire        wb_we_w = reset ? 1'b0 : (wb_we && wb_valid);
         vmicro16_regs # (
                 .CELL_WIDTH(16),
-                .CELL_DEPTH(8),
-                .CELL_DEFAULTS("../../soc_sregs.txt")
+                .CELL_DEPTH(8)
         ) regs (
                 .clk    (clk), 
                 .reset  (reset),
@@ -866,7 +875,6 @@ module vmicro16_cpu (
                 .ifid_instr     (ifid_instr)
         );
 
-        
         wire [15:0] idex_pc;
         wire [15:0] idex_instr;
         wire [2:0]  idex_rs1;

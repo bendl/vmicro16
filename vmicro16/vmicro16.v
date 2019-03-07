@@ -351,7 +351,7 @@ module vmicro16_ifid (
         input mewb_valid,
         input jmping,
 
-        input [15:0]     wb_jmp_target,
+        input [15:0]      wb_jmp_target,
 
         output reg        ifid_valid,
         output reg [15:0] ifid_pc,
@@ -375,10 +375,16 @@ module vmicro16_ifid (
         mem_cache[16] = {`VMICRO16_OP_HALT, 3'h0}; mem_cache[17] = { 8'h00 };
         */
         mem_cache[0]  = {`VMICRO16_OP_MOVI,    3'h0}; mem_cache[1]  = { 8'h00 };
-        mem_cache[2]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[3]  = {3'h7, 1'b0, 4'h1};
-        mem_cache[4]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[5]  = {3'h7, 1'b0, 4'h3};
-        mem_cache[6]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[7]  = {3'h7, 1'b0, 4'h5};
-        mem_cache[8]  = {`VMICRO16_OP_HALT,    3'h0}; mem_cache[9]  = {8'h00};
+        mem_cache[2]  = {`VMICRO16_OP_MOVI,    3'h1}; mem_cache[3]  = { -8'd02 };
+        mem_cache[4]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[5]  = {3'h7, 1'b0, 4'h1};
+        mem_cache[6]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[7]  = {3'h7, 1'b0, 4'h3};
+        mem_cache[8]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[9]  = {3'h7, 1'b0, 4'h5};
+        mem_cache[10] = {`VMICRO16_OP_BR,      3'h1}; mem_cache[11] = {`VMICRO16_OP_BR_U};
+        mem_cache[12] = {`VMICRO16_OP_NOP,     3'h0}; mem_cache[13] = {8'h0};
+        mem_cache[14] = {`VMICRO16_OP_NOP,     3'h0}; mem_cache[15] = {8'h0};
+        mem_cache[16] = {`VMICRO16_OP_NOP,     3'h0}; mem_cache[17] = {8'h0};
+        mem_cache[18] = {`VMICRO16_OP_NOP,     3'h0}; mem_cache[19] = {8'h0};
+        mem_cache[20] = {`VMICRO16_OP_HALT,    3'h0}; mem_cache[21] = {8'h00};
         end
 
         reg [15:0] pc;
@@ -818,9 +824,9 @@ module vmicro16_cpu (
         wire [2:0]  reg_rs1;
         wire [2:0]  reg_rs2;
 
-        
         wire mewb_valid;
 
+        // nop = not any bits set in dec_op
         wire nop        = ~(|dec_op);
         wire stall_ifid = (~nop) && ifid_valid;
         wire stall_idex = (~nop && idex_valid) && ((reg_rs1 == idex_rs1) || ((~dec_has_imm8) && (reg_rs2 == idex_rs1)));
@@ -828,15 +834,13 @@ module vmicro16_cpu (
         wire stall_mewb = (~nop && mewb_valid) && ((reg_rs1 == mewb_rs1) || ((~dec_has_imm8) && (reg_rs2 == mewb_rs1)));
         wire stall_wb   = (~nop && wb_valid)   && ((reg_rs1 == wb_rs1)   || ((~dec_has_imm8) && (reg_rs2 == wb_rs1)));
         wire stall_mem  = 1'b0;
-        wire stall      =  //stall_ifid |
-                           stall_idex |
-                           stall_exme |
-                           stall_mewb | 
-                           stall_wb   |
-                           stall_mem  |
-                           dec_halt   |
-                           !mem_valid;
-        wire jmping     = (wb_valid && wb_has_br) ? 1'b1 : 1'b0;
+        wire stall      = |{ stall_idex,
+                             stall_exme, 
+                             stall_mewb, 
+                             stall_wb, 
+                             dec_halt, 
+                             !mem_valid };
+        wire jmping     = (wb_valid && wb_has_br);
 
 
         wire [2:0]  wb_rs1;

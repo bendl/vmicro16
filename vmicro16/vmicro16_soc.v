@@ -13,26 +13,26 @@ module vmicro16_soc (
     wire        wb_miso_ack_i;
 
     vmicro16_regs_wb # (
-                .CELL_WIDTH     (16),
-                .CELL_DEPTH     (8),
-                .CELL_SEL_BITS  (3),
-                // Default soc conf registers
-                .CELL_DEFAULTS  ("../../soc_sregs.txt"),
-                .DEBUG_NAME     ("soc_regs")
-        ) soc_regs (
-                .clk           (clk),
-                .reset         (reset),
+            .CELL_WIDTH     (16),
+            .CELL_DEPTH     (8),
+            .CELL_SEL_BITS  (3),
+            // Default soc conf registers
+            .CELL_DEFAULTS  ("../../soc_sregs.txt"),
+            .DEBUG_NAME     ("soc_regs")
+    ) soc_regs (
+            .clk           (clk),
+            .reset         (reset),
 
-                .wb_stb_i      (wb_mosi_stb_o_regs), 
-                .wb_cyc_i      (wb_mosi_cyc_o), 
-                .wb_we_i       (wb_mosi_we_o), 
-                .wb_addr_i     (wb_mosi_addr_o), 
-                .wb_data_i     (wb_mosi_data_o), 
-                .wb_data_o     (wb_miso_data_i),
-                .wb_ack_o      (wb_miso_ack_i)
-                //.wb_stall_o    (wb_stall_o), 
-                //.wb_err_o      (wb_err_o), 
-        );
+            .wb_stb_i      (wb_mosi_stb_o_regs), 
+            .wb_cyc_i      (wb_mosi_cyc_o), 
+            .wb_we_i       (wb_mosi_we_o), 
+            .wb_addr_i     (wb_mosi_addr_o), 
+            .wb_data_i     (wb_mosi_data_o), 
+            .wb_data_o     (wb_miso_data_i),
+            .wb_ack_o      (wb_miso_ack_i)
+            //.wb_stall_o    (wb_stall_o), 
+            //.wb_err_o      (wb_err_o), 
+    );
     
 
     vmicro16_cpu core (

@@ -168,8 +168,8 @@ module vmicro16_regs # (
                         end
         else
                 always @(*) begin
-                        assign rd1 = regs[rs1];
-                        assign rd2 = regs[rs2];
+                        rd1 = regs[rs1];
+                        rd2 = regs[rs2];
                 end
         endgenerate
 endmodule
@@ -824,7 +824,19 @@ module vmicro16_cpu (
         wire [2:0]  reg_rs1;
         wire [2:0]  reg_rs2;
 
+        wire ifid_valid;
+        wire idex_valid;
+        wire exme_valid;
         wire mewb_valid;
+        wire wb_valid;
+        wire mem_valid;
+        wire dec_halt;
+        wire wb_has_br;
+
+        wire [2:0]  idex_rs1;
+        wire [2:0]  exme_rs1;
+        wire [2:0]  mewb_rs1;
+        wire [2:0]  wb_rs1;
 
         // nop = not any bits set in dec_op
         wire nop        = ~(|dec_op);
@@ -843,7 +855,6 @@ module vmicro16_cpu (
         wire jmping     = (wb_valid && wb_has_br);
 
 
-        wire [2:0]  wb_rs1;
         wire [15:0] wb_d;
         wire [15:0] wb_jmp_target;
         wire        wb_we;
@@ -881,7 +892,6 @@ module vmicro16_cpu (
 
         wire [15:0] idex_pc;
         wire [15:0] idex_instr;
-        wire [2:0]  idex_rs1;
         wire [2:0]  idex_rs2;
         wire [15:0] idex_rd1;
         wire [15:0] idex_rd2;
@@ -891,7 +901,6 @@ module vmicro16_cpu (
         wire        idex_has_mem;
         wire        idex_has_mem_we;
         wire        idex_has_we;
-        wire        dec_halt;
         vmicro16_idex stage_idex (
                 .clk             (clk), 
                 .reset           (reset), 
@@ -939,13 +948,11 @@ module vmicro16_cpu (
         wire [15:0] exme_d;
         wire [15:0] exme_d2;
         // PASS
-        wire [2:0]  exme_rs1;
         wire [2:0]  exme_rs2;
         wire        exme_has_br;
         wire        exme_has_we;
         wire        exme_has_mem;
         wire        exme_has_mem_we;
-        wire        exme_valid;
         wire [15:0] exme_jmp_target;
         vmicro16_exme stage_exme (
                 .clk             (clk), 
@@ -971,7 +978,6 @@ module vmicro16_cpu (
 
         
 
-        wire mem_valid;
         wire [15:0] mem_out;
         //                     If SW, use calculated address
         wire [15:0] mem_addr = exme_has_mem ? exme_d : 16'h00;
@@ -1006,7 +1012,6 @@ module vmicro16_cpu (
         wire [15:0] mewb_pc;
         wire [15:0] mewb_d;
         wire [15:0] mewb_d2;
-        wire [2:0]  mewb_rs1;
         wire [15:0] mewb_jmp_target;
         wire        mewb_has_mem;
         wire        mewb_has_mem_we;
@@ -1049,8 +1054,6 @@ module vmicro16_cpu (
 
         
         // WB stage
-        wire wb_has_br;
-        wire wb_valid;
         vmicro16_wb stage_wb (
                 .clk             (clk), 
                 .reset           (reset), 

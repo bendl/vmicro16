@@ -6,7 +6,7 @@
 %\usepackage{classicthesis}
 \usepackage[sc]{mathpazo}
 
-%\linespread{1.2}
+\linespread{1.1}
 \usepackage[margin=1in]{geometry}
 
 % http://ctan.org/pkg/lipsum
@@ -32,7 +32,109 @@
 %https://www.sharelatex.com/learn/Code_Highlighting_with_minted#Reference_guide
 \usemintedstyle{vs}
 
+% tables, row colour
+\usepackage{tabularx,colortbl,booktabs}
+% For vertical centering text in X column
+\renewcommand\tabularxcolumn[1]{m{#1}}
+
 \begin{document}
+\newpage
+\begin{titlepage}
+\begin{center}
+
+\vspace*{2cm}
+\Large
+
+\textbf{
+%%PRCO304 - Project Initiation Document
+%Highlight Reports
+Multi-core RISC Processor Design and Implementation (Rev. 1.00)
+}
+
+\vspace{0.4cm}
+\large
+%%Space optimised FPGA-based side-microprocessor.
+ELEC5881M - Interim Report
+%%EMBEDDED CPU - FPGA-based RISC microprocessor
+
+\vspace{3cm}
+\textbf{Ben David Lancaster}\\
+Student ID: 201280376
+
+\vspace{3cm}
+Submitted in accordance with the requirements for the degree of\\
+Master of Science\\
+in Embedded Systems Engineering\\
+
+\vspace{3cm}
+Supervisor: Dr. David Cowell\\
+Assessor: 
+
+\vspace{3cm}
+\textbf{University of Leeds}\\
+School of Electrical and Electronic Engineering
+
+\vspace{3cm}
+\today
+\end{center}
+\end{titlepage}
+
+
+\section*{Revision History}
+\begin{table}[h]
+\def\arraystretch{1.3}
+    \begin{tabularx}{\textwidth}{|l|l|X|}
+    \hline
+    Date & Version & Changes \\
+    %\arrayrulecolor{\color{red}}
+	\specialrule{2pt}{-2pt}{0pt}
+	20/05/2018 & 3.14 & Add background research to appendix. \\ \hline
+	19/05/2018 & 3.13 & Update abstract to align with guidelines. \\ \hline
+	19/05/2018 & 3.12 & Fix ISA pseudo-codes. \\ \hline
+	11/03/2018 & 1.00 & Initial section outline. \\ \hline
+    \end{tabularx}
+    \caption{Document revisions.}
+\end{table}
+
+\newpage
+\chapter*{Acknowledgements}
+I would like to thank my project supervisors Nigel Barlow and Serge Thill for their support and guidance throughout this project. 
+\\\\
+I would also like to thank James Spalding (Spirent Communications) and firmware team for their encouragement, ideas, and industrial sponsorship supporting this final project.
+
+\newpage
+\chapter*{Abstract}
+\startcontents[chapters]
+\printcontents[chapters]{}{1}{}
+\noindent
+\lipsum[1-3]
+
+
+\chapter*{Declaration of Academic Integrity}
+\addcontentsline{toc}{chapter}{Declaration of Academic Integrity}
+
+The candidate confirms that the work submitted is his/her own, except where work which has formed part of jointly-authored publications has been included. The contribution of the candidate and the other authors to this work has been explicitly indicated in the report. The candidate confirms that appropriate credit has been given within the report where reference has been made to the work of others.
+
+This copy has been supplied on the understanding that no quotation from the report may be published without proper acknowledgement. The candidate, however, confirms his/her consent to the University of Leeds copying and distributing all or part of this work in any forms and using third parties, who might be outside the University, to monitor breaches of regulations, to verify whether this work contains plagiarised material, and for quality assurance purposes.
+
+The candidate confirms that the details of any mitigating circumstances have been submitted to the Student Support Office at the School of Electronic and Electrical Engineering, at the University of Leeds.
+\vfill
+\noindent Name:	Ben David Lancaster \\
+Date:	\today
+\newpage
+
+
+\newpage
+\renewcommand*\contentsname{Table of Contents}
+%TC:ignore
+{%\hypersetup{linkcolor=black}
+\tableofcontents
+%\listoffigures
+%\listoftables
+}
+\newpage
+
+
 \chapter*{Preface}
 \label{sect:preface}
 This report discusses the design, implementation, and verification, of an FPGA-based embedded processor (processor) and compiler.
@@ -43,53 +145,46 @@ A field-programmable gate array (FPGA) is a reprogrammable logic device that ena
 An embedded processor will be designed using the Verilog hardware description language (HDL). A HDL can be thought of as a front-end to a software compiler. Other HDL front-ends exist such as VHDL. The HDL is synthesised into an retargetable intermediate form consisting of nets - a form describing the gates, flip-flops, and their interconnections. After this synthesis takes place, the intermediate net list form is transformed into implementation specific forms. As this processor is designed for FPGA implementation, processes such as "place and route" are utilised to map the net list to physical resources on the FPGA. Different processes are performed for different implementations, such as for ASICs and CPLDs.
 
 \newpage
-\chapter{Embedded Processors and Compilers}
+\chapter{RISC Machines}
 {%\hypersetup{linkcolor=black}
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 }
 
 \section{Introduction}
-Modern computing and electronics equipment, like function generators, oscilloscopes, and spectrum analysers, use FPGAs to implement their compute intensive logic. These FPGAs are often accompanied by a small, low-cost, microprocessor to supervise and provide interfaces to external peripherals.
+\lipsum[1]
 
-The aim of this project is to implement this side-microprocessor into the FPGA to save on BOM costs, PCB  space,  and  power  costs,  which  contribute  to  higher  development  and  product  costs.  While  savings can  be  made  by  the  lack  of  side  microprocessor,  the  product  may  need  a  larger  FPGA  to  accommodate the embedded microprocessor.  The project will produce a small, soft-core, CPU design and compiler. Although there is no direct client in this project, I believe this project will produce an attractive product for FPGA-based product designers wishing to employ an embedded processor solution as well as improve my knowledge and experience in this field.
-
-This report details the design considerations, implementation, and verification, of a new embedded processor architecture and a high-level code-compiler targeting it.
-
-\section{Background}
-Embedded processors are becoming more and more present in many products, ranging from toys to outdoor sensory recording systems to test and measurement tools. Embedded processors are specifically designed for remote and constrained environments, where power consumption, operating temperature, and form factor are extremely constricted. 
-
-FPGAs are powerful devices. They allow virtually any digital electronics design to be programmed post-manufacturing to the device. This makes FPGAs safer and cheaper to implement complex digital logic and are great alternatives to ASICs, which cannot be reprogrammed and have steep initial development costs. FPGAs are being utilised in an increasing number of new areas, such as machine vision for image processing and machine learning for faster learning  \cite{fpgacloud}.
- 
-\subsection{Soft-core Embedded Processors}
-There exists many commercial and open-source embedded processors, each providing different features and specialities such as digital signal processing, analogue components, instruction set architectures, and interfaces.
-
-Research has been performed to identify existing embedded processor features and characteristics. This research has been used to identify requirements and desired functionality of this new processor architecture. This research can be found in appendix.
-
-From this research, it was clear that the new processor was to be a lightweight design with RISC architecture. PicoBlaze, with it's on-chip scratch memory and low resource footprint, is a primary inspiration for this new processor. 
-
-\subsection{Compilers}
-Compilers are used to transform high-level code into a lower form. This is particularly useful for large applications where abstracting low-level details can result in faster development and better optimisation. Most modern open-source compilers today have retargetable front-end, optimisation, and back-end components that allow new architectures and grammars to be implemented while still utilising existing compiler features. 
-
-Research into existing compilers has been performed. This research is required to identify a suitable compiler that would allow easy creation of a back-end for the new processor architecture. 
-
-After comparing compilers such as LLVM and 8CC, it was decided to build a new compiler from scratch rather than implement a back-end for an existing compiler. This was to satisfy a chief requirement of the project: to improve my learning and experience in processor architecture, low-level programming, and compilers.
-
-\newpage
-
-\section{Project Overview}
-This primary aim of this project is to improve my knowledge and experience in embedded processors, SoC design, computer architecture, and compilers. To do this, I will design an efficient and cost-saving alternative for board and hardware product designers utilising side-microprocessors by designing, implementing, and demonstrating, a small, portable, FPGA processor core design to be used in-place of the side-microprocessor. 
-
-The processor core will implement it's own pipeline and instruction set architecture and so a compiler and assembler will also be provided so that software code can easily be executed on the processor. The new processor core and compiler tool chain will be named.
+This \mintinline{c}{
+int main(int argc, char** argv);
+} is the.
 
 \begin{figure}[H]
 \centering
-\begin{minted}{asm}
-MOVI  $0xFE,   %Ax
-LSHF  %Ax,     $8
-ORI   %Ax,     $0xCA
-JMP   %Ax,     JE_UC (unconditional)
-\end{minted}
+\mintinline{c}{
+int main(int argc, char** argv);
+}
+\caption{Foo bar}
+\end{figure}
+\lipsum[2]
+
+\section{Background}
+\lipsum[1-2]
+\subsection{Soft-core Embedded Processors}
+\lipsum[1-2]
+\subsection{Compilers}
+\lipsum[1-2]
+\section{Project Overview}
+\lipsum[1-2]
+
+This \mintinline{c}{
+int main(int argc, char** argv);
+} is the.
+
+\begin{figure}[H]
+\centering
+\mintinline{c}{
+int main(int argc, char** argv);
+}
 \caption{Foo bar}
 \end{figure}
 

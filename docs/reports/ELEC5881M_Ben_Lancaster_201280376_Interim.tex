@@ -1,4 +1,4 @@
-\documentclass[11pt,a4paper]{report}
+\documentclass[11pt,a4paper,twoside]{report}
 
 %https://tex.stackexchange.com/questions/134079/font-setup-for-an-academic-thesis-no-computer-modern-wanted
 %\usepackage[libertine,cmintegrals,cmbraces,vvarbb]{newtxmath}
@@ -6,8 +6,17 @@
 %\usepackage{classicthesis}
 \usepackage[sc]{mathpazo}
 
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
 \linespread{1.1}
 \usepackage[margin=1in]{geometry}
+
+\usepackage[sort,numbers,sectionbib]{natbib}
+%\usepackage{natbib}
+%\usepackage{biblatex}
+\bibliographystyle{IEEEtran}
+\renewcommand{\bibname}{References}
 
 % http://ctan.org/pkg/lipsum
 \usepackage{lipsum}
@@ -38,7 +47,8 @@
 \renewcommand\tabularxcolumn[1]{m{#1}}
 
 \begin{document}
-\newpage
+\pagestyle{headings}
+
 \begin{titlepage}
 \begin{center}
 
@@ -57,24 +67,24 @@ Multi-core RISC Processor Design and Implementation (Rev. 1.00)
 ELEC5881M - Interim Report
 %%EMBEDDED CPU - FPGA-based RISC microprocessor
 
-\vspace{3cm}
+\vspace{2cm}
 \textbf{Ben David Lancaster}\\
 Student ID: 201280376
 
-\vspace{3cm}
+\vspace{2cm}
 Submitted in accordance with the requirements for the degree of\\
-Master of Science\\
+Master of Science (MSc)\\
 in Embedded Systems Engineering\\
 
-\vspace{3cm}
+\vspace{2cm}
 Supervisor: Dr. David Cowell\\
-Assessor: 
+Assessor: Mr David Moore
 
-\vspace{3cm}
+\vspace{2cm}
 \textbf{University of Leeds}\\
 School of Electrical and Electronic Engineering
 
-\vspace{3cm}
+\vspace{2cm}
 \today
 \end{center}
 \end{titlepage}
@@ -97,21 +107,19 @@ School of Electrical and Electronic Engineering
 \end{table}
 
 \newpage
+\chapter*{Abstract}
+\lipsum[1-3]
+
+\newpage
 \chapter*{Acknowledgements}
 I would like to thank my project supervisors Nigel Barlow and Serge Thill for their support and guidance throughout this project. 
 \\\\
 I would also like to thank James Spalding (Spirent Communications) and firmware team for their encouragement, ideas, and industrial sponsorship supporting this final project.
 
-\newpage
-\chapter*{Abstract}
-\startcontents[chapters]
-\printcontents[chapters]{}{1}{}
-\noindent
-\lipsum[1-3]
 
 
 \chapter*{Declaration of Academic Integrity}
-\addcontentsline{toc}{chapter}{Declaration of Academic Integrity}
+%\addcontentsline{toc}{chapter}{Declaration of Academic Integrity}
 
 The candidate confirms that the work submitted is his/her own, except where work which has formed part of jointly-authored publications has been included. The contribution of the candidate and the other authors to this work has been explicitly indicated in the report. The candidate confirms that appropriate credit has been given within the report where reference has been made to the work of others.
 
@@ -132,60 +140,120 @@ Date:	\today
 %\listoffigures
 %\listoftables
 }
+
+\vspace{1cm}
+\cite{openpiton}
+\cite{satish2009designing}
+\cite{binet2010harnessing}
+\bibliography{refs}
 \newpage
 
+\chapter{Abstract (not in toc)}
+\chapter{Declaration of Academic Integrity (not in toc)}
+\chapter{Acknowledgements (not in toc)}
+\chapter{Introduction}
+    \section{Why Multi-core?}
+    \section{Why RISC?}
+    \section{Why FPGA?}
+\chapter{Background}
+    \section{Single core vs. Multi-core vs. Many-core}
+    \section{Network-on-chip}
+        \subsection{OpenPiton}
+    \section{Summary}
+        
+\chapter{RISC Core Design}
+    \section{Design Goals}
+    \section{Instruction Set Architecture}
+        \subsection{Data Sizes}
+        \subsection{Registers}
+        \subsection{Endianness}
+    \section{High Level Design}
+    \section{Memory-mapped peripherals}
+        \subsection{Wishbone Master Bus}
+    \section{Optimisations}
+        \subsection{Pipelining}
+        \subsection{Stall Avoidance}
+    \section{Core Verification}
+    \section{Conclusion}
+        
+\chapter{Multi-core Communication Design}
+    \section{Interconnect Goals}
+    \section{Interconnect Layout}
+        \subsection{Bus Design}
+        \subsection{Core Pin Assignments}
+    \section{Core-to-core Communication}
+    \section{Shared-Resource Control}
+        \subsection{Resource Scheduling}
+    \section{Verification}
+    \section{Conclusion}
 
-\chapter*{Preface}
-\label{sect:preface}
-This report discusses the design, implementation, and verification, of an FPGA-based embedded processor (processor) and compiler.
+\chapter{Core Analysis}
+    \section{FPGA Implementation Analysis}
+        \subsection{Space/Resource Usage}
+        \subsection{Static Timing Analysis}
+    \section{Speed Analysis}
+        \subsection{Parallel Reduction Algorithms}
+        \subsection{Parallel DFT Algorithm}
 
 
-A field-programmable gate array (FPGA) is a reprogrammable logic device that enables digital electronic designs to be realised and executed on-chip. FPGAs utilise configurable logic blocks (CLB) that can be configured to emulate primitive gates. Connecting these primitive gates with others allows the engineer to realise complex logic such as combinational gates, multiplexers, and lookup-tables. Modern FPGA devices also include components such as block-RAMs, DLLs, and DSP blocks.
+\chapter{Conclusion}
+    \section{RISC Core Review}
+    \section{Multi-core Review}
+    \section{Verification Review}
+    \section{Goal Review}
 
-An embedded processor will be designed using the Verilog hardware description language (HDL). A HDL can be thought of as a front-end to a software compiler. Other HDL front-ends exist such as VHDL. The HDL is synthesised into an retargetable intermediate form consisting of nets - a form describing the gates, flip-flops, and their interconnections. After this synthesis takes place, the intermediate net list form is transformed into implementation specific forms. As this processor is designed for FPGA implementation, processes such as "place and route" are utilised to map the net list to physical resources on the FPGA. Different processes are performed for different implementations, such as for ASICs and CPLDs.
-
-\newpage
-\chapter{RISC Machines}
-{%\hypersetup{linkcolor=black}
-\startcontents[chapters]
-\printcontents[chapters]{}{1}{}
-}
-
-\section{Introduction}
-\lipsum[1]
-
-This \mintinline{c}{
-int main(int argc, char** argv);
-} is the.
-
-\begin{figure}[H]
-\centering
-\mintinline{c}{
-int main(int argc, char** argv);
-}
-\caption{Foo bar}
-\end{figure}
-\lipsum[2]
-
-\section{Background}
-\lipsum[1-2]
-\subsection{Soft-core Embedded Processors}
-\lipsum[1-2]
-\subsection{Compilers}
-\lipsum[1-2]
-\section{Project Overview}
-\lipsum[1-2]
-
-This \mintinline{c}{
-int main(int argc, char** argv);
-} is the.
-
-\begin{figure}[H]
-\centering
-\mintinline{c}{
-int main(int argc, char** argv);
-}
-\caption{Foo bar}
-\end{figure}
+%
+%\chapter*{Preface}
+%\label{sect:preface}
+%This report discusses the design, implementation, and verification, of an FPGA-based embedded processor (processor) and compiler.
+%
+%
+%A field-programmable gate array (FPGA) is a reprogrammable logic device that enables digital electronic designs to be realised and executed on-chip. FPGAs utilise configurable logic blocks (CLB) that can be configured to emulate primitive gates. Connecting these primitive gates with others allows the engineer to realise complex logic such as combinational gates, multiplexers, and lookup-tables. Modern FPGA devices also include components such as block-RAMs, DLLs, and DSP blocks.
+%
+%An embedded processor will be designed using the Verilog hardware description language (HDL). A HDL can be thought of as a front-end to a software compiler. Other HDL front-ends exist such as VHDL. The HDL is synthesised into an retargetable intermediate form consisting of nets - a form describing the gates, flip-flops, and their interconnections. After this synthesis takes place, the intermediate net list form is transformed into implementation specific forms. As this processor is designed for FPGA implementation, processes such as "place and route" are utilised to map the net list to physical resources on the FPGA. Different processes are performed for different implementations, such as for ASICs and CPLDs.
+%
+%\newpage
+%\chapter{RISC Machines}
+%{%\hypersetup{linkcolor=black}
+%\startcontents[chapters]
+%\printcontents[chapters]{}{1}{}
+%}
+%
+%\section{Introduction}
+%\lipsum[1]
+%
+%This \mintinline{c}{
+%int main(int argc, char** argv);
+%} is the.
+%
+%\begin{figure}[H]
+%\centering
+%\mintinline{c}{
+%int main(int argc, char** argv);
+%}
+%\caption{Foo bar}
+%\end{figure}
+%\lipsum[2]
+%
+%\section{Background}
+%\lipsum[1-2]
+%\subsection{Soft-core Embedded Processors}
+%\lipsum[1-2]
+%\subsection{Compilers}
+%\lipsum[1-2]
+%\section{Project Overview}
+%\lipsum[1-2]
+%
+%This \mintinline{c}{
+%int main(int argc, char** argv);
+%} is the.
+%
+%\begin{figure}[H]
+%\centering
+%\mintinline{c}{
+%int main(int argc, char** argv);
+%}
+%\caption{Foo bar}
+%\end{figure}
 
 \end{document}

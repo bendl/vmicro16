@@ -14,6 +14,9 @@ module tb_vmicro16_cpu;
 
     always #10 clk = ~clk;
 
+    // Nanosecond time format
+    initial $timeformat(-9, 0, " ns", 10);
+
     initial begin
         // Initialize Inputs
         clk   = 0;

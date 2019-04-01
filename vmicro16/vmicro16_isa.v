@@ -67,4 +67,6 @@
 `define VMICRO16_ALU_SETC        5'h1a
 `define VMICRO16_ALU_ARITH_UADDI 5'h1b
 `define VMICRO16_ALU_ARITH_SSUBI 5'h1c
-`define VMICRO16_ALU_BAD         5'h1d
+`define VMICRO16_ALU_BR          5'h1d
+`define VMICRO16_ALU_SPARE       5'h1e
+`define VMICRO16_ALU_BAD         5'h1f

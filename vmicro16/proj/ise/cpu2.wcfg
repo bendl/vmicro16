@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="Z:/uni/vmicro16/vmicro16/proj/ise/tb_vmicro16_cpu_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="tb_vmicro16_cpu" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="33" />
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/reset" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">reset</obj_property>
+      <obj_property name="ObjectShortName">reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/pc" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">pc[15:0]</obj_property>
+      <obj_property name="ObjectShortName">pc[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider23" type="divider">
+      <obj_property name="label">DEC</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">128 128 255</obj_property>
+      <obj_property name="TextColor">230 230 230</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/decoder/instr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">instr[15:0]</obj_property>
+      <obj_property name="ObjectShortName">instr[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/decoder/opcode" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">opcode[4:0]</obj_property>
+      <obj_property name="ObjectShortName">opcode[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/decoder/rd" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">rd[2:0]</obj_property>
+      <obj_property name="ObjectShortName">rd[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/decoder/ra" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ra[2:0]</obj_property>
+      <obj_property name="ObjectShortName">ra[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/decoder/has_imm8" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">has_imm8</obj_property>
+      <obj_property name="ObjectShortName">has_imm8</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider89" type="divider">
+      <obj_property name="label">STAGE1</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">128 128 255</obj_property>
+      <obj_property name="TextColor">230 230 230</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/decoder/imm8" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">imm8[7:0]</obj_property>
+      <obj_property name="ObjectShortName">imm8[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/stall" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">stall</obj_property>
+      <obj_property name="ObjectShortName">stall</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/pc" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">pc[15:0]</obj_property>
+      <obj_property name="ObjectShortName">pc[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/stage1_pc" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">stage1_pc[15:0]</obj_property>
+      <obj_property name="ObjectShortName">stage1_pc[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/stage_instrc" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">stage_instrc[15:0]</obj_property>
+      <obj_property name="ObjectShortName">stage_instrc[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/stage1_op" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">stage1_op[4:0]</obj_property>
+      <obj_property name="ObjectShortName">stage1_op[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/stage1_rs1c" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">stage1_rs1c[2:0]</obj_property>
+      <obj_property name="ObjectShortName">stage1_rs1c[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/stage1_rs2c" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">stage1_rs2c[2:0]</obj_property>
+      <obj_property name="ObjectShortName">stage1_rs2c[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/stage1_has_we" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">stage1_has_we</obj_property>
+      <obj_property name="ObjectShortName">stage1_has_we</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/stage1_has_imm8" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">stage1_has_imm8</obj_property>
+      <obj_property name="ObjectShortName">stage1_has_imm8</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/stage1_has_br" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">stage1_has_br</obj_property>
+      <obj_property name="ObjectShortName">stage1_has_br</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/stage1_alu_d" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">stage1_alu_d[15:0]</obj_property>
+      <obj_property name="ObjectShortName">stage1_alu_d[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/stage1_alu_d2" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">stage1_alu_d2[15:0]</obj_property>
+      <obj_property name="ObjectShortName">stage1_alu_d2[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider17" type="divider">
+      <obj_property name="label">ALU</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">128 128 255</obj_property>
+      <obj_property name="TextColor">230 230 230</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/alu/op" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">op[4:0]</obj_property>
+      <obj_property name="ObjectShortName">op[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/alu/d1" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">d1[15:0]</obj_property>
+      <obj_property name="ObjectShortName">d1[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/alu/d2" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">d2[15:0]</obj_property>
+      <obj_property name="ObjectShortName">d2[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/alu/q" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">q[15:0]</obj_property>
+      <obj_property name="ObjectShortName">q[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider31" type="divider">
+      <obj_property name="label">REGS READ</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">128 128 255</obj_property>
+      <obj_property name="TextColor">230 230 230</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/regs/rs1" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">rs1[2:0]</obj_property>
+      <obj_property name="ObjectShortName">rs1[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/regs/rs2" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">rs2[2:0]</obj_property>
+      <obj_property name="ObjectShortName">rs2[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/regs/rd1" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">rd1[15:0]</obj_property>
+      <obj_property name="ObjectShortName">rd1[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/regs/rd2" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">rd2[15:0]</obj_property>
+      <obj_property name="ObjectShortName">rd2[15:0]</obj_property>
+   </wvobject>
+</wave_config>

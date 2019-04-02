@@ -10,7 +10,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="86" />
+   <WVObjectSize size="84" />
    <wvobject fp_name="/tb_vmicro16_cpu/uut/clk" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -24,22 +24,6 @@
       <obj_property name="DisplayName">label</obj_property>
       <obj_property name="BkColor">128 128 255</obj_property>
       <obj_property name="TextColor">230 230 230</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/stage1_has_br" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">stage1_has_br</obj_property>
-      <obj_property name="ObjectShortName">stage1_has_br</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage_mewb/exme_has_br" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">exme_has_br</obj_property>
-      <obj_property name="ObjectShortName">exme_has_br</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_cpu/uut/mewb_has_br" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">mewb_has_br</obj_property>
-      <obj_property name="ObjectShortName">mewb_has_br</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_cpu/uut/wb_has_br" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">wb_has_br</obj_property>
-      <obj_property name="ObjectShortName">wb_has_br</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/stall" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">stall</obj_property>
@@ -99,6 +83,10 @@
       <obj_property name="BkColor">128 128 255</obj_property>
       <obj_property name="TextColor">230 230 230</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/nop" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">nop</obj_property>
+      <obj_property name="ObjectShortName">nop</obj_property>
+   </wvobject>
    <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/decoder/instr" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">instr[15:0]</obj_property>
       <obj_property name="ObjectShortName">instr[15:0]</obj_property>
@@ -134,6 +122,10 @@
    <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/decoder/alu_op" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">alu_op[4:0]</obj_property>
       <obj_property name="ObjectShortName">alu_op[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/stage1_rd3" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">stage1_rd3[15:0]</obj_property>
+      <obj_property name="ObjectShortName">stage1_rd3[15:0]</obj_property>
    </wvobject>
    <wvobject fp_name="divider14" type="divider">
       <obj_property name="label">REGS READ</obj_property>

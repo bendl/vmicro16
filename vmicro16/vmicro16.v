@@ -796,12 +796,13 @@ module vmicro16_stage1new (
                 mem_cache[2]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[3]  = {3'h7, 1'b0, 4'h1};
                 //*/
 
-                //*
+                /*
+                // register dependency
                 mem_cache[0]  = {`VMICRO16_OP_MOVI,    3'h0}; mem_cache[1]  = { 8'h01 };
                 mem_cache[2]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[3]  = {3'h7, 1'b0, 4'h2};
                 //*/
 
-                /*
+                //*
                 // Single cycle register writes
                 mem_cache[0]  = {`VMICRO16_OP_MOVI, 3'h0}; mem_cache[1]  = { 8'h00 };
                 mem_cache[2]  = {`VMICRO16_OP_MOVI, 3'h1}; mem_cache[3]  = { 8'h01 };
@@ -868,11 +869,11 @@ module vmicro16_stage1new (
                         stage1_halt       <= 0;
                         stage1_valid       <= 0;
                 end
-                else if (!stall) begin
-                        // Move to next instruction
-                        pc        <= pc + 2;
-
-                        stage1_valid <= 1;
+                else begin
+                        if (!stall) begin
+                                // Move to next instruction
+                                pc        <= pc + 2;
+                        end
 
                         // Clock outputs
                         stage_instrc      <= stage1_instr;
@@ -891,7 +892,10 @@ module vmicro16_stage1new (
                         stage1_halt       <= w_stage1_halt;
 
                         stage1_alu_d <= w_stage1_alu_d;
+                        
+                        stage1_valid <= !stall;
                 end
+                
         end
 
         // Calculate rd3 data for ALU
@@ -899,12 +903,17 @@ module vmicro16_stage1new (
         always @(*) begin
                 stage1_rd3 = 0;
                 if (!stall) begin
-                        if ((w_stage1_op == `VMICRO16_OP_SW) || (w_stage1_op == `VMICRO16_OP_LW))
+                        if ((w_stage1_op == `VMICRO16_OP_SW) || (w_stage1_op == `VMICRO16_OP_LW)) begin
                                 stage1_rd3 = reg_rd2 + { {11{w_stage1_imm8[4]}}, w_stage1_simm5 };
+                                $display($time, "\t\tALU: SWLW: = %d", stage1_rd3);
+                        end
                         else if(w_stage1_has_imm8) 
                                 stage1_rd3 = { {8{w_stage1_imm8[7]}}, w_stage1_imm8 };
-                        else if ((w_stage1_op == `VMICRO16_OP_ARITH_U && stage1_instr[4] == 0))
+                        else if ((w_stage1_op == `VMICRO16_OP_ARITH_U && stage1_instr[4] == 0)) begin
                                 stage1_rd3 = reg_rd2 + { {12{1'b0}}, stage1_instr[3:0] };
+                                $display($time, "\t\tALU: ARITH_U: %d + %d = %d", 
+                                        reg_rd2, { {12{1'b0}}, stage1_instr[3:0] }, stage1_rd3);
+                        end
                         else if ((w_stage1_op == `VMICRO16_OP_ARITH_S && stage1_instr[4] == 0))
                                 stage1_rd3 = reg_rd2 + { {12{stage1_instr[3]}}, stage1_instr[3:0] };
                         else
@@ -1013,7 +1022,17 @@ module vmicro16_cpu (
 
         reg jmping = 0;
 
-        wire stall = 0;
+        wire nop          = !(|stage1_op);
+        wire stall_stage1 = (!nop) && valid_stage1;
+        wire stall_mewb   = (!nop && mewb_valid) && ((stage1_rs1 == mewb_rs1) || ((~stage1_has_imm8) && (stage1_rs2 == mewb_rs1)));
+        wire stall_wb     = (!nop && wb_valid)   && ((stage1_rs1 == wb_rs1)   || ((~stage1_has_imm8) && (stage1_rs2 == wb_rs1)));
+        //wire stall_mem    = 1'b0;
+        wire stall        = |{ stall_stage1,
+                               stall_mewb, 
+                               stall_wb, 
+                               stage1_halt
+                               //!mem_valid 
+                               };
 
         // Stage1
         vmicro16_stage1new stage1 (

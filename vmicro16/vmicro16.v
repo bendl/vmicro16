@@ -750,6 +750,8 @@ module vmicro16_stage1new (
         // debug
         output reg [15:0] stage1_pc,
 
+        output reg stage1_valid,
+
         // sync decoder outputs
         output reg [15:0] stage_instrc,
         output reg [4:0] stage1_op,
@@ -864,10 +866,13 @@ module vmicro16_stage1new (
                         stage1_has_mem_we <= 0;
                         //stage1_alu_op     <= 0;
                         stage1_halt       <= 0;
+                        stage1_valid       <= 0;
                 end
                 else if (!stall) begin
                         // Move to next instruction
                         pc        <= pc + 2;
+
+                        stage1_valid <= 1;
 
                         // Clock outputs
                         stage_instrc      <= stage1_instr;
@@ -884,6 +889,8 @@ module vmicro16_stage1new (
                         stage1_has_mem_we <= w_stage1_has_mem_we;
                         //stage1_alu_op     <= w_stage1_alu_op;
                         stage1_halt       <= w_stage1_halt;
+
+                        stage1_alu_d <= w_stage1_alu_d;
                 end
         end
 
@@ -914,6 +921,7 @@ module vmicro16_stage1new (
         wire        w_stage1_has_mem;
         wire        w_stage1_has_mem_we;
         wire [4:0]  w_stage1_alu_op;
+        wire [15:0]  w_stage1_alu_d;
         wire        w_stage1_halt;
         vmicro16_dec decoder (
                 .instr          (stage1_instr),
@@ -939,7 +947,7 @@ module vmicro16_stage1new (
                 .op     (w_stage1_alu_op), 
                 .d1     (reg_rd1), 
                 .d2     (stage1_rd3), 
-                .q      (stage1_alu_d)
+                .q      (w_stage1_alu_d)
         );
 
         // Just a passthrough
@@ -960,6 +968,7 @@ module vmicro16_cpu (
         input  [15:0] wb_miso_data_i, // seperate data_o and data_i buses
         input         wb_miso_ack_i
 );
+        wire        valid_stage1;
         wire [4:0]  stage1_op;
         wire [2:0]  stage1_rs1;
         wire [2:0]  stage1_rs2;
@@ -980,8 +989,8 @@ module vmicro16_cpu (
         wire [15:0] wb_jmp_target;
 
         wire        wb_we;
-        //wire        wb_we_w = reset ? 1'b0 : (wb_we && wb_valid);
-        wire        wb_we_w = 0;
+        wire        wb_we_w = reset ? 1'b0 : (wb_we && wb_valid);
+        //wire        wb_we_w = 0;
         wire [2:0]  wb_rs1;
         wire [15:0] wb_d;
         vmicro16_regs # (
@@ -1002,7 +1011,6 @@ module vmicro16_cpu (
                 .wd     (wb_d)
         );
 
-        reg mewb_valid = 1;
         reg jmping = 0;
 
         wire stall = 0;
@@ -1013,6 +1021,7 @@ module vmicro16_cpu (
                 .reset                  (reset), 
                 // control signals
                 .stall                  (stall), 
+                .stage1_valid           (valid_stage1),
 
                 // sync outputs
                 .stage1_pc              (stage1_pc), 
@@ -1039,6 +1048,112 @@ module vmicro16_cpu (
                 // Async inputs
                 .reg_rd1                (reg_rd1), 
                 .reg_rd2                (reg_rd2)
+        );
+
+        
+        //*
+        wire [15:0] mem_out;
+        //                     If SW, use calculated address
+        wire [15:0] mem_addr = stage1_has_mem ? stage1_alu_d : 16'h00;
+        //                     If SW, use register value
+        wire [15:0] mem_in   = stage1_has_mem ? stage1_alu_d2 : stage1_alu_d;
+        wire        mem_we   = reset ? 1'b0 : (stage1_has_mem_we & valid_stage1);
+        wire [1:0]  mem_whl  = 2'b00; // TODO: implement in ISA
+        vmicro16_mmu mmu (
+                .clk            (clk), 
+                .reset          (reset), 
+
+                .req            (stage1_has_mem && valid_stage1),
+                .valid          (mem_valid),
+
+                .mem_addr       (mem_addr), 
+                .mem_in         (mem_in), 
+                .mem_we         (mem_we), 
+                .mem_whl        (mem_whl),
+                .mem_out        (mem_out),
+
+                // wishbone master interface
+                // TODO: Add to top level cpu
+                .wb_mosi_stb_o_regs (wb_mosi_stb_o_regs),
+                .wb_mosi_cyc_o      (wb_mosi_cyc_o),
+                .wb_mosi_we_o       (wb_mosi_we_o),
+                .wb_mosi_addr_o     (wb_mosi_addr_o),
+                .wb_mosi_data_o     (wb_mosi_data_o),
+                .wb_miso_data_i     (wb_miso_data_i),
+                .wb_miso_ack_i      (wb_miso_ack_i)
+        );
+
+        wire [15:0] mewb_pc;
+        wire [15:0] mewb_d;
+        wire [15:0] mewb_d2;
+        wire [2:0]  mewb_rs1;
+        wire [15:0] mewb_jmp_target;
+        wire        mewb_has_mem;
+        wire        mewb_has_mem_we;
+        wire        mewb_has_br;
+        wire        mewb_has_we;
+        wire        mewb_valid;
+        vmicro16_mewb stage_mewb (
+                .clk             (clk), 
+                .reset           (reset), 
+
+                .exme_valid      (valid_stage1), 
+                .mewb_valid      (mewb_valid),
+
+                .jmping          (jmping),
+
+                .mem_out         (mem_out), 
+                .mem_valid       (mem_valid),
+
+                .exme_pc         (stage1_pc), 
+                .mewb_pc         (mewb_pc), 
+
+                .exme_d          (stage1_alu_d), 
+                .mewb_d          (mewb_d), 
+                .exme_d2         (stage1_alu_d2), 
+                .mewb_d2         (mewb_d2), 
+
+                .exme_rs1        (stage1_rs1), 
+                .mewb_rs1        (mewb_rs1), 
+
+                .exme_jmp_target (stage1_jmp_target), 
+                .mewb_jmp_target (mewb_jmp_target), 
+
+                .exme_has_br     (stage1_has_br), 
+                .mewb_has_br     (mewb_has_br), 
+                .exme_has_we     (stage1_has_we), 
+                .mewb_has_we     (mewb_has_we),  
+                .exme_has_mem    (stage1_has_mem), 
+                .mewb_has_mem    (mewb_has_mem), 
+                .exme_has_mem_we (stage1_has_mem_we), 
+                .mewb_has_mem_we (mewb_has_mem_we)
+        );
+
+        
+        // WB stage
+        vmicro16_wb stage_wb (
+                .clk             (clk), 
+                .reset           (reset), 
+
+                .mewb_d          (mewb_d), 
+                .wb_d            (wb_d), 
+
+                .mewb_rs1        (mewb_rs1), 
+                .wb_rs1          (wb_rs1), 
+
+                .mewb_has_we     (mewb_has_we), 
+                .wb_we           (wb_we), 
+
+                .mewb_has_br     (mewb_has_br), 
+                .wb_has_br       (wb_has_br), 
+
+                .mewb_jmp_target (mewb_jmp_target), 
+                .wb_jmp_target   (wb_jmp_target), 
+
+                .jmping          (jmping), 
+
+                .mewb_valid      (mewb_valid), 
+                .wb_valid        (wb_valid)
         );
 endmodule
 

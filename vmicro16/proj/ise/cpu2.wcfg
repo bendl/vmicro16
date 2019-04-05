@@ -10,7 +10,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="53" />
+   <WVObjectSize size="57" />
    <wvobject fp_name="/tb_vmicro16_cpu/uut/clk" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -22,6 +22,32 @@
    <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/pc" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">pc[15:0]</obj_property>
       <obj_property name="ObjectShortName">pc[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider56" type="divider">
+      <obj_property name="label">STALL</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">128 128 255</obj_property>
+      <obj_property name="TextColor">230 230 230</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/nop" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">nop</obj_property>
+      <obj_property name="ObjectShortName">nop</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stall_stage1" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">stall_stage1</obj_property>
+      <obj_property name="ObjectShortName">stall_stage1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stall_mewb" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">stall_mewb</obj_property>
+      <obj_property name="ObjectShortName">stall_mewb</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stall_wb" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">stall_wb</obj_property>
+      <obj_property name="ObjectShortName">stall_wb</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stall" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">stall</obj_property>
+      <obj_property name="ObjectShortName">stall</obj_property>
    </wvobject>
    <wvobject fp_name="divider23" type="divider">
       <obj_property name="label">DEC</obj_property>
@@ -49,23 +75,15 @@
       <obj_property name="ElementShortName">has_imm8</obj_property>
       <obj_property name="ObjectShortName">has_imm8</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/decoder/imm8" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">imm8[7:0]</obj_property>
+      <obj_property name="ObjectShortName">imm8[7:0]</obj_property>
+   </wvobject>
    <wvobject fp_name="divider89" type="divider">
       <obj_property name="label">STAGE1</obj_property>
       <obj_property name="DisplayName">label</obj_property>
       <obj_property name="BkColor">128 128 255</obj_property>
       <obj_property name="TextColor">230 230 230</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/decoder/imm8" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">imm8[7:0]</obj_property>
-      <obj_property name="ObjectShortName">imm8[7:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/stall" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">stall</obj_property>
-      <obj_property name="ObjectShortName">stall</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/pc" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">pc[15:0]</obj_property>
-      <obj_property name="ObjectShortName">pc[15:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_cpu/uut/stage1/stage1_pc" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">stage1_pc[15:0]</obj_property>

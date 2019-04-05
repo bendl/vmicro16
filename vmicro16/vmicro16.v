@@ -357,180 +357,6 @@ module vmicro16_alu # (
         endcase
 endmodule
 
-module vmicro16_stage1 (
-        input clk,
-        input reset,
-        input stall,
-        
-        input mewb_valid,
-        input jmping,
-
-        // Input from last stage
-        input      [15:0] wb_jmp_target,
-
-        output reg        stage1_valid,
-        output reg [15:0] stage1_pc,
-        output reg [15:0] stage1_instr,
-
-        // Decoder values
-        output [4:0] stage1_op,
-        output [4:0] stage1_alu_op, // not needed
-        output [7:0] stage1_imm8,   // not needed
-        output [4:0] stage1_simm5,  // not needed
-
-        // Decoder signals
-        output       stage1_has_imm8,
-        output       stage1_has_simm5,
-        output       stage1_has_we,
-        output       stage1_has_br,
-        output       stage1_has_mem,
-        output       stage1_has_mem_we,
-        output       stage1_halt,
-        
-        // register data
-        output     [2:0] stage1_rs1, 
-        output     [2:0] stage1_rs2, 
-
-        // Stage1 register reads
-        input      [15:0] reg_rd1, 
-        input      [15:0] reg_rd2,
-        // ALU outputs
-        output reg  [15:0] stage1_jmp_target,
-        output wire [15:0] stage1_alu_d,
-        output wire [15:0] stage1_alu_d2
-);
-
-        reg [15:0] pc;
-        initial pc = 0;
-
-        // Instruction memory
-        reg [7:0] mem_cache [0:31];
-        integer i;
-        // Initialise instruction memory
-        initial begin
-                $display($time, "\tResetting mem");
-                for(i = 0; i < 32; i = i + 1) mem_cache[i] = 8'h00;
-                
-                /*
-                // MOV 1 R0
-                mem_cache[0]  = {`VMICRO16_OP_MOVI,    3'h0}; mem_cache[1]  = { 8'h01 };
-                // ADDI 1 R0
-                mem_cache[2]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[3]  = {3'h7, 1'b0, 4'h1};
-                //*/
-
-                //*
-                mem_cache[0]  = {`VMICRO16_OP_MOVI,    3'h0}; mem_cache[1]  = { 8'h01 };
-                mem_cache[2]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[3]  = {3'h7, 1'b0, 4'h2};
-                //*/
-
-                /*
-                // Single cycle register writes
-                mem_cache[0]  = {`VMICRO16_OP_MOVI, 3'h0}; mem_cache[1]  = { 8'h00 };
-                mem_cache[2]  = {`VMICRO16_OP_MOVI, 3'h1}; mem_cache[3]  = { 8'h01 };
-                mem_cache[4]  = {`VMICRO16_OP_MOVI, 3'h2}; mem_cache[5]  = { 8'h02 };
-                mem_cache[6]  = {`VMICRO16_OP_MOVI, 3'h3}; mem_cache[7]  = { 8'h03 };
-                mem_cache[8]  = {`VMICRO16_OP_MOVI, 3'h4}; mem_cache[9]  = { 8'h04 };
-                mem_cache[10] = {`VMICRO16_OP_MOVI, 3'h5}; mem_cache[11] = { 8'h05 };
-                mem_cache[12] = {`VMICRO16_OP_MOVI, 3'h6}; mem_cache[13] = { 8'h06 };
-                mem_cache[14] = {`VMICRO16_OP_MOVI, 3'h7}; mem_cache[15] = { 8'h07 };
-                mem_cache[16] = {`VMICRO16_OP_HALT, 3'h0}; mem_cache[17] = { 8'h00 };
-                //*/
-                
-                /*
-                // while (1) add loop
-                mem_cache[0]  = {`VMICRO16_OP_MOVI,    3'h0}; mem_cache[1]  = { 8'h00 };
-                mem_cache[2]  = {`VMICRO16_OP_MOVI,    3'h1}; mem_cache[3]  = { -8'd02 };
-                mem_cache[4]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[5]  = {3'h7, 1'b0, 4'h1};
-                mem_cache[6]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[7]  = {3'h7, 1'b0, 4'h3};
-                mem_cache[8]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[9]  = {3'h7, 1'b0, 4'h5};
-                mem_cache[10] = {`VMICRO16_OP_BR,      3'h1}; mem_cache[11] = {`VMICRO16_OP_BR_U};
-                mem_cache[12] = {`VMICRO16_OP_NOP,     3'h0}; mem_cache[13] = {8'h0};
-                mem_cache[14] = {`VMICRO16_OP_NOP,     3'h0}; mem_cache[15] = {8'h0};
-                mem_cache[16] = {`VMICRO16_OP_NOP,     3'h0}; mem_cache[17] = {8'h0};
-                mem_cache[18] = {`VMICRO16_OP_NOP,     3'h0}; mem_cache[19] = {8'h0};
-                mem_cache[20] = {`VMICRO16_OP_HALT,    3'h0}; mem_cache[21] = {8'h00};
-                //*/
-        end
-
-        // Every clock
-        always @(posedge clk) begin
-                if (reset) begin
-                        stage1_valid <= 0;
-                        stage1_pc    <= 0;
-                        stage1_instr <= 0;
-                        pc           <= 0;
-                end else begin
-                        stage1_valid <= stall ? 1'b0 : !jmping;
-                        if (mewb_valid && jmping) begin
-                                $display($time, "\tJumping to %h", wb_jmp_target);
-                                pc <= wb_jmp_target;
-                        end
-                        else if (!stall) begin
-                                // Get next instruction from instruction memory
-                                // TODO: vmicro16_mmu is single port
-                                //       so we require a cache to do this
-                                stage1_instr <= {mem_cache[pc], mem_cache[pc+1]};
-                                
-                                $display($time, "\tNext PC: %h %h", pc, {mem_cache[pc], mem_cache[pc+1]});
-                                stage1_pc    <= pc; // Only for simulation
-                                pc           <= pc + 16'h2;
-                        end
-                end
-        end
-
-        reg [15:0] stage1_rd3;
-        always @(*) begin
-                stage1_rd3 = 0;
-                if (!stall) begin
-                        if ((stage1_op == `VMICRO16_OP_SW) || (stage1_op == `VMICRO16_OP_LW))
-                                stage1_rd3 = reg_rd2 + { {11{stage1_imm8[4]}}, stage1_simm5 };
-                        else if(stage1_has_imm8) 
-                                stage1_rd3 = { {8{stage1_imm8[7]}}, stage1_imm8 };
-                        else if ((stage1_op == `VMICRO16_OP_ARITH_U && stage1_instr[4] == 0))
-                                stage1_rd3 = reg_rd2 + { {12{1'b0}}, stage1_instr[3:0] };
-                        else if ((stage1_op == `VMICRO16_OP_ARITH_S && stage1_instr[4] == 0))
-                                stage1_rd3 = reg_rd2 + { {12{stage1_instr[3]}}, stage1_instr[3:0] };
-                        else
-                                stage1_rd3 = reg_rd2;
-                end
-        end
-
-        always @(*) begin
-                // Relative PC jmp target, PC = PC + rd1
-                stage1_jmp_target = (stage1_has_br) ? 
-                                        (stage1_pc + reg_rd1) : 
-                                        1'b0;
-        end
-
-        vmicro16_dec decoder (
-                .instr          (stage1_instr),
-                .opcode         (stage1_op),
-                .rd             (stage1_rs1),
-                .ra             (stage1_rs2),
-                .imm8           (stage1_imm8),
-                .has_imm8       (stage1_has_imm8   ),
-                .simm5          (stage1_simm5      ),
-                .has_br         (stage1_has_br     ),
-                .has_we         (stage1_has_we     ),
-                //.has_bad        (stage1_has_bad     ),
-                .has_mem        (stage1_has_mem    ),
-                .has_mem_we     (stage1_has_mem_we ),
-                .alu_op         (stage1_alu_op),
-                .halt           (stage1_halt)
-        );
-
-        // ALU
-        wire [15:0] alu_q;
-        vmicro16_alu alu (
-                .op     (stage1_alu_op), 
-                .d1     (reg_rd1), 
-                .d2     (stage1_rd3), 
-                .q      (stage1_alu_d)
-        );
-        // Just a passthrough
-        assign stage1_alu_d2 = reg_rd1;
-endmodule
-
 module vmicro16_mewb (
         input clk,
         input reset,
@@ -551,15 +377,15 @@ module vmicro16_mewb (
         input exme_has_mem,     output reg mewb_has_mem,
         input exme_has_mem_we,  output reg mewb_has_mem_we,
 
-        input mem_valid,
-        input exme_valid,      output reg mewb_valid,
+        input valid_mem,
+        input valid_stage1,     output reg valid_mewb,
 
         input jmping
 );
         // MEWB stage
         always @(posedge clk)
         if (!reset) begin
-                if (exme_valid) begin
+                if (valid_stage1) begin
                         // Move previous stage regs into this stage
                         mewb_pc         <= exme_pc; // Only for simulation
                         
@@ -583,9 +409,9 @@ module vmicro16_mewb (
                                         $display($time, "\tmmu: LW: r[%h] <= RAM[%h]",
                                                 exme_rs1, exme_d);
                 end
-                mewb_valid <= exme_valid && !jmping && mem_valid;
+                valid_mewb <= valid_stage1 && !jmping && valid_mem;
         end else begin
-                mewb_valid      <= 1'b0;
+                valid_mewb      <= 1'b0;
                 mewb_has_br     <= 1'b0;
                 mewb_has_we     <= 1'b0;
                 mewb_has_mem    <= 1'b0;
@@ -605,21 +431,21 @@ module vmicro16_wb (
         input        mewb_has_br,     output reg        wb_has_br,
         input [15:0] mewb_jmp_target, output reg [15:0] wb_jmp_target,
         
-        input mewb_valid,             output reg wb_valid
+        input valid_mewb,             output reg valid_wb
 );
         // WB stage
         always @(posedge clk)
         if (!reset) begin
-                if (mewb_valid) begin
+                if (valid_mewb) begin
                         wb_d          <= mewb_d;
                         wb_we         <= mewb_has_we;
                         wb_rs1        <= mewb_rs1;
                         wb_has_br     <= mewb_has_br;
                         wb_jmp_target <= mewb_jmp_target;
                 end
-                wb_valid <= mewb_valid && !jmping;
+                valid_wb <= valid_mewb && !jmping;
         end else begin
-                wb_valid      <= 1'b0;
+                valid_wb      <= 1'b0;
                 wb_we         <= 1'b0;
                 wb_has_br     <= 1'b0;
                 wb_jmp_target <= 1'b0;
@@ -750,7 +576,7 @@ module vmicro16_stage1new (
         // debug
         output reg [15:0] stage1_pc,
 
-        output reg stage1_valid,
+        output reg valid_stage1,
 
         // sync decoder outputs
         output reg [15:0] stage_instrc,
@@ -767,7 +593,7 @@ module vmicro16_stage1new (
 
         // sync ALU outputs
         output reg [15:0] stage1_alu_d,
-        output     [15:0] stage1_alu_d2,
+        output reg [15:0] stage1_alu_d2,
         
         // async outputs
         output     [2:0] stage1_rs1,
@@ -796,14 +622,15 @@ module vmicro16_stage1new (
                 mem_cache[2]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[3]  = {3'h7, 1'b0, 4'h1};
                 //*/
 
-                /*
+                //*
                 // register dependency
-                mem_cache[0]  = {`VMICRO16_OP_MOVI,    3'h0}; mem_cache[1]  = { 8'h01 };
-                mem_cache[2]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[3]  = {3'h7, 1'b0, 4'h2};
+                mem_cache[0]  = {`VMICRO16_OP_MOVI,    3'h5}; mem_cache[1]  = { 8'h01 };
+                mem_cache[2]  = {`VMICRO16_OP_ARITH_U, 3'h5}; mem_cache[3]  = {3'h7, 1'b0, 4'h2};
                 //*/
 
-                //*
+                /*
                 // Single cycle register writes
+                // Should execute 1 clock each
                 mem_cache[0]  = {`VMICRO16_OP_MOVI, 3'h0}; mem_cache[1]  = { 8'h00 };
                 mem_cache[2]  = {`VMICRO16_OP_MOVI, 3'h1}; mem_cache[3]  = { 8'h01 };
                 mem_cache[4]  = {`VMICRO16_OP_MOVI, 3'h2}; mem_cache[5]  = { 8'h02 };
@@ -837,6 +664,10 @@ module vmicro16_stage1new (
         //   fetch operands
         //   alu it
 
+        reg f_valid = 1;
+        reg d_valid = 0;
+        reg e_valid = 0;
+
         reg  [15:0] stage1_instr;
         always @(*) begin
                 if (reset) begin
@@ -867,33 +698,39 @@ module vmicro16_stage1new (
                         stage1_has_mem_we <= 0;
                         //stage1_alu_op     <= 0;
                         stage1_halt       <= 0;
-                        stage1_valid       <= 0;
+                        valid_stage1       <= 0;
                 end
                 else begin
                         if (!stall) begin
                                 // Move to next instruction
                                 pc        <= pc + 2;
+
+                                // Clock outputs
+                                stage_instrc      <= stage1_instr;
+                                stage1_pc         <= pc;
+                                stage1_op         <= w_stage1_op;
+                                stage1_rs1c       <= stage1_rs1;
+                                stage1_rs2c       <= stage1_rs2;
+                                //stage1_imm8       <= w_stage1_imm8;
+                                stage1_has_imm8   <= w_stage1_has_imm8;
+                                //stage1_has_simm5  <= w_stage1_has_simm5;
+                                stage1_has_br     <= w_stage1_has_br;
+                                stage1_has_we     <= w_stage1_has_we;
+                                stage1_has_mem    <= w_stage1_has_mem;
+                                stage1_has_mem_we <= w_stage1_has_mem_we;
+                                //stage1_alu_op     <= w_stage1_alu_op;
+                                stage1_halt       <= w_stage1_halt;
+
+                                d_valid <= f_valid;
+                        end else begin
+                                d_valid <= 0;
                         end
-
-                        // Clock outputs
-                        stage_instrc      <= stage1_instr;
-                        stage1_pc         <= pc;
-                        stage1_op         <= w_stage1_op;
-                        stage1_rs1c       <= stage1_rs1;
-                        stage1_rs2c       <= stage1_rs2;
-                        //stage1_imm8       <= w_stage1_imm8;
-                        stage1_has_imm8   <= w_stage1_has_imm8;
-                        //stage1_has_simm5  <= w_stage1_has_simm5;
-                        stage1_has_br     <= w_stage1_has_br;
-                        stage1_has_we     <= w_stage1_has_we;
-                        stage1_has_mem    <= w_stage1_has_mem;
-                        stage1_has_mem_we <= w_stage1_has_mem_we;
-                        //stage1_alu_op     <= w_stage1_alu_op;
-                        stage1_halt       <= w_stage1_halt;
-
-                        stage1_alu_d <= w_stage1_alu_d;
                         
-                        stage1_valid <= !stall;
+                                
+                        stage1_alu_d  <= w_stage1_alu_d;
+                        stage1_alu_d2 <= reg_rd1;
+                        e_valid       <= d_valid;
+                        valid_stage1  <= d_valid;
                 end
                 
         end
@@ -958,9 +795,6 @@ module vmicro16_stage1new (
                 .d2     (stage1_rd3), 
                 .q      (w_stage1_alu_d)
         );
-
-        // Just a passthrough
-        assign stage1_alu_d2 = reg_rd1;
 endmodule
 
 module vmicro16_cpu (
@@ -979,8 +813,8 @@ module vmicro16_cpu (
 );
         wire        valid_stage1;
         wire [4:0]  stage1_op;
-        wire [2:0]  stage1_rs1;
-        wire [2:0]  stage1_rs2;
+        wire [2:0]  stage1_rs1c;
+        wire [2:0]  stage1_rs2c;
         wire        stage1_has_imm8;
         wire        stage1_has_br;
         wire        stage1_has_we;
@@ -998,7 +832,7 @@ module vmicro16_cpu (
         wire [15:0] wb_jmp_target;
 
         wire        wb_we;
-        wire        wb_we_w = reset ? 1'b0 : (wb_we && wb_valid);
+        wire        wb_we_w = reset ? 1'b0 : (wb_we && valid_wb);
         //wire        wb_we_w = 0;
         wire [2:0]  wb_rs1;
         wire [15:0] wb_d;
@@ -1009,10 +843,10 @@ module vmicro16_cpu (
                 .clk    (clk), 
                 .reset  (reset),
 
-                .rs1    (stage1_rs1),
+                .rs1    (reg_rs1),
                 .rd1    (reg_rd1),
 
-                .rs2    (stage1_rs2),
+                .rs2    (reg_rs2),
                 .rd2    (reg_rd2),
                 
                 .we     (wb_we_w),
@@ -1023,9 +857,9 @@ module vmicro16_cpu (
         reg jmping = 0;
 
         wire nop          = !(|stage1_op);
-        wire stall_stage1 = (!nop) && valid_stage1;
-        wire stall_mewb   = (!nop && mewb_valid) && ((stage1_rs1 == mewb_rs1) || ((~stage1_has_imm8) && (stage1_rs2 == mewb_rs1)));
-        wire stall_wb     = (!nop && wb_valid)   && ((stage1_rs1 == wb_rs1)   || ((~stage1_has_imm8) && (stage1_rs2 == wb_rs1)));
+        wire stall_stage1 = (!nop && valid_stage1);
+        wire stall_mewb   = (!nop && valid_mewb) && ((stage1_rs1c == mewb_rs1) || ((~stage1_has_imm8) && (stage1_rs2c == mewb_rs1)));
+        wire stall_wb     = (!nop && valid_wb)   && ((stage1_rs1c == wb_rs1)   || ((~stage1_has_imm8) && (stage1_rs2c == wb_rs1)));
         //wire stall_mem    = 1'b0;
         wire stall        = |{ stall_stage1,
                                stall_mewb, 
@@ -1033,6 +867,12 @@ module vmicro16_cpu (
                                stage1_halt
                                //!mem_valid 
                                };
+        
+        //reg stall;
+        //always @(*) begin
+        //        stall = 0;
+        //        if (valid_stage1 && |stage1_op)
+        //end
 
         // Stage1
         vmicro16_stage1new stage1 (
@@ -1040,15 +880,15 @@ module vmicro16_cpu (
                 .reset                  (reset), 
                 // control signals
                 .stall                  (stall), 
-                .stage1_valid           (valid_stage1),
+                .valid_stage1           (valid_stage1),
 
                 // sync outputs
                 .stage1_pc              (stage1_pc), 
                 
                 // sync decoder outputs
                 .stage1_op              (stage1_op), 
-                .stage1_rs1c            (stage1_rs1), 
-                .stage1_rs2c            (stage1_rs2), 
+                .stage1_rs1c            (stage1_rs1c), 
+                .stage1_rs2c            (stage1_rs2c), 
                 //.stage1_simm5           (stage1_simm5), 
                 .stage1_has_imm8        (stage1_has_imm8),
                 .stage1_has_we          (stage1_has_we), 
@@ -1083,7 +923,7 @@ module vmicro16_cpu (
                 .reset          (reset), 
 
                 .req            (stage1_has_mem && valid_stage1),
-                .valid          (mem_valid),
+                .valid          (valid_mem),
 
                 .mem_addr       (mem_addr), 
                 .mem_in         (mem_in), 
@@ -1111,18 +951,18 @@ module vmicro16_cpu (
         wire        mewb_has_mem_we;
         wire        mewb_has_br;
         wire        mewb_has_we;
-        wire        mewb_valid;
+        wire        valid_mewb;
         vmicro16_mewb stage_mewb (
                 .clk             (clk), 
                 .reset           (reset), 
 
-                .exme_valid      (valid_stage1), 
-                .mewb_valid      (mewb_valid),
+                .valid_stage1    (valid_stage1), 
+                .valid_mewb      (valid_mewb),
+                .valid_mem       (valid_mem),
 
                 .jmping          (jmping),
 
                 .mem_out         (mem_out), 
-                .mem_valid       (mem_valid),
 
                 .exme_pc         (stage1_pc), 
                 .mewb_pc         (mewb_pc), 
@@ -1132,7 +972,7 @@ module vmicro16_cpu (
                 .exme_d2         (stage1_alu_d2), 
                 .mewb_d2         (mewb_d2), 
 
-                .exme_rs1        (stage1_rs1), 
+                .exme_rs1        (stage1_rs1c), 
                 .mewb_rs1        (mewb_rs1), 
 
                 .exme_jmp_target (stage1_jmp_target), 
@@ -1171,234 +1011,7 @@ module vmicro16_cpu (
 
                 .jmping          (jmping), 
 
-                .mewb_valid      (mewb_valid), 
-                .wb_valid        (wb_valid)
+                .valid_mewb      (valid_mewb), 
+                .valid_wb        (valid_wb)
         );
 endmodule
-
-/*
-module vmicro16_cpu (
-        input clk,
-        input reset,
-
-        // wishbone peripheral master interface
-        //   driven by mmu
-        output        wb_mosi_stb_o_regs,    // ...
-        output        wb_mosi_cyc_o,
-        output        wb_mosi_we_o,
-        output [15:0] wb_mosi_addr_o,
-        output [15:0] wb_mosi_data_o, // seperate data_o and data_i buses
-        input  [15:0] wb_miso_data_i, // seperate data_o and data_i buses
-        input         wb_miso_ack_i
-);
-        wire [4:0]  stage1_op;
-        wire [7:0]  stage1_imm8;
-        wire        stage1_has_imm8;
-        wire [4:0]  stage1_simm5;
-        wire        stage1_has_br;
-        wire        stage1_has_we;
-        wire        stage1_has_mem;
-        wire        stage1_has_mem_we;
-        //wire        stage1_has_bad;
-
-        wire [15:0] stage1_pc;
-        wire [15:0] stage1_instr;
-
-        wire [15:0] reg_rd1;
-        wire [15:0] reg_rd2;
-        wire [2:0]  stage1_rs1;
-        wire [2:0]  stage1_rs2;
-
-        wire stage1_valid;
-        wire mewb_valid;
-        wire wb_valid;
-        wire mem_valid;
-        wire stage1_halt;
-        wire wb_has_br;
-
-        wire [2:0]  mewb_rs1;
-        wire [2:0]  wb_rs1;
-
-        // nop = not any bits set in dec_op
-        wire nop          = !(|stage1_instr);
-        wire stall_stage1 = (!nop) && stage1_valid;
-        wire stall_mewb   = (!nop && mewb_valid) && ((stage1_rs1 == mewb_rs1) || ((~stage1_has_imm8) && (stage1_rs2 == mewb_rs1)));
-        wire stall_wb     = (!nop && wb_valid)   && ((stage1_rs1 == wb_rs1)   || ((~stage1_has_imm8) && (stage1_rs2 == wb_rs1)));
-        //wire stall_mem    = 1'b0;
-        wire stall        = |{ //stall_stage1,
-                               stall_mewb, 
-                               stall_wb, 
-                               stage1_halt
-                               //!mem_valid 
-                               };
-        wire jmping       = (wb_valid && wb_has_br);
-
-
-        wire [15:0] wb_d;
-        wire [15:0] wb_jmp_target;
-        wire        wb_we;
-        wire        wb_we_w = reset ? 1'b0 : (wb_we && wb_valid);
-        vmicro16_regs # (
-                .CELL_WIDTH(16),
-                .CELL_DEPTH(8)
-        ) regs (
-                .clk    (clk), 
-                .reset  (reset),
-
-                .rs1    (stage1_rs1),
-                .rd1    (reg_rd1),
-
-                .rs2    (stage1_rs2),
-                .rd2    (reg_rd2),
-                
-                .we     (wb_we_w),
-                .ws1    (wb_rs1),
-                .wd     (wb_d)
-        );
-
-        // Stage1
-        wire [4:0]  stage1_alu_op;
-        wire [15:0] stage1_alu_d;
-        wire [15:0] stage1_alu_d2;
-        vmicro16_stage1 stage1 (
-                .clk                    (clk), 
-                .reset                  (reset), 
-                .stall                  (stall), 
-
-                .mewb_valid             (mewb_valid), 
-                .jmping                 (jmping), 
-                .wb_jmp_target          (wb_jmp_target), 
-
-                .stage1_valid           (stage1_valid), 
-                .stage1_pc              (stage1_pc), 
-
-                // Output
-                .stage1_instr           (stage1_instr), 
-                // Ouptuts
-                .stage1_op              (stage1_op), 
-                .stage1_imm8            (stage1_imm8), 
-                .stage1_simm5           (stage1_simm5), 
-                .stage1_has_imm8        (stage1_has_imm8), 
-                .stage1_has_simm5       (stage1_has_simm5), 
-                .stage1_has_we          (stage1_has_we), 
-                .stage1_has_mem         (stage1_has_mem), 
-                .stage1_has_br          (stage1_has_br), 
-                .stage1_has_mem_we      (stage1_has_mem_we), 
-                .stage1_halt            (stage1_halt), 
-
-                .stage1_alu_op          (stage1_alu_op), 
-                .stage1_rs1             (stage1_rs1), 
-                .stage1_rs2             (stage1_rs2), 
-                // Input stage 1 register reads
-                .reg_rd1                (reg_rd1), 
-                .reg_rd2                (reg_rd2), 
-
-                // Outputs to stage2
-                .stage1_alu_d           (stage1_alu_d),
-                .stage1_alu_d2          (stage1_alu_d2)
-        );
-
-        //*
-        wire [15:0] mem_out;
-        //                     If SW, use calculated address
-        wire [15:0] mem_addr = stage1_has_mem ? stage1_alu_d : 16'h00;
-        //                     If SW, use register value
-        wire [15:0] mem_in   = stage1_has_mem ? stage1_alu_d2 : stage1_alu_d;
-        wire        mem_we   = reset ? 1'b0 : (stage1_has_mem_we & stage1_valid);
-        wire [1:0]  mem_whl  = 2'b00; // TODO: implement in ISA
-        vmicro16_mmu mmu (
-                .clk            (clk), 
-                .reset          (reset), 
-
-                .req            (stage1_has_mem && stage1_valid),
-                .valid          (mem_valid),
-
-                .mem_addr       (mem_addr), 
-                .mem_in         (mem_in), 
-                .mem_we         (mem_we), 
-                .mem_whl        (mem_whl),
-                .mem_out        (mem_out),
-
-                // wishbone master interface
-                // TODO: Add to top level cpu
-                .wb_mosi_stb_o_regs (wb_mosi_stb_o_regs),
-                .wb_mosi_cyc_o      (wb_mosi_cyc_o),
-                .wb_mosi_we_o       (wb_mosi_we_o),
-                .wb_mosi_addr_o     (wb_mosi_addr_o),
-                .wb_mosi_data_o     (wb_mosi_data_o),
-                .wb_miso_data_i     (wb_miso_data_i),
-                .wb_miso_ack_i      (wb_miso_ack_i)
-        );
-
-        wire [15:0] mewb_pc;
-        wire [15:0] mewb_d;
-        wire [15:0] mewb_d2;
-        wire [15:0] mewb_jmp_target;
-        wire        mewb_has_mem;
-        wire        mewb_has_mem_we;
-        wire        mewb_has_br;
-        wire        mewb_has_we;
-        vmicro16_mewb stage_mewb (
-                .clk             (clk), 
-                .reset           (reset), 
-
-                .jmping          (jmping),
-
-                .mem_out         (mem_out), 
-                .mem_valid       (mem_valid),
-
-                .exme_pc         (stage1_pc), 
-                .mewb_pc         (mewb_pc), 
-
-                .exme_d          (stage1_alu_d), 
-                .mewb_d          (mewb_d), 
-                .exme_d2         (stage1_alu_d2), 
-                .mewb_d2         (mewb_d2), 
-
-                .exme_rs1        (stage1_rs1), 
-                .mewb_rs1        (mewb_rs1), 
-
-                .exme_jmp_target (stage1_jmp_target), 
-                .mewb_jmp_target (mewb_jmp_target), 
-
-                .exme_has_br     (stage1_has_br), 
-                .mewb_has_br     (mewb_has_br), 
-                .exme_has_we     (stage1_has_we), 
-                .mewb_has_we     (mewb_has_we),  
-                .exme_has_mem    (stage1_has_mem), 
-                .mewb_has_mem    (mewb_has_mem), 
-                .exme_has_mem_we (stage1_has_mem_we), 
-                .mewb_has_mem_we (mewb_has_mem_we), 
-
-                .exme_valid      (stage1_valid), 
-                .mewb_valid      (mewb_valid)
-        );
-
-        
-        // WB stage
-        vmicro16_wb stage_wb (
-                .clk             (clk), 
-                .reset           (reset), 
-
-                .mewb_d          (mewb_d), 
-                .wb_d            (wb_d), 
-
-                .mewb_rs1        (mewb_rs1), 
-                .wb_rs1          (wb_rs1), 
-
-                .mewb_has_we     (mewb_has_we), 
-                .wb_we           (wb_we), 
-
-                .mewb_has_br     (mewb_has_br), 
-                .wb_has_br       (wb_has_br), 
-
-                .mewb_jmp_target (mewb_jmp_target), 
-                .wb_jmp_target   (wb_jmp_target), 
-
-                .jmping          (jmping), 
-
-                .mewb_valid      (mewb_valid), 
-                .wb_valid        (wb_valid)
-        );
-endmodule
-*/

@@ -6,8 +6,8 @@
 %\usepackage{classicthesis}
 \usepackage[sc]{mathpazo}
 
-\usepackage{helvet}
-\renewcommand{\familydefault}{\sfdefault}
+%\usepackage{helvet}
+%\renewcommand{\familydefault}{\sfdefault}
 
 \linespread{1.1}
 \usepackage[margin=1in]{geometry}
@@ -20,6 +20,9 @@
 
 % http://ctan.org/pkg/lipsum
 \usepackage{lipsum}
+
+% https://tex.stackexchange.com/questions/94224/how-to-create-a-list-with-a-fixed-prefix-and-incremental-numbers
+\usepackage{enumitem}
 
 %https://tex.stackexchange.com/questions/3001/list-sections-of-chapter-at-beginning-of-that-chapter
 % !!! NEEDS TO BE ABOVE HYPEREF !!!
@@ -164,9 +167,26 @@ Date:	\today
     \section{Summary}
     
 \chapter{Project Management}
-\section{Project Goals}
+
+\section{Project Deliverables}
+The project's deliverables are split into two sections: core deliverables (CD) -- each deliverable must be satisfied for the project to be a minimum viable product (MVP), and extended deliverables (ED) -- deliverables that are not required for an MVP, features that only improve upon an existing feature.
+
 \subsection{Core Deliverables (CD)}
+The project's core deliverables are described below.
+\begin{enumerate}[leftmargin=2\parindent, label=\bfseries CD\arabic*.]
+    \item{Design a compact 16-bit RISC instruction set architecture.}\label{cd:isa}
+    \item{Produce a synthesisable Verilog RISC core that implements the ISA in \ref{cd:isa}.}\label{cd:core}
+    \item{Design and implement an on-chip interconnect for multi-core processing (between 2 to 32 cores) using the RISC core from \ref{cd:core}.}
+    \item{Analyse performance of serial and parallel software algorithms, such as parallel DFT \cite{dft}, on the processor.}
+\end{enumerate}
+
 \subsection{Extended Deliverables (ED)}
+The project's extended deliverables are described below.
+\begin{enumerate}[leftmargin=2\parindent, label=\bfseries ED\arabic*.]
+    \item{Produce a RISC core with an instructions-per-clock (IPC) rating of at least 1.0 (a single-cycle CPU).}
+    \item{Produce a scalable multi-core interconnect supporting arbitrary (more than 32) RISC core instances (manycore) using Network-on-Chip (NoC) architecture.}
+    \item{Produce a compiler-backend for the PRCO304 \cite{prco304} compiler to support the ISA from1 \ref{cd:isa}. This will make it easier to build complex multi-core software for the processor.}
+\end{enumerate}
 
 \section{Project Timeline}
 \subsection{Project Stages}
@@ -175,7 +195,25 @@ Date:	\today
 \section{Resources}
 \subsection{Terasic DE1-SoC Development Board}
 \subsection{Minispartan 6+ FPGA Development Board}
-        
+
+\chapter{Current Progress}
+\section{RISC Core}
+\subsection{Instruction Set Architecture}
+\subsection{Implementation}
+\subsection{Verification}
+
+\chapter{Future Progress}
+\section{Multi-core Functionality}
+    \section{Interconnect Goals}
+    \section{Interconnect Layout}
+        \subsection{Bus Design}
+        \subsection{Core Pin Assignments}
+    \section{Core-to-core Communication}
+    \section{Shared-Resource Control}
+        \subsection{Resource Scheduling}
+    \section{Verification}
+    \section{Conclusion}
+
 \chapter{RISC Core Design}
     \section{Design Goals}
     \section{Instruction Set Architecture}

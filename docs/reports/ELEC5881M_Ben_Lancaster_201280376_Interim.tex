@@ -24,6 +24,9 @@
 % https://tex.stackexchange.com/questions/94224/how-to-create-a-list-with-a-fixed-prefix-and-incremental-numbers
 \usepackage{enumitem}
 
+% https://tex.stackexchange.com/questions/86120/font-size-of-figure-caption-header
+\usepackage[font=scriptsize,labelfont=bf]{caption}
+
 %https://tex.stackexchange.com/questions/3001/list-sections-of-chapter-at-beginning-of-that-chapter
 % !!! NEEDS TO BE ABOVE HYPEREF !!!
 \usepackage{titletoc}
@@ -54,8 +57,10 @@
 \usepackage{tabularx,colortbl,booktabs}
 % For vertical centering text in X column
 \renewcommand\tabularxcolumn[1]{m{#1}}
+\def\arraystretch{1.3}
 
 \begin{document}
+%TC:ignore
 \pagestyle{headings}
 
 \begin{titlepage}
@@ -136,14 +141,15 @@ This copy has been supplied on the understanding that no quotation from the repo
 
 The candidate confirms that the details of any mitigating circumstances have been submitted to the Student Support Office at the School of Electronic and Electrical Engineering, at the University of Leeds.
 \vfill
-\noindent Name:	Ben David Lancaster \\
+
+\noindent 
+Name:	Ben David Lancaster \\
 Date:	\today
 \newpage
 
 
 \newpage
 \renewcommand*\contentsname{Table of Contents}
-%TC:ignore
 {%\hypersetup{linkcolor=black}
 \tableofcontents
 %\listoffigures
@@ -156,6 +162,7 @@ Date:	\today
 \cite{binet2010harnessing}
 \bibliography{refs}
 \newpage
+%TC:endignore
 
 \chapter{Abstract (not in toc)}
 \chapter{Declaration of Academic Integrity (not in toc)}
@@ -186,13 +193,13 @@ Date:	\today
 \printcontents[chapters]{}{1}{}
 }
 \section{Project Deliverables}
-The project's deliverables are split into two sections: core deliverables (CD) -- each deliverable must be satisfied for the project to be a minimum viable product (MVP), and extended deliverables (ED) -- deliverables that are not required for an MVP, features that only improve upon an existing feature.
+The project's deliverables are split into two sections: core deliverables (CD) -- each deliverable must be satisfied for the project to be a minimum viable product (MVP), and extended deliverables (ED) -- deliverables that are not required for a MVP -- features that only improve upon an existing feature.
 
 \subsection{Core Deliverables (CD)}
 The project's core deliverables are described below.
 \begin{enumerate}[leftmargin=2\parindent, label=\bfseries CD\arabic*.]
     \item{Design a compact 16-bit RISC instruction set architecture.}\label{cd:isa}
-    \item{Design a synthesisable Verilog RISC core that implements the ISA in \ref{cd:isa}.}\label{cd:core}
+    \item{Design and implement a Verilog RISC core that implements the ISA in \ref{cd:isa}.}\label{cd:core}
     \item{Design and implement an on-chip interconnect for multi-core processing (2 to 32 cores) using the RISC core from \ref{cd:core}.}\label{cd:interconnect}
     \item{Analyse performance of serial and parallel software algorithms, such as parallel DFT \cite{dft}, on the processor.}\label{cd:software}
 \end{enumerate}
@@ -211,7 +218,7 @@ The project's extended deliverables are described below.
     \item{Processor external debugger using host-processor link.}\label{ed:debug}
 \end{enumerate}
 
-\section{Project Timeline}
+\section{Project Timeline}\label{sect:timeline}
 \subsection{Project Stages}
 The project is split up into many stages to aid planning and management of the project. There are 8 unique stage areas: 1. Inital project conception; 2 Basic RISC core development; 3. Extended RISC core development; 4. Multi-core development; 5. Processor quality-of-life (QoL) improvements; 6. Compiler development; 7. Demo preparation, and 8. Final report.
 
@@ -284,51 +291,93 @@ The project stages from Table \ref{tb:stages} are displayed below in a Gantt cha
 
 
 \section{Resources}
-\subsection{Terasic DE1-SoC Development Board}
-\subsection{Minispartan 6+ FPGA Development Board}
+This section describes the hardware and software resources required to design and implement the project. 
+
+\subsection{Hardware Resources}
+The designed Verilog RISC core will be implemented and deployed to FPGAs.
+
+\subsubsection{Terasic DE1-SoC Development Board}
+
+
+\begin{figure}[h]
+\centering 
+\includegraphics[width=10cm]{../img/de1soc}
+\caption{Terasic DE1-SoC development board featuring the Altera Cyclone V FPGA and many peripherals. Image source: \cite{de1soc}.}
+\label{fig:de1soc}
+\end{figure}
+
+\subsubsection{Minispartan 6+ FPGA Development Board}
+
+\begin{figure}[h]
+\centering 
+\includegraphics[width=10cm]{../img/minispartan}
+\caption{Minispartan-6+ development board featuring the Xilinx Spartan 6 XC6SLX9. Image source: \cite{minispartan}.}
+\label{fig:de1soc}
+\end{figure}
+Testing testing
+
+\subsection{Software Resources}
+\subsubsection{Xilinx ISE}
+\subsubsection{Intel Quartus}
 
 \chapter{Current Progress}
-{\hypersetup{linkcolor=black}
+{%\hypersetup{linkcolor=black}
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 }
-\section{RISC Core}
+\noindent\\
+This chapter discusses the current progress made towards the project, including designs, implementation, and current results.
 
+\section{RISC Core}
+Following the project time line described in section \ref{sect:timeline}, the first couple months have been dedicated to the design and implementation of the instruction set architecture and RISC core with stages 1-3. Good progress has been made in both deliverables, the ISA and the RISC core, and the progress is on-time with the initial project time line.
 
 \subsection{Instruction Set Architecture}
-The goals of the ISA are to:
+A 16-bit instruction set architecture (ISA) has been designed using an iterative approach. There currently exists 32 unique instructions covering most generic RISC operations (add, load/store, branch, compare, etc.) and atleast 16 opcodes available to be provide multi-core communication and functionality. This number should be adequate to support these features when the work begins on the multi-core project stages (stages 4-7).
+
+\subsubsection{Design Goals}
+Having past experience designing and implementing ISAs for previous projects, I wanted to use that knowledge to design an even more efficient and compact instruction set that could provide much greater functionality. The technical design goals of the ISA are described below:
+
 \begin{enumerate}[leftmargin=3\parindent, label=\bfseries ISA\arabic*., style=nextline]
 \item{\textbf{Use a fixed width of 16-bits for all instructions.}\\
-This will significantly reduce RTL resources and encourage efficiency by not wasting spare bits. In addition, many SPI flash and RAMs support 16-bit wide data reads which will allow each instruction fetch to only require one clock cycle, thus increasing processor performance.}\label{isa:bits}
+This will significantly reduce RTL resources and encourage efficiency by not wasting spare bits. In addition, many SPI flash and RAMs support 16-bit wide data reads which will allow each instruction fetch to only require one clock cycle, thus increasing processor performance.}\label{isa:16}
 
 \item{\textbf{Be able to select at least two registers for common instructions.}\\
-This will reduce the number of required instructions to manipulate register data. A disadvantage of using two instead of three reigster selects is that instructions are always destructive -- they always \textit{destroy} existing data in the destination register (e.g. R0 = ADD R0 R1) unlike constructive instructions that provide a dedicated register select for the destination (e.g. R2 = ADD R0 R1). }\label{isa:bits}
+This will reduce the number of required instructions to manipulate register data. A disadvantage of using two instead of three reigster selects is that instructions are always destructive -- they always \textit{destroy} existing data in the destination register (e.g. R0 = ADD R0 R1) unlike constructive instructions that provide a unique register select for the destination (e.g. R2 = ADD R0 R1). }\label{isa:regs}
 
 \item{\textbf{Reduce bit-space for frequently used instructions (MOV, MOVI, ADD).}\\
 Due to the 16-bit limit, two register selects, and immediate values, the opcode bits are reduced resulting in fewer unique instructions. To overcome this constraint, spare bits in other instructions will be appended to the opcode bits to extend the opcode range. This however, will require a more complex decoder that must first switch the opcode, then switch any spare bits to determine the final opcode. This method will significantly increase the number of unique instructions provided by the instruction set.}\label{isa:bits}
 
 \item{\textbf{Provide frequently used actions as options for existing instructions.}\\
-In software, frequently used actions include incrementing/decrementing by 1 and performing logical comparisons which usually take more than one instruction on some RISC architectures. As they are common actions, the instruction overhead and time may be significant and can affect performance. To provide a solution to this problem, in addition to using spare bits to extend the opcode range, spare bits will be used to signify a frequently used action action to be performed by the ALU.\\
+In software, frequently used actions include incrementing/decrementing by 1 and performing logical comparisons which usually take more than one instruction on some RISC architectures. As they are common actions, the instruction overhead and time may be significant and can affect performance. To provide a solution to this problem, in addition to using spare bits to extend the opcode range, spare bits will be used to signify a frequently used action action to be performed by the ALU.
 
 As shown in Figure \ref{fig:isa}, frequently used commands such as incrementing/decrementing and logical comparions are provided by setting spare bits to special values. For example, the instructions \verb|ARITH_UADDI| and \verb|ARITH_SSUBI| extend the \verb|ARITH_U| and \verb|ARITH_S| opcodes by filling the spare bit, 4. If this bit is not set (0), the instruction allows for a 4-bit immediate value to be added in addition to the two register selects. The 4-bit immediate allows adding a small number to the ALU which is useful in the case of software for loops where an increment/decrement of more than 1 is required.
 
-Another example is the \verb|SETC| instruction. Inspired by Intel's x86 \verb|SETCC|, the instructions sets the destination register to zero or one depending on the result of the \verb|CMP| instruction's flags. Without this instruction, multiple branches would be required to convert the comparion's flags to logical zeros and ones.}\label{isa:bits}
+Another example is the \verb|SETC| instruction. Inspired by Intel's x86 \verb|SETCC|, the instructions sets the destination register to zero or one depending on the result of the \verb|CMP| instruction's flags. Without this instruction, multiple branches would be required to convert the comparion's flags to logical zeros and ones.}\label{isa:freq}
 
 
-\item{Provide instructions for performing bitwise manipulations.\\
+\item{\textbf{Provide instructions for performing bitwise manipulations.}\\
 RISC processors are commonly used for microprocessing and microcontroller actions which typically includes bit manipulation. The ISA provides bitwise OR, XOR, AND, NOT, and shifting instructions under a single opcode to fill this need.}\label{isa:bitwise}
 
-\item{Provide instructions for explicitly performing signed and unsigned arithmetic.}\label{isa:signed}
+\item{\textbf{Provide instructions for explicitly performing signed and unsigned arithmetic.}\\
+Performing signed and unsigned arithmetic is a key requirement for RISC applications and so it was decided to provide such instructions. Software programmers can easily switch between signed and unsigned arithmetic by setting bit 11 in the \verb|ARITH| instruction family. Being able to change between signed and unsigned arithmetic instructions by changing a single bit will make the RISC processor's decoder module smaller and less complex.
+
+Without explicit unsigned and signed instructions, extra instructions would be required to perform addition and subtraction. In addition, due to two's complement representation of signed numbers, the highest immediate operand value would be halved, resulting in more instructions to reach the desired value.
+}\label{isa:signed}
 \end{enumerate}
+
+The ISA table is shown in Figure \ref{fig:isa}. The top 5 bits (15-11) are dedicated to the opcode resulting in 32 unique values. Currently only the bits 14-11 are used (\verb|NOP| to \verb|SETC|) leaving the top bit spare. Initially, this bit was reserved to indicate an extended immediate instruction, \verb|MOVI12|, supporting a large 12-bit immediate value, however later in the design it was decided that the top bit would indicate special instructions dedicated for multi-core operation. This leaves 16 spare unique opcodes for this purpose.
 
 \begin{figure}[h]
 \centering 
 \includegraphics[width=9cm]{../img/isa}
-\caption{Vmicro16}
+\caption{Initial Vmicro16 16-bit instruction set architecture. Coloured regions represent instruction families (bitwise, branching, arithmetic, etc.).}
 \label{fig:isa}
 \end{figure}
 
 \subsection{Design}
+The RISC core design is a traditional 5-stage processor (fetch, decode, execute, memory, write-back).
+
+The extended deliverable \ref{ed:ipc}, to provide atleast 1 instructions per clock
 
 \begin{figure}[h]
 \centering 

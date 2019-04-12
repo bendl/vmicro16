@@ -321,12 +321,13 @@ module vmicro16_alu # (
         output reg [DATA_WIDTH-1:0] q
 );
         always @(*) case (op)
+                // branch/nop, output nothing
                 `VMICRO16_ALU_BR,
                 `VMICRO16_ALU_NOP:          q = 0;
-
+                // load/store addresses (use value in rd2)
                 `VMICRO16_ALU_LW,
                 `VMICRO16_ALU_SW:           q = d2;
-
+                // bitwise operations
                 `VMICRO16_ALU_BIT_OR:       q = d1 | d2;
                 `VMICRO16_ALU_BIT_XOR:      q = d1 ^ d2;
                 `VMICRO16_ALU_BIT_AND:      q = d1 & d2;

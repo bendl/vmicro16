@@ -52,6 +52,8 @@
 \usepackage[outputdir=build]{minted}
 %https://www.sharelatex.com/learn/Code_Highlighting_with_minted#Reference_guide
 \usemintedstyle{vs}
+% https://tex.stackexchange.com/questions/161124/how-to-make-a-minted-code-listing-centered-on-a-page
+%\RecustomVerbatimEnvironment{Verbatim}{BVerbatim}{}
 
 % tables, row colour
 \usepackage{tabularx,colortbl,booktabs}
@@ -202,6 +204,7 @@ The project's core deliverables are described below.
     \item{Design and implement a Verilog RISC core that implements the ISA in \ref{cd:isa}.}\label{cd:core}
     \item{Design and implement an on-chip interconnect for multi-core processing (2 to 32 cores) using the RISC core from \ref{cd:core}.}\label{cd:interconnect}
     \item{Analyse performance of serial and parallel software algorithms, such as parallel DFT \cite{dft}, on the processor.}\label{cd:software}
+    \item{Allow the RISC core to be easily compiled to multiple FPGA vendors (Xilinx, Altera).}\label{cd:vendor}
 \end{enumerate}
 
 \subsection{Extended Deliverables (ED)}
@@ -365,35 +368,96 @@ Without explicit unsigned and signed instructions, extra instructions would be r
 }\label{isa:signed}
 \end{enumerate}
 
-The ISA table is shown in Figure \ref{fig:isa}. The top 5 bits (15-11) are dedicated to the opcode resulting in 32 unique values. Currently only the bits 14-11 are used (\verb|NOP| to \verb|SETC|) leaving the top bit spare. Initially, this bit was reserved to indicate an extended immediate instruction, \verb|MOVI12|, supporting a large 12-bit immediate value, however later in the design it was decided that the top bit would indicate special instructions dedicated for multi-core operation. This leaves 16 spare unique opcodes for this purpose.
-
 \begin{figure}[h]
 \centering 
 \includegraphics[width=9cm]{../img/isa}
 \caption{Initial Vmicro16 16-bit instruction set architecture. Coloured regions represent instruction families (bitwise, branching, arithmetic, etc.).}
 \label{fig:isa}
 \end{figure}
+The ISA table is shown in Figure \ref{fig:isa}. The top 5 bits (15-11) are dedicated to the opcode resulting in 32 unique values. Currently only the bits 14-11 are used (\verb|NOP| to \verb|SETC|) leaving the top bit spare. Initially, this bit was reserved to indicate an extended immediate instruction, \verb|MOVI12|, supporting a large 12-bit immediate value, however later in the design it was decided that the top bit would indicate special instructions dedicated for multi-core operation. This leaves 16 spare unique opcodes for this purpose.
 
+
+\newpage
 \subsection{Design}
 The RISC core design is a traditional 5-stage processor (fetch, decode, execute, memory, write-back).
 
-\begin{figure}[h]
+\subsubsection{Instruction and Data Memory}
+The design uses separate instruction and data memories similar to a Harvard architecture computer. This architecture was chosen due to it's simplicity to implement.
+
+\subsubsection{Register File}
+To support design goal \ref{isa:regs}, the register set features a dual-port read and single-port write. This allows instructions to read 2 registers simultaneously for any instruction. The single-port write allows the instruction output to be written to the register file. 
+
+\begin{figure}[H]
 \centering 
 \includegraphics[width=10cm]{../img/risc}
 \caption{Vmicro16 RISC 5-stage RTL diagram.}
 \label{fig:risc}
 \end{figure}
 
+\subsubsection{Pipelining}
 The extended deliverable \ref{ed:ipc}, to provide atleast 1 instructions per clock
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering 
 \includegraphics[width=10cm]{../img/stall}
 \caption{Pipeline stall detection logic. }
 \label{fig:risc}
 \end{figure}
 
+\subsubsection{Memory Management Unit}
+It was decided to use a memory management unit (MMU) to make it easier and extensible to communicate with external peripherals or additional registers. This method would transparently use the existing \verb|LW|/\verb|SW| instructions which removes the requirement for a unique instruction for each peripheral. 
+
+\subsubsection{Proposed Memory Mapped Addresses}
+The proposed memory mapped adresses for each system and peripheral are listed below.
+
+\begin{table}[h]
+    \small
+    \begin{tabularx}{\textwidth}{|l|X|}
+    \hline
+    Address (16-bit aligned) & Peripheral Name
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    \verb|0x0000| & NOP (reads returns 0, writes do nothing)
+    \\ \hline 
+    \verb|0x00ZZ| & Per-core scratch RAM (ZZ = 8-bit RAM address)
+    \\ \hline 
+    \verb|0x0100| & Extended Core Registers 1
+    \\ \hline 
+    \verb|0x0200| & Extended Core Registers 2
+    \\ \hline 
+    \verb|0x03ZZ| & Wishbone Master controller select (ZZ contains 8-bit wishbone slave address)
+    \\ \hline 
+    \verb|0x1XYZ| & Master core controller (X = slave select, Y = instruction, Z = data)
+    \\ \hline 
+    \end{tabularx}
+    \caption{Project stages throughout the life cycle of the project.}
+    \label{tb:stages}
+\end{table}
+
 \subsection{Implementation}
+To satisfy \ref{cd:vendor}, the Verilog code will be self-contained in a single file. This reduces the hierarchical complexity and eases cross-vendor project set-up as only a single file is required to be included.
+
+A disadvantage with this single file approach is that some external Verilog verification tools that I plan to use, such as Verilator, do not currently support multiple Verilog modules (due to an unfixed bug) within a single file. 
+
+\subsubsection{Decoder Implementation}
+
+\begin{figure}[H]
+\centering
+\inputminted[fontsize=\footnotesize,firstline=224,lastline=245,linenos]{verilog}{../../vmicro16/vmicro16.v}
+\caption{Vmicro16's decoder module code showing nested bit switches to determine the intended opcode. vmicro16.v}
+\label{fig:decoder}
+\end{figure}
+
+In Figure \ref{fig:decoder}, it can be seen that the first 8 opcode cases are represented using the same 15-11 bits, however the \verb|VMICRO16_OP_BIT| instructions require another bit range to be compared to determine the output opcode.
+
+
+\subsubsection{ALU Implementation}
+
+\begin{figure}[H]
+\centering
+\inputminted[fontsize=\footnotesize,firstline=322,lastline=335,linenos]{verilog}{../../vmicro16/vmicro16.v}
+\caption{Vmicro16's decoder module code showing nested bit switches to determine the intended opcode. vmicro16.v}
+\label{fig:alu}
+\end{figure}
 
 \subsection{Verification}
 

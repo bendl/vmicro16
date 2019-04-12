@@ -377,11 +377,20 @@ The ISA table is shown in Figure \ref{fig:isa}. The top 5 bits (15-11) are dedic
 \subsection{Design}
 The RISC core design is a traditional 5-stage processor (fetch, decode, execute, memory, write-back).
 
+\begin{figure}[h]
+\centering 
+\includegraphics[width=10cm]{../img/risc}
+\caption{Vmicro16 RISC 5-stage RTL diagram.}
+\label{fig:risc}
+\end{figure}
+
 The extended deliverable \ref{ed:ipc}, to provide atleast 1 instructions per clock
 
 \begin{figure}[h]
 \centering 
-\includegraphics[width=9cm]{../img/risc}
+\includegraphics[width=10cm]{../img/stall}
+\caption{Pipeline stall detection logic. }
+\label{fig:risc}
 \end{figure}
 
 \subsection{Implementation}

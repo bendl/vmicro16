@@ -166,10 +166,6 @@ Date:	\today
 \newpage
 %TC:endignore
 
-\chapter{Abstract (not in toc)}
-\chapter{Declaration of Academic Integrity (not in toc)}
-\chapter{Acknowledgements (not in toc)}
-
 \chapter{Introduction}
 {%\hypersetup{linkcolor=black}
 \startcontents[chapters]
@@ -199,7 +195,7 @@ The project's deliverables are split into two sections: core deliverables (CD) -
 
 \subsection{Core Deliverables (CD)}
 The project's core deliverables are described below.
-\begin{enumerate}[leftmargin=2\parindent, label=\bfseries CD\arabic*.]
+\begin{enumerate}[leftmargin=2\parindent, label=\bfseries CD\arabic*]
     \item{Design a compact 16-bit RISC instruction set architecture.}\label{cd:isa}
     \item{Design and implement a Verilog RISC core that implements the ISA in \ref{cd:isa}.}\label{cd:core}
     \item{Design and implement an on-chip interconnect for multi-core processing (2 to 32 cores) using the RISC core from \ref{cd:core}.}\label{cd:interconnect}
@@ -209,7 +205,7 @@ The project's core deliverables are described below.
 
 \subsection{Extended Deliverables (ED)}
 The project's extended deliverables are described below.
-\begin{enumerate}[leftmargin=2\parindent, label=\bfseries ED\arabic*.]
+\begin{enumerate}[leftmargin=2\parindent, label=\bfseries ED\arabic*]
     \item{Design a RISC core with an instructions-per-clock (IPC) rating of at least 1.0 (a single-cycle CPU).}\label{ed:ipc}
     \item{Design a RISC core with a pipe-lined data path to increase the design's clock speed.}\label{ed:pipeline}
     \item{Design a scalable multi-core interconnect supporting arbitrary (more than 32) RISC core instances (manycore) using Network-on-Chip (NoC) architecture.}\label{ed:scale}
@@ -340,7 +336,7 @@ A 16-bit instruction set architecture (ISA) has been designed using an iterative
 \subsubsection{Design Goals}
 Having past experience designing and implementing ISAs for previous projects, I wanted to use that knowledge to design an even more efficient and compact instruction set that could provide much greater functionality. The technical design goals of the ISA are described below:
 
-\begin{enumerate}[leftmargin=3\parindent, label=\bfseries ISA\arabic*., style=nextline]
+\begin{enumerate}[leftmargin=3\parindent, label=\bfseries ISA\arabic*, style=nextline]
 \item{\textbf{Use a fixed width of 16-bits for all instructions.}\\
 This will significantly reduce RTL resources and encourage efficiency by not wasting spare bits. In addition, many SPI flash and RAMs support 16-bit wide data reads which will allow each instruction fetch to only require one clock cycle, thus increasing processor performance.}\label{isa:16}
 
@@ -378,8 +374,11 @@ The ISA table is shown in Figure \ref{fig:isa}. The top 5 bits (15-11) are dedic
 
 
 \newpage
-\subsection{Design}
+\subsection{Design and Implementation}
 The RISC core design is a traditional 5-stage processor (fetch, decode, execute, memory, write-back).
+
+To satisfy \ref{cd:vendor}, the Verilog code will be self-contained in a single file. This reduces the hierarchical complexity and eases cross-vendor project set-up as only a single file is required to be included. 
+A disadvantage with this single file approach is that some external Verilog verification tools that I plan to use, such as Verilator, do not currently support multiple Verilog modules (due to an unfixed bug) within a single file. 
 
 \subsubsection{Instruction and Data Memory}
 The design uses separate instruction and data memories similar to a Harvard architecture computer. This architecture was chosen due to it's simplicity to implement.
@@ -433,12 +432,34 @@ The proposed memory mapped adresses for each system and peripheral are listed be
     \label{tb:stages}
 \end{table}
 
-\subsection{Implementation}
-To satisfy \ref{cd:vendor}, the Verilog code will be self-contained in a single file. This reduces the hierarchical complexity and eases cross-vendor project set-up as only a single file is required to be included.
+\subsubsection{ALU Design}
+The Vmicro16's ALU is an asynchronous module that has 3 inputs: data a; data b; and opcode op, and outputs data value c.
+The ALU is able to operand on both register data (\verb|rd1| and \verb|rd2|) and immediate values. A switch is used to set the \verb|b| input to either the \verb|rd2| or \verb|imm| value from the previous stage.
 
-A disadvantage with this single file approach is that some external Verilog verification tools that I plan to use, such as Verilator, do not currently support multiple Verilog modules (due to an unfixed bug) within a single file. 
+Currently, the ALU does not store flags to indicate overflow, equality, or zero values in the module itself. Instead the ALU outputs the result of the \verb|CMP|, which calculates such flags, to be written back to the register set in the write-back stage. This means that in order to perform a conditional operation, such as a branch, the register containing the \verb|CMP| flags must be included in the instruction.
 
-\subsubsection{Decoder Implementation}
+\begin{figure}[H]
+\centering 
+\includegraphics[width=10cm]{../img/alu}
+\caption{Vmicro16 ALU diagram showing clocked inputs from the previous IDEX stage being }
+\label{fig:alu}
+\end{figure}
+
+
+The Verilog implementation of the ALU is shown in Figure \ref{fig:aluv}. The ALU's asynchronous output is clocked with other registers, such as destination register \verb|rs1| and other control signals, in the \verb|EXME| register bank.
+\begin{figure}[H]
+\centering
+\inputminted[fontsize=\footnotesize,firstline=322,lastline=335,linenos]{verilog}{../../vmicro16/vmicro16.v}
+\caption{Vmicro16's ALU implementation named vmicro16\_alu. vmicro16.v}
+\label{fig:aluv}
+\end{figure}
+
+
+
+
+\subsubsection{Decoder Design}
+Instruction decoding occurs in the between the IFID and IDEX stages. 
+The decoder extracts register selects and operands from the input instruction. The decoder outputs are asynchronous which allows the register selects to be passed to the register set and register data to be read asynchronously. The register selects and register read data is then clocked into the IDEX register bank.
 
 \begin{figure}[H]
 \centering
@@ -449,17 +470,19 @@ A disadvantage with this single file approach is that some external Verilog veri
 
 In Figure \ref{fig:decoder}, it can be seen that the first 8 opcode cases are represented using the same 15-11 bits, however the \verb|VMICRO16_OP_BIT| instructions require another bit range to be compared to determine the output opcode.
 
-
-\subsubsection{ALU Implementation}
-
-\begin{figure}[H]
-\centering
-\inputminted[fontsize=\footnotesize,firstline=322,lastline=335,linenos]{verilog}{../../vmicro16/vmicro16.v}
-\caption{Vmicro16's decoder module code showing nested bit switches to determine the intended opcode. vmicro16.v}
-\label{fig:alu}
-\end{figure}
-
 \subsection{Verification}
+Currently, the only verification method used is manual inspection of the output waveforms of a test bench.
+
+\subsubsection{Known Bugs}
+Several known bugs exist within the RISC core however none are critical as they can be easily avoided in software.
+
+\begin{enumerate}[leftmargin=3\parindent, label=\bfseries BUG\arabic*, style=nextline]
+\item{\textbf{Stall detection does not consider load/store instructions.}\\
+Due to pipelining techniques used by the processor and lack of address checking in the \verb|EXME| and \verb|MEWB| stages, \verb|LW| instructions immediately after \verb|SW| instructions:\\ \verb|    SW R0 (R2+16)|\\ \verb|    LW R1 (R2+16)|\\
+will not return the previously stored value. In addition, because of the target address is calculated by the ALU (e.g. \verb|R2+16|), detecting matching addresses at IFID and IDEX stage is not trivial, and because of this, a hardware fix is not planned for the final version. It is possible to overcome this problem in software by placing at least 5 \verb|NOP| instructions after each \verb|SW|. 
+}\label{bug:swlw}
+\end{enumerate}
+
 
 \chapter{Future Progress}
 {\hypersetup{linkcolor=black}
@@ -477,62 +500,62 @@ In Figure \ref{fig:decoder}, it can be seen that the first 8 opcode cases are re
     \section{Verification}
     \section{Conclusion}
 
-\chapter{RISC Core Design}
-{\hypersetup{linkcolor=black}
-\startcontents[chapters]
-\printcontents[chapters]{}{1}{}
-}
-    \section{Design Goals}
-    \section{Instruction Set Architecture}
-        \subsection{Data Sizes}
-        \subsection{Registers}
-        \subsection{Endianness}
-    \section{High Level Design}
-    \section{Memory-mapped peripherals}
-        \subsection{Wishbone Master Bus}
-    \section{Optimisations}
-        \subsection{Pipelining}
-        \subsection{Stall Avoidance}
-    \section{Core Verification}
-    \section{Conclusion}
-        
-\chapter{Multi-core Communication Design}
-{\hypersetup{linkcolor=black}
-\startcontents[chapters]
-\printcontents[chapters]{}{1}{}
-}
-    \section{Interconnect Goals}
-    \section{Interconnect Layout}
-        \subsection{Bus Design}
-        \subsection{Core Pin Assignments}
-    \section{Core-to-core Communication}
-    \section{Shared-Resource Control}
-        \subsection{Resource Scheduling}
-    \section{Verification}
-    \section{Conclusion}
-
-\chapter{Core Analysis}
-{\hypersetup{linkcolor=black}
-\startcontents[chapters]
-\printcontents[chapters]{}{1}{}
-}
-    \section{FPGA Implementation Analysis}
-        \subsection{Space/Resource Usage}
-        \subsection{Static Timing Analysis}
-    \section{Speed Analysis}
-        \subsection{Parallel Reduction Algorithms}
-        \subsection{Parallel DFT Algorithm}
-
-
-\chapter{Conclusion}
-{\hypersetup{linkcolor=black}
-\startcontents[chapters]
-\printcontents[chapters]{}{1}{}
-}
-    \section{RISC Core Review}
-    \section{Multi-core Review}
-    \section{Verification Review}
-    \section{Goal Review}
+%\chapter{RISC Core Design}
+%{\hypersetup{linkcolor=black}
+%\startcontents[chapters]
+%\printcontents[chapters]{}{1}{}
+%}
+%    \section{Design Goals}
+%    \section{Instruction Set Architecture}
+%        \subsection{Data Sizes}
+%        \subsection{Registers}
+%        \subsection{Endianness}
+%    \section{High Level Design}
+%    \section{Memory-mapped peripherals}
+%        \subsection{Wishbone Master Bus}
+%    \section{Optimisations}
+%        \subsection{Pipelining}
+%        \subsection{Stall Avoidance}
+%    \section{Core Verification}
+%    \section{Conclusion}
+%        
+%\chapter{Multi-core Communication Design}
+%{\hypersetup{linkcolor=black}
+%\startcontents[chapters]
+%\printcontents[chapters]{}{1}{}
+%}
+%    \section{Interconnect Goals}
+%    \section{Interconnect Layout}
+%        \subsection{Bus Design}
+%        \subsection{Core Pin Assignments}
+%    \section{Core-to-core Communication}
+%    \section{Shared-Resource Control}
+%        \subsection{Resource Scheduling}
+%    \section{Verification}
+%    \section{Conclusion}
+%
+%\chapter{Core Analysis}
+%{\hypersetup{linkcolor=black}
+%\startcontents[chapters]
+%\printcontents[chapters]{}{1}{}
+%}
+%    \section{FPGA Implementation Analysis}
+%        \subsection{Space/Resource Usage}
+%        \subsection{Static Timing Analysis}
+%    \section{Speed Analysis}
+%        \subsection{Parallel Reduction Algorithms}
+%        \subsection{Parallel DFT Algorithm}
+%
+%
+%\chapter{Conclusion}
+%{\hypersetup{linkcolor=black}
+%\startcontents[chapters]
+%\printcontents[chapters]{}{1}{}
+%}
+%    \section{RISC Core Review}
+%    \section{Multi-core Review}
+%    \section{Verification Review}
+%    \section{Goal Review}
 
 %
 %\chapter*{Preface}

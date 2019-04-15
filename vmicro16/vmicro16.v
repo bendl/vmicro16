@@ -316,43 +316,44 @@ module vmicro16_alu # (
         // input clk, // TODO: make clocked
 
         input      [OP_WIDTH-1:0]   op,
-        input      [DATA_WIDTH-1:0] d1, // rs1/dst
-        input      [DATA_WIDTH-1:0] d2, // rs2
-        output reg [DATA_WIDTH-1:0] q
+        input      [DATA_WIDTH-1:0] a, // rs1/dst
+        input      [DATA_WIDTH-1:0] b, // rs2
+        output reg [DATA_WIDTH-1:0] c
 );
         always @(*) case (op)
+                // branch/nop, output nothing
                 `VMICRO16_ALU_BR,
-                `VMICRO16_ALU_NOP:          q = 0;
-
+                `VMICRO16_ALU_NOP:          c = 0;
+                // load/store addresses (use value in rd2)
                 `VMICRO16_ALU_LW,
-                `VMICRO16_ALU_SW:           q = d2;
+                `VMICRO16_ALU_SW:           c = b;
+                // bitwise operations
+                `VMICRO16_ALU_BIT_OR:       c = a | b;
+                `VMICRO16_ALU_BIT_XOR:      c = a ^ b;
+                `VMICRO16_ALU_BIT_AND:      c = a & b;
+                `VMICRO16_ALU_BIT_NOT:      c = ~(b);
+                `VMICRO16_ALU_BIT_LSHFT:    c = a << b;
+                `VMICRO16_ALU_BIT_RSHFT:    c = a >> b;
 
-                `VMICRO16_ALU_BIT_OR:       q = d1 | d2;
-                `VMICRO16_ALU_BIT_XOR:      q = d1 ^ d2;
-                `VMICRO16_ALU_BIT_AND:      q = d1 & d2;
-                `VMICRO16_ALU_BIT_NOT:      q = ~(d2);
-                `VMICRO16_ALU_BIT_LSHFT:    q = d1 << d2;
-                `VMICRO16_ALU_BIT_RSHFT:    q = d1 >> d2;
+                `VMICRO16_ALU_MOV:          c = b;
+                `VMICRO16_ALU_MOVI:         c = b;
+                `VMICRO16_ALU_MOVI_L:       c = b;
 
-                `VMICRO16_ALU_MOV:          q = d2;
-                `VMICRO16_ALU_MOVI:         q = d2;
-                `VMICRO16_ALU_MOVI_L:       q = d2;
-
-                `VMICRO16_ALU_ARITH_UADD:   q = d1 + d2;
-                `VMICRO16_ALU_ARITH_USUB:   q = d1 - d2;
+                `VMICRO16_ALU_ARITH_UADD:   c = a + b;
+                `VMICRO16_ALU_ARITH_USUB:   c = a - b;
                 // TODO: ALU should have simm5 as input
-                `VMICRO16_ALU_ARITH_UADDI:  q = d1 + d2;
+                `VMICRO16_ALU_ARITH_UADDI:  c = a + b;
                 
-                `VMICRO16_ALU_ARITH_SADD:   q = $signed(d1) + $signed(d2);
-                `VMICRO16_ALU_ARITH_SSUB:   q = $signed(d1) - $signed(d2);
+                `VMICRO16_ALU_ARITH_SADD:   c = $signed(a) + $signed(b);
+                `VMICRO16_ALU_ARITH_SSUB:   c = $signed(a) - $signed(b);
                 // TODO: ALU should have simm5 as input
-                `VMICRO16_ALU_ARITH_SSUBI:  q = $signed(d1) + $signed(d2);
+                `VMICRO16_ALU_ARITH_SSUBI:  c = $signed(a) + $signed(b);
 
 
                 // TODO: Parameterise
                 default: begin
                         $display($time, "\tALU: unknown op: %h", op);
-                        q = {(DATA_WIDTH-1){1'bZZZZ}};
+                        c = {(DATA_WIDTH-1){1'bZZZZ}};
                 end
         endcase
 endmodule
@@ -567,12 +568,12 @@ module vmicro16_exme (
         output reg [15:0] exme_jmp_target
 );
         // ALU
-        wire [15:0] alu_q;
+        wire [15:0] alu_c;
         vmicro16_alu alu (
                 .op(idex_op), 
                 .d1(idex_rd1), 
                 .d2(idex_rd3), 
-                .q(alu_q)
+                .q(alu_c)
         );
 
         always @(posedge clk)
@@ -581,7 +582,7 @@ module vmicro16_exme (
                 exme_pc         <= idex_pc; // Only for simulation
                 // exme_d contains the result data value or 
                 //   address for LW/SW
-                exme_d          <= alu_q;
+                exme_d          <= alu_c;
                 exme_d2         <= idex_rd1;
                 // exme_rs contains the destination register for
                 //   the data value or memory after it's fetched

@@ -105,7 +105,11 @@ School of Electrical and Electronic Engineering
 \end{center}
 \end{titlepage}
 
+\newpage
+\chapter*{Abstract}
+\lipsum[1-3]
 
+\newpage
 \section*{Revision History}
 \begin{table}[h]
 \def\arraystretch{1.3}
@@ -121,10 +125,6 @@ School of Electrical and Electronic Engineering
     \end{tabularx}
     \caption{Document revisions.}
 \end{table}
-
-\newpage
-\chapter*{Abstract}
-\lipsum[1-3]
 
 \newpage
 \chapter*{Acknowledgements}
@@ -293,10 +293,12 @@ The project stages from Table \ref{tb:stages} are displayed below in a Gantt cha
 This section describes the hardware and software resources required to design and implement the project. 
 
 \subsection{Hardware Resources}
-The designed Verilog RISC core will be implemented and deployed to FPGAs.
+Core deliverable \ref{cd:vendor} requires the designed RISC core to be implemented and demonstrated on multiple FPGA devices.  Although my design should synthesise for physical IC implementation, due to high costs and length production times, it is not a primary development target.
+
+Due to having past experience with Xilinx FPGAs from my placement work and experience with Altera from university modules it was decided to target the Xilinx Spartan 6 XC6SLX9 and the Altera Cyclone V.
 
 \subsubsection{Terasic DE1-SoC Development Board}
-
+The Terasic DE1-SoC development board features a large Cyclone V FPGA and many peripherals, such as seven-segment displays, 64 MB SDRAM, ADCs, and buttons and switches, which will aid demonstration of the project. The development board is available through the university so the cost is negligible. Figure \ref{fig:de1soc} shows the peripherals (green) available to the FPGA.
 
 \begin{figure}[h]
 \centering 
@@ -306,6 +308,7 @@ The designed Verilog RISC core will be implemented and deployed to FPGAs.
 \end{figure}
 
 \subsubsection{Minispartan 6+ FPGA Development Board}
+The Minispartan 6+ is a hobbyist FGPA development board with fewer peripherals than the DE1-SoC. The board's simplicity will ease debugging. The board features a Xilinx Spartan 6 XC6LX9
 
 \begin{figure}[h]
 \centering 
@@ -318,6 +321,10 @@ Testing testing
 \subsection{Software Resources}
 \subsubsection{Xilinx ISE}
 \subsubsection{Intel Quartus}
+
+\section{Legal and Ethical Considerations}
+The RISC core is designed to be used as an academic research and educational tool to aid learning and understanding of RISC and multi-core machines.
+
 
 \chapter{Current Progress}
 {%\hypersetup{linkcolor=black}

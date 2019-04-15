@@ -3,7 +3,7 @@
 // TODO: Remove NOP by making a register write/read always 0
 `define VMICRO16_OP_NOP          5'b00000
 `define VMICRO16_OP_LW           5'b00001
-`define VMICRO16_OP_SW           5'b00001
+`define VMICRO16_OP_SW           5'b00010
 `define VMICRO16_OP_BIT          5'b00011
 `define VMICRO16_OP_BIT_OR       5'b00000
 `define VMICRO16_OP_BIT_XOR      5'b00001

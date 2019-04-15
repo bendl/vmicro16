@@ -35,7 +35,7 @@ module vmicro16_bram # (
                 // synchronous WRITE_FIRST (page 13)
                 if (mem_we) begin
                         mem[mem_addr] <= mem_in;
-                        $display($time, "\tbram: W mem[%h] <= %h", mem_addr, mem_in);
+                        $display($time, "\tMEM: W mem[%h] <= %h", mem_addr, mem_in);
                 end else begin
                         mem_out <= mem[mem_addr];
                 end
@@ -389,9 +389,9 @@ module vmicro16_ifid (
         mem_cache[12] = {`VMICRO16_OP_MOVI, 3'h6}; mem_cache[13] = { 8'h06 };
         mem_cache[14] = {`VMICRO16_OP_MOVI, 3'h7}; mem_cache[15] = { 8'h07 };
         mem_cache[16] = {`VMICRO16_OP_HALT, 3'h0}; mem_cache[17] = { 8'h00 };
-        */
+        //*/
         
-        
+        /*
         mem_cache[0]  = {`VMICRO16_OP_MOVI,    3'h0}; mem_cache[1]  = { 8'h00 };
         mem_cache[2]  = {`VMICRO16_OP_MOVI,    3'h1}; mem_cache[3]  = { -8'd02 };
         mem_cache[4]  = {`VMICRO16_OP_ARITH_U, 3'h0}; mem_cache[5]  = {3'h7, 1'b0, 4'h1};
@@ -403,7 +403,14 @@ module vmicro16_ifid (
         mem_cache[16] = {`VMICRO16_OP_NOP,     3'h0}; mem_cache[17] = {8'h0};
         mem_cache[18] = {`VMICRO16_OP_NOP,     3'h0}; mem_cache[19] = {8'h0};
         mem_cache[20] = {`VMICRO16_OP_HALT,    3'h0}; mem_cache[21] = {8'h00};
+        //*/
+
         
+        mem_cache[0]  = {`VMICRO16_OP_MOVI, 3'h0}; mem_cache[1]  = { 8'h7F };
+        mem_cache[2]  = {`VMICRO16_OP_MOVI, 3'h1}; mem_cache[3]  = { 8'h0A };
+        mem_cache[4]  = {`VMICRO16_OP_SW,   3'h0}; mem_cache[5]  = { 3'h01, 5'h03 };
+        mem_cache[6]  = {`VMICRO16_OP_HALT, 3'h0}; mem_cache[7]  = {8'h00};
+
         end
 
         reg [15:0] pc;
@@ -633,8 +640,8 @@ module vmicro16_mewb (
                         // Move previous stage regs into this stage
                         mewb_pc         <= exme_pc; // Only for simulation
                         
-                        if (exme_has_mem) mewb_d <= mem_out;
-                        else              mewb_d <= exme_d;
+                        if (exme_has_mem) mewb_d <= mem_out; // from mmu
+                        else              mewb_d <= exme_d;  // from alu
                         
                         mewb_d2         <= exme_d2;
                         mewb_rs1        <= exme_rs1;
@@ -646,11 +653,9 @@ module vmicro16_mewb (
                         mewb_has_mem_we  <= exme_has_mem_we;
                         
                         if (exme_has_mem) 
-                                if (exme_has_mem_we)
-                                        $display($time, "\tmmu: SW: RAM[%h] <= r[%h] (%h)",
-                                                exme_d, exme_rs1, exme_d2);
-                                else
-                                        $display($time, "\tmmu: LW: r[%h] <= RAM[%h]",
+                                // LW
+                                if (!exme_has_mem_we)
+                                        $display($time, "\tMEWB: LW: r[%h] <= mem[%h]",
                                                 exme_rs1, exme_d);
                 end
                 mewb_valid <= exme_valid && !jmping && mem_valid;

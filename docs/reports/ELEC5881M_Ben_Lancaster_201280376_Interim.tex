@@ -128,10 +128,7 @@ School of Electrical and Electronic Engineering
 
 \newpage
 \chapter*{Acknowledgements}
-I would like to thank my project supervisors Nigel Barlow and Serge Thill for their support and guidance throughout this project. 
-\\\\
-I would also like to thank James Spalding (Spirent Communications) and firmware team for their encouragement, ideas, and industrial sponsorship supporting this final project.
-
+I would like to thank my project supervisor Dr David Cowell for their support and guidance throughout this project.
 
 
 \chapter*{Declaration of Academic Integrity}
@@ -180,16 +177,24 @@ Date:	\today
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 }
-    \section{Single core vs. Multi-core vs. Many-core}
-    \section{Network-on-chip}
-        \subsection{OpenPiton}
-    \section{Summary}
+\noindent\\
+Testing
+
+\section{Single core vs. Multi-core vs. Many-core}
+\section{Network-on-chip}
+Network-on-chip (NoC) architectures implement on-chip communication mechanisms that are based on network communication  principles, such as routing, switching, and massive scalability.
+
+\subsection{OpenPiton}
+\section{Summary}
     
 \chapter{Project Overview}
 {%\hypersetup{linkcolor=black}
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 }
+\noindent\\
+This chapter discusses the the project's requirements, goals, risks, and structure.
+
 \section{Project Deliverables}
 The project's deliverables are split into two sections: core deliverables (CD) -- each deliverable must be satisfied for the project to be a minimum viable product (MVP), and extended deliverables (ED) -- deliverables that are not required for a MVP -- features that only improve upon an existing feature.
 
@@ -281,7 +286,7 @@ The project stages are shown in Table \ref{tb:stages}.
 \subsection{Timeline}
 The project stages from Table \ref{tb:stages} are displayed below in a Gantt chart.
 
-\begin{figure}[H]
+\begin{figure}[h]
 \centering
 \includegraphics[width=13cm]{../img/week1_gantt}
 \label{fig:arduino_record}
@@ -293,7 +298,7 @@ The project stages from Table \ref{tb:stages} are displayed below in a Gantt cha
 This section describes the hardware and software resources required to design and implement the project. 
 
 \subsection{Hardware Resources}
-Core deliverable \ref{cd:vendor} requires the designed RISC core to be implemented and demonstrated on multiple FPGA devices.  Although my design should synthesise for physical IC implementation, due to high costs and length production times, it is not a primary development target.
+Core deliverable \ref{cd:vendor} requires the designed RISC core to be implemented and demonstrated on multiple FPGA devices.  Although my design should synthesise for physical IC implementation, due to high costs and lengthy production times, it is not a primary development target.
 
 Due to having past experience with Xilinx FPGAs from my placement work and experience with Altera from university modules it was decided to target the Xilinx Spartan 6 XC6SLX9 and the Altera Cyclone V.
 
@@ -308,22 +313,33 @@ The Terasic DE1-SoC development board features a large Cyclone V FPGA and many p
 \end{figure}
 
 \subsubsection{Minispartan 6+ FPGA Development Board}
-The Minispartan 6+ is a hobbyist FGPA development board with fewer peripherals than the DE1-SoC. The board's simplicity will ease debugging. The board features a Xilinx Spartan 6 XC6LX9
+The Minispartan 6+ is a hobbyist FGPA development board with fewer peripherals than the DE1-SoC. The board's simplicity will ease debugging. The board features a Xilinx Spartan 6 XC6LX9 however it's simplicity and Xilinx's software suite will speed up development.
 
 \begin{figure}[h]
 \centering 
 \includegraphics[width=10cm]{../img/minispartan}
-\caption{Minispartan-6+ development board featuring the Xilinx Spartan 6 XC6SLX9. Image source: \cite{minispartan}.}
-\label{fig:de1soc}
+\caption{Minispartan-6+ development board featuring the Xilinx Spartan 6 XC6SLX9. Image source: \cite{scarabhardware}.}
+\label{fig:minispartan}
 \end{figure}
-Testing testing
 
 \subsection{Software Resources}
-\subsubsection{Xilinx ISE}
 \subsubsection{Intel Quartus}
+Intel Quartus Prime is a paid-for SoC, CPLD, and FPGA software suite targeting Intel's Stratix, Arria, and Cyclone based FPGAs. The university provides student licences which will be used via VPN.
+
+
+\subsubsection{Xilinx ISE Webpack}
+Xilinx ISE Webkpack is Xilinx's free software suite for FPGA development for Spartan 6 based FPGAs.
+Due to ISE's intuitive and fast work flow, most of the initial simulation and verification processes will be performed using ISE. This will greatly improve development times.
+
+\subsubsection{Verilator}
+Verilator is an open-source Verilog to C++ transpiler which provides a C++ interface to simulate Verilog modules and read/write values similar to a test bench. Verilator will be used for specific modules within the RISC core such as the ALU and decoder as Verilator is useful when performing exhaustive verification.
 
 \section{Legal and Ethical Considerations}
-The RISC core is designed to be used as an academic research and educational tool to aid learning and understanding of RISC and multi-core machines.
+The RISC core is designed to be used as an academic research and educational tool to aid learning and understanding of RISC and multi-core machines. It should not be use for roles where mission critical or safety is a factor. 
+
+The processor does not provide any memory protection features and any software running on the processor has full access to all memory.
+
+The processor does not store/track/predict software instructions. The processor uses pipelining techniques to improve performance which results in future instructions entering the pipeline even if the software's logical sequence does not include said instructions. This could result in security vulnerabilities similar to Intel's Spectre vulnerability \cite{kocher2018spectre}.
 
 
 \chapter{Current Progress}
@@ -407,14 +423,14 @@ The extended deliverable \ref{ed:ipc}, to provide atleast 1 instructions per clo
 \centering 
 \includegraphics[width=10cm]{../img/stall}
 \caption{Pipeline stall detection logic. }
-\label{fig:risc}
+\label{fig:stall}
 \end{figure}
 
 \subsubsection{Memory Management Unit}
 It was decided to use a memory management unit (MMU) to make it easier and extensible to communicate with external peripherals or additional registers. This method would transparently use the existing \verb|LW|/\verb|SW| instructions which removes the requirement for a unique instruction for each peripheral. 
 
 \subsubsection{Proposed Memory Mapped Addresses}
-The proposed memory mapped adresses for each system and peripheral are listed below.
+The proposed memory mapped addresses for each system and peripheral are listed below.
 
 \begin{table}[h]
     \small
@@ -436,7 +452,7 @@ The proposed memory mapped adresses for each system and peripheral are listed be
     \\ \hline 
     \end{tabularx}
     \caption{Project stages throughout the life cycle of the project.}
-    \label{tb:stages}
+    \label{tb:mmu}
 \end{table}
 
 \subsubsection{ALU Design}
@@ -496,6 +512,74 @@ will not return the previously stored value. In addition, because of the target 
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 }
+\noindent\\
+This chapter discusses planned future work 
+
+\section{Project Status}
+
+\begin{table}[h]
+    \small
+    \begin{tabularx}{\textwidth}{|l|l|l|l|X|}
+    \hline
+    Stage & Title & Start Date & Core & Status
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    1.0 & Research & Feb 04 & x & Completed
+    \\ \hline
+    1.1 & Requirement gathering/review & Feb 11 & x & Completed
+	\\ \hline
+    1.1 & Processor specification, architecture, ISA & Feb 18 & x & Completed
+	\\ \hline
+    1.2 & Stage/Time Allocation Planning & Feb 25 & x & Completed
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    2.1 & Decoder, Register Set, impl \& integration & Feb 25 & x & Completed
+	\\ \hline
+    2.2 & Register set impl \& integration & Mar 04 & x & Completed
+	\\ \hline
+    2.3 & Local memory impl \& integration & Mar 11 & x & Completed
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    3.1 & Memory mapped register layout \& impl & Apr 01 &  & On-going
+	\\ \hline
+    3.2 & Wishbone peripheral bus connected to MMU & Apr 081 &  & On-going
+	\\ \hline
+    3.3 & Pipelined implementation and verification & Apr 15 &  & On-going
+	\\ \hline
+    3.4 & Cache memory design \& impl & Apr 22 &  & Not planned
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    4.1 & Multi-core communication interface & TBD & x & Planned
+	\\ \hline
+    4.2 & Shared-memory controller & TBD & x &Planned
+	\\ \hline
+    4.3 & Scalable multi-core interface (10s of cores) & TBD & x & Planned
+	\\ \hline
+    4.4 & Multi-core example program (reduction) & TBD & x & Planned
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    5.1 & SPI-FPGA interface for OTG programming & TBD &  & Unknown
+	\\ \hline
+    5.2 & FPGA-PC interfacing & TBD &  & Unknown
+	\\ \hline
+    5.3 & FPGA-PC debugging (instruction breakpoints) & TBD & & Unknown
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    6.1 & Compiler backend for vmicro16 & TBD &  & Unknown
+	\\ \hline
+    6.2 & Compiler support for multi-core codegen & TBD &  & Unknown 
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    7.1 & Wishbone peripherals for demo & TBD & x & Planned
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    8.1 & Final Report & TBD & x & Planned
+	\\ \hline    \end{tabularx}
+    \caption{Project stages throughout the life cycle of the project.}
+    \label{tb:stages}
+\end{table}
+
+\subsection{Updated Project Time Line}
+
+\begin{figure}[h]
+\centering 
+\includegraphics[width=12cm]{../img/week2_gantt}
+\caption{Updated project time gantt chart showing time allocations for stage 4.}
+\label{fig:week2_gantt}
+\end{figure}
+
 \section{Multi-core Functionality}
     \section{Interconnect Goals}
     \section{Interconnect Layout}

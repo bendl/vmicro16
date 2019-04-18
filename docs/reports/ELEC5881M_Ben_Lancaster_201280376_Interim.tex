@@ -105,9 +105,9 @@ School of Electrical and Electronic Engineering
 \end{center}
 \end{titlepage}
 
-\newpage
-\chapter*{Abstract}
-\lipsum[1-3]
+%\newpage
+%\chapter*{Abstract}
+%\lipsum[1-3]
 
 \newpage
 \section*{Revision History}
@@ -126,9 +126,9 @@ School of Electrical and Electronic Engineering
     \caption{Document revisions.}
 \end{table}
 
-\newpage
-\chapter*{Acknowledgements}
-I would like to thank my project supervisor Dr David Cowell for their support and guidance throughout this project.
+%\newpage
+%\chapter*{Acknowledgements}
+%I would like to thank my project supervisor Dr David Cowell for their support and guidance throughout this project.
 
 
 \chapter*{Declaration of Academic Integrity}
@@ -153,24 +153,30 @@ Date:	\today
 \tableofcontents
 %\listoffigures
 %\listoftables}
-\newpage
-
-\vspace{1cm}
-\cite{openpiton}
-\cite{satish2009designing}
-\cite{binet2010harnessing}
-\bibliography{refs}
-\newpage
 %TC:endignore
 
+\newpage
 \chapter{Introduction}
 {%\hypersetup{linkcolor=black}
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 }
-    \section{Why Multi-core?}
-    \section{Why RISC?}
-    \section{Why FPGA?}
+
+\noindent\\
+Moore's Law states that the number of transistors in a chip will double every 2 years \cite{}. CPU designers would utilize the  additional transistors to add more pipeline stages in the processor to reduce the propagation delay \cite{}. This would allow the processor to be run at higher clock frequencies as the logic between pipeline stages is reduced. The faster clock frequency would result in computational performance because more instructions could be executed in a period of time.
+
+The size of transistors have been decreasing \cite{} and today can be manufactured in sub-10 nanometer range. However, the extremely small transistor size increases electrical leakage and other negative effects resulting in unreliability and potential damage to the transistor \cite{}.  The high transistor count produces large amounts of heat and requires increasing power to supply the chip. These trade-offs are currently managed by reducing the input voltage, utilising complex cooling techniques, and reducing clock frequency. These factors limit the performance of the chip significantly.
+These are contributing factors to Moore's Law \textit{slowing} down.
+
+The capacity limit of transitional planar transistors is approaching and so in order for performance increases to continue, other approaches such as alternate transistor technologies like Multigate transistors \cite{subramanian2010multiple}, software and hardware optimisations, and multi-processor architectures are employed.
+
+\section{Why Multi-core?}
+This report will focus on the latter approach: to design, implement, and verify a new multi-core RISC processor, with an emphasis on multi-core communication techniques.
+
+ 
+
+\section{Why RISC?}
+\section{Why FPGA?}
     
 \chapter{Background}
 {%\hypersetup{linkcolor=black}
@@ -508,14 +514,16 @@ will not return the previously stored value. In addition, because of the target 
 
 
 \chapter{Future Progress}
+
 {\hypersetup{linkcolor=black}
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 }
 \noindent\\
-This chapter discusses planned future work 
+This chapter discusses planned future work
 
 \section{Project Status}
+The project has progresses at an acceptable speed
 
 \begin{table}[h]
     \small
@@ -568,7 +576,7 @@ This chapter discusses planned future work
     8.1 & Final Report & TBD & x & Planned
 	\\ \hline    \end{tabularx}
     \caption{Project stages throughout the life cycle of the project.}
-    \label{tb:stages}
+    \label{tb:future_stages}
 \end{table}
 
 \subsection{Updated Project Time Line}
@@ -590,6 +598,14 @@ This chapter discusses planned future work
         \subsection{Resource Scheduling}
     \section{Verification}
     \section{Conclusion}
+    
+
+\newpage
+\cite{openpiton}
+\cite{satish2009designing}
+\cite{binet2010harnessing}
+\bibliography{refs}
+\addcontentsline{toc}{chapter}{References}
 
 %\chapter{RISC Core Design}
 %{\hypersetup{linkcolor=black}

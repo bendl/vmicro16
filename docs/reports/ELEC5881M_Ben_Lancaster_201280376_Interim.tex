@@ -109,21 +109,31 @@ School of Electrical and Electronic Engineering
 %\chapter*{Abstract}
 %\lipsum[1-3]
 
+\begin{abstract}
+This interim report details the 4-month progress on a project to design, implement, and verify, a multi-core FPGA RISC processor. The project has been split into two stages: firstly to build a functional single-core RISC processor, and then secondly to add multi-core principles and functionality to it.
+
+Current multi-core and network-on-chip communication methods have been discussed and how they could be included in this multi-core RISC design. To-date, a 16-bit instruction set architecture has been designed featuring common load/store instructions, comparison, and bitwise operations. A single-core processor has been implemented in Verilog and verified using simulations/test benches running various simple programs.
+
+Future tasks have been planned and will focus on the second stage of the project. Work will start on designing multi-core communication interfaces and bringing them to the single-core processor.
+
+
+\end{abstract}
+
 \newpage
 \section*{Revision History}
 \begin{table}[h]
 \def\arraystretch{1.3}
-    \begin{tabularx}{\textwidth}{|l|l|X|}
-    \hline
-    Date & Version & Changes \\
-    %\arrayrulecolor{\color{red}}
-	\specialrule{2pt}{-2pt}{0pt}
-	10/04/2019 & 2.01 & Add introduction. \\ \hline
-	05/04/2019 & 2.01 & Fix processor RTL diagram. \\ \hline
-	04/04/2019 & 2.00 & Initial processor RTL diagram. \\ \hline
-	01/04/2019 & 1.00 & Initial section outline. \\ \hline
-    \end{tabularx}
-    \caption{Document revisions.}
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+Date & Version & Changes \\
+%\arrayrulecolor{\color{red}}
+\specialrule{2pt}{-2pt}{0pt}
+10/04/2019 & 2.01 & Add introduction. \\ \hline
+05/04/2019 & 2.01 & Fix processor RTL diagram. \\ \hline
+04/04/2019 & 2.00 & Initial processor RTL diagram. \\ \hline
+01/04/2019 & 1.00 & Initial section outline. \\ \hline
+\end{tabularx}
+\caption{Document revisions.}
 \end{table}
 
 %\newpage
@@ -163,30 +173,42 @@ Date: \today
 }
 
 \noindent\\
-Moore's Law states that the number of transistors in a chip will double every 2 years \cite{}. CPU designers would utilize the  additional transistors to add more pipeline stages in the processor to reduce the propagation delay \cite{}. This would allow the processor to be run at higher clock frequencies as the logic between pipeline stages is reduced. The faster clock frequency would result in computational performance because more instructions could be executed in a period of time.
+This project will detail the design, implementation, and verification, of a new multi-core RISC processor aimed at FPGA devices. This project was chosen due to my interest in processor design, in which I have only previously designed single-core RISC processors and wish to extend this knowledge to gain a basic understanding of multi-core communication, design considerations, and the limitations of parallelism first hand.
 
-The size of transistors have been decreasing \cite{} and today can be manufactured in sub-10 nanometer range. However, the extremely small transistor size increases electrical leakage and other negative effects resulting in unreliability and potential damage to the transistor \cite{}.  The high transistor count produces large amounts of heat and requires increasing power to supply the chip. These trade-offs are currently managed by reducing the input voltage, utilising complex cooling techniques, and reducing clock frequency. These factors limit the performance of the chip significantly.
-These are contributing factors to Moore's Law \textit{slowing} down.
-
-The capacity limit of transitional planar transistors is approaching and so in order for performance increases to continue, other approaches such as alternate transistor technologies like Multigate transistors \cite{subramanian2010multiple}, software and hardware optimisations, and multi-processor architectures are employed.
+I will use this opportunity to further develop my knowledge of FPGA and processor design by implementing, designing, and verifying, a multi-core RISC processor from scratch, including the design of a communication interface between multiple cores.
 
 \section{Why Multi-core?}
-This report will focus on the latter approach: to design, implement, and verify a new multi-core RISC processor, with an emphasis on multi-core communication techniques.
 
- 
+Moore's Law states that the number of transistors in a chip will double every 2 years \cite{}. CPU designers would utilize the  additional transistors to add more pipeline stages in the processor to reduce the propagation delay \cite{} which would allow for higher clock frequencies. 
+
+%This would allow the processor to be run at higher clock frequencies as the logic between pipeline stages is reduced. The faster clock frequency would result in computational performance because more instructions could be executed in a period of time.
+
+The size of transistors have been decreasing \cite{} and today can be manufactured in sub-10 nanometer range. However, the extremely small transistor size increases electrical leakage and other negative effects resulting in unreliability and potential damage to the transistor \cite{}.  The high transistor count produces large amounts of heat and requires increasing power to supply the chip. These trade-offs are currently managed by reducing the input voltage, utilising complex cooling techniques, and reducing clock frequency. These factors limit the performance of the chip significantly.
+These are contributing factors to Moore's Law \textit{slowing} down. 
+The capacity limit of the current-generation planar transistors is approaching and so in order for performance increases to continue, other approaches such as alternate transistor technologies like Multigate transistors \cite{subramanian2010multiple}, software and hardware optimisations, and multi-processor architectures are employed.
+
+This report will focus on the latter: to produce a small multi-core processor that can utilise software-based parallelism to gain performance benefits, compared to a larger single-core design.
 
 \section{Why RISC?}
-RISC architectures 
+RISC architectures feature simpler and fewer instructions compared to CISC, which emphasises instructions that perform larger tasks. A single CISC instruction might be performed with multiple RISC instructions. Because of the fewer and simpler instructions, RISC machines rely heavily on software optimisations for performance.
+
+RISC instruction sets are based on load/store architectures, where most instructions are either register-to-register or memory reading and writing \cite{flynn1995computer}. This constraint greatly reduces complexity.
+
+RISC architectures are easier to design implement, especially for beginners, due to their simpler instructions that share the same pipeline, compared to CISC where there may be different pipeline for each instruction, which would greatly consume FPGA resources.
 
 \section{Why FPGA?}
-    
+Field programmable gate arrays (FPGA) are a great choice for prototyping digital logic designs due to their programmable nature and quick development times. 
+
+FPGAs, however, may not be suitable for prototyping all register-transistor logic (RTL) projects. Larger RTL projects, such as large commercial processors, may greatly exceed the logic cell resources available in today's high-end FPGA devices and may only be prototyped through silicon fabrication, which can be expensive. This restriction will not be problem 
+
 \chapter{Background}
 {%\hypersetup{linkcolor=black}
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 }
 \noindent\\
-Testing
+
+
 
 \section{Single core vs. Multi-core vs. Many-core}
 \section{Network-on-chip}
@@ -530,7 +552,11 @@ will not return the previously stored value. In addition, because of the target 
 This chapter discusses planned future work
 
 \section{Project Status}
-The project has progresses at an acceptable speed
+Four months have passed since the start of the project. 
+
+
+\subsection{Updated Project Time Line}
+
 
 \begin{table}[h]
     \small
@@ -586,31 +612,30 @@ The project has progresses at an acceptable speed
     \label{tb:future_stages}
 \end{table}
 
-\subsection{Updated Project Time Line}
-
-\begin{figure}[h]
+\begin{figure}[H]
 \centering 
 \includegraphics[width=12cm]{../img/week2_gantt}
 \caption{Updated project time gantt chart showing time allocations for stage 4.}
 \label{fig:week2_gantt}
 \end{figure}
 
-\section{Multi-core Functionality}
-    \section{Interconnect Goals}
-    \section{Interconnect Layout}
-        \subsection{Bus Design}
-        \subsection{Core Pin Assignments}
-    \section{Core-to-core Communication}
-    \section{Shared-Resource Control}
-        \subsection{Resource Scheduling}
-    \section{Verification}
-    \section{Conclusion}
+%\section{Multi-core Functionality}
+%\section{Interconnect Goals}
+%\section{Interconnect Layout}
+%\subsection{Bus Design}
+%\subsection{Core Pin Assignments}
+%\section{Core-to-core Communication}
+%\section{Shared-Resource Control}
+%\subsection{Resource Scheduling}
+%\section{Verification}
+%\section{Conclusion}
     
 
-\newpage
 \cite{openpiton}
 \cite{satish2009designing}
 \cite{binet2010harnessing}
+\newpage
+\newpage
 \bibliography{refs}
 \addcontentsline{toc}{chapter}{References}
 

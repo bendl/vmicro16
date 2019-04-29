@@ -198,7 +198,9 @@ RISC architectures are easier to design implement, especially for beginners, due
 \section{Why FPGA?}
 Field programmable gate arrays (FPGA) are a great choice for prototyping digital logic designs due to their programmable nature and quick development times. 
 
-FPGAs, however, may not be suitable for prototyping all register-transistor logic (RTL) projects. Larger RTL projects, such as large commercial processors, may greatly exceed the logic cell resources available in today's high-end FPGA devices and may only be prototyped through silicon fabrication, which can be expensive. This restriction will not be problem 
+My previous experience with FPGAs in previous project will reduce risk and learning times and allow for more time to be spent on adding and extending features (discusses further in section \ref{sect:goals}).
+
+FPGAs, however, may not be suitable for prototyping all register-transistor logic (RTL) projects. Larger RTL projects, such as large commercial processors, may greatly exceed the logic cell resources available in today's high-end FPGA devices and may only be prototyped through silicon fabrication, which can be expensive. This resource limitation will not be problem as the project aims to produce a small and minimal design specifically for learning about multi-core architectures.
 
 \chapter{Background}
 {%\hypersetup{linkcolor=black}
@@ -207,8 +209,13 @@ FPGAs, however, may not be suitable for prototyping all register-transistor logi
 }
 
 \section{Parallelism and Amdahl's Law}
+Computational parallelism is the process of performing multiple tasks simultaneously.
+
+Concurrency differs from parallelism in that only a single process can be running at any time and requires a scheduler to switch the active process. This project will not cover concurrency.
+
 In serial software programs there may exist many potential opportunities for parallelism. 
 
+\textit{Speedup} is a term used to describe the potential time improvements to perform an algorithm.
 
 \section{Single core vs. Multi-core vs. Many-core}
 \section{Network-on-chip}
@@ -220,8 +227,6 @@ Network-on-chip (NoC) architectures implement on-chip communication mechanisms t
 The "critical path" in an algorithm is described as the longest sequence of instructions that must be performed sequentially due to data dependencies within the instruction sequence  \cite{bohme2014characterizing}.
 
 Additional problems include access to shared resources and memory coherency in distributed systems. These will be discussed.
-
-
 
 \subsubsection{Data Dependencies}
 Data dependencies are a critical obstacle in parallelising serial programs.
@@ -267,6 +272,7 @@ function no_dependency(a, b):
 This chapter discusses the the project's requirements, goals, risks, and structure.
 
 \section{Project Deliverables}
+\label{sect:goals}
 The project's deliverables are split into two sections: core deliverables (CD) -- each deliverable must be satisfied for the project to be a minimum viable product (MVP), and extended deliverables (ED) -- deliverables that are not required for a MVP -- features that only improve upon an existing feature.
 
 \subsection{Core Deliverables (CD)}

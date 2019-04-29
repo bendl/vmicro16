@@ -190,8 +190,7 @@ The capacity limit of the current-generation planar transistors is approaching a
 This report will focus on the latter: to produce a small multi-core processor that can utilise software-based parallelism to gain performance benefits, compared to a larger single-core design.
 
 \section{Why RISC?}
-RISC architectures feature simpler and fewer instructions compared to CISC, which emphasises instructions that perform larger tasks. A single CISC instruction might be performed with multiple RISC instructions. Because of the fewer and simpler instructions, RISC machines rely heavily on software optimisations for performance.
-
+RISC architectures feature simpler and fewer instructions compared to CISC, which emphasises instructions that perform larger tasks. A single CISC instruction might be performed with multiple RISC instructions. Because of the fewer and simpler instructions, RISC machines rely heavily on software optimisations for performance. 
 RISC instruction sets are based on load/store architectures, where most instructions are either register-to-register or memory reading and writing \cite{flynn1995computer}. This constraint greatly reduces complexity.
 
 RISC architectures are easier to design implement, especially for beginners, due to their simpler instructions that share the same pipeline, compared to CISC where there may be different pipeline for each instruction, which would greatly consume FPGA resources.
@@ -206,8 +205,9 @@ FPGAs, however, may not be suitable for prototyping all register-transistor logi
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 }
-\noindent\\
 
+\section{Parallelism and Amdahl's Law}
+In serial software programs there may exist many potential opportunities for parallelism. 
 
 
 \section{Single core vs. Multi-core vs. Many-core}
@@ -217,6 +217,42 @@ Network-on-chip (NoC) architectures implement on-chip communication mechanisms t
 \subsection{OpenPiton}
 
 \subsection{Concurrency Problems}
+The "critical path" in an algorithm is described as the longest sequence of instructions that must be performed sequentially due to data dependencies within the instruction sequence  \cite{bohme2014characterizing}.
+
+Additional problems include access to shared resources and memory coherency in distributed systems. These will be discussed.
+
+
+
+\subsubsection{Data Dependencies}
+Data dependencies are a critical obstacle in parallelising serial programs.
+
+
+\begin{minipage}{0.45\textwidth}
+\begin{figure}[H]
+\centering
+\begin{minted}[linenos]{c}
+function has_dependency(a, b):
+    x = a + b
+    y = x + b
+\end{minted}
+\caption{Sequence of instructions where a data dependency exists between instructions 2 and 3 -- Instruction 3 must wait for variable x to be ready.}
+\label{fig:}
+\end{figure}
+\end{minipage}
+\begin{minipage}{0.05\textwidth}\hfill\end{minipage}
+\begin{minipage}{0.45\textwidth}
+\begin{figure}[H]
+\centering
+\begin{minted}[linenos]{c}
+function no_dependency(a, b):
+    x = a + b
+    y = b + 2
+\end{minted}
+\caption{Sequence of instructions with no data dependencies. This sequence can be ran in parallel using multiple processing cores.}
+\label{fig:}
+\end{figure}
+\end{minipage}
+
 \subsubsection{Access to shared memory}
 \subsubsection{Memory Coherency}
 
@@ -438,12 +474,6 @@ The RISC core design is a traditional 5-stage processor (fetch, decode, execute,
 To satisfy \ref{cd:vendor}, the Verilog code will be self-contained in a single file. This reduces the hierarchical complexity and eases cross-vendor project set-up as only a single file is required to be included. 
 A disadvantage with this single file approach is that some external Verilog verification tools that I plan to use, such as Verilator, do not currently support multiple Verilog modules (due to an unfixed bug) within a single file. 
 
-\subsubsection{Instruction and Data Memory}
-The design uses separate instruction and data memories similar to a Harvard architecture computer. This architecture was chosen due to it's simplicity to implement.
-
-\subsubsection{Register File}
-To support design goal \ref{isa:regs}, the register set features a dual-port read and single-port write. This allows instructions to read 2 registers simultaneously for any instruction. The single-port write allows the instruction output to be written to the register file. 
-
 \begin{figure}[H]
 \centering 
 \includegraphics[width=10cm]{../img/risc}
@@ -451,10 +481,22 @@ To support design goal \ref{isa:regs}, the register set features a dual-port rea
 \label{fig:risc}
 \end{figure}
 
-\subsubsection{Pipelining}
-The extended deliverable \ref{ed:ipc}, to provide atleast 1 instructions per clock
+\subsubsection{Instruction and Data Memory}
+The design uses separate instruction and data memories similar to a Harvard architecture computer. This architecture was chosen due because I find it easier to implement.
 
-\begin{figure}[H]
+\subsubsection{Register File}
+To support design goal \ref{isa:regs}, the register set features a dual-port read and single-port write. This allows instructions to read 2 registers simultaneously for any instruction. The single-port write allows the instruction output to be written to the register file. 
+
+\subsubsection{Pipelining}
+The extended deliverable \ref{ed:ipc}, to provide atleast 1 instructions per clock. Previous processor designs of mine have all required multiple clocks per instruction as it is a lot easier to implement. Modern processors today can output 1 or more instructions per clock through the use of instruction pipelining. This technique increases throughput of the processor by performing each stage in parallel. In this pipeline, instructions still travel through each stage in the same order, the difference is that the  fetch stage does not wait for the final stage to complete and so fetches a new instruction every clock cycle, resulting in each stage operating on new data every clock cycle. To extend my knowledge in CPU pipelining, extended deliverable \ref{ed:ipc} is proposed.
+
+Instruction pipelining is harder to implement as data and control hazards can occur. Data hazards occur when instructions  are dependant on the output of a previous instruction that has not left the pipeline, for example a register dependency. Methods to detect this hazard include checking if the register selects in the decode stage are present in future stages of the pipeline. If this check is true, then the current instruction depends on an instruction in the pipeline, and the processor can  either wait until the dependant instruction has left the pipeline (i.e. has been written back to registers) or insert a \verb|NOP| that will produce a \textit{bubble} in the pipeline allowing the final stage to execute before the dependant instruction continues.
+
+Control hazards occur when conditional or interrupt branching instructions are in the pipeline and their result has not been calculated yet. This results in preceding instructions entering the pipeline when they should not be executed due to the conditional branch. To detect this hazard, for instructions that perform branching or conditional execution, a global flag is set. When the outcome of the conditional check is performed, stages after decode are allowed to commit their results. Fortunately this technique is fairly simple implement.
+
+This project's RISC processor implements these two hazard detectors and solutions to resolve them. The data hazard resolver implements a \verb|valid| signal that is passed forward from stage to stage. This signal is low when a hazard has occured and indicates that receiving stage should not operate on the previous stage's data. Each stage's \verb|valid| signal is dependant on the previous stages \verb|valid| signal. This allows future stages to stall when a hazard is detected in previous stages. A diagram of the implementation of these hazards in the processor is shown in Figure \ref{fig:stall}.
+
+\begin{figure}[h]
 \centering 
 \includegraphics[width=10cm]{../img/stall}
 \caption{Pipeline stall detection logic. }

@@ -128,7 +128,7 @@ Future tasks have been planned and will focus on the second stage of the project
 Date & Version & Changes \\
 %\arrayrulecolor{\color{red}}
 \specialrule{2pt}{-2pt}{0pt}
-10/04/2019 & 2.01 & Add introduction. \\ \hline
+10/04/2019 & 2.02 & Update future stages. \\ \hline
 05/04/2019 & 2.01 & Fix processor RTL diagram. \\ \hline
 04/04/2019 & 2.00 & Initial processor RTL diagram. \\ \hline
 01/04/2019 & 1.00 & Initial section outline. \\ \hline
@@ -198,7 +198,7 @@ RISC architectures are easier to design implement, especially for beginners, due
 \section{Why FPGA?}
 Field programmable gate arrays (FPGA) are a great choice for prototyping digital logic designs due to their programmable nature and quick development times. 
 
-My previous experience with FPGAs in previous project will reduce risk and learning times and allow for more time to be spent on adding and extending features (discusses further in section \ref{sect:goals}).
+My previous experience with FPGAs in previous projects will reduce risk and learning times and allow for more time to be spent on adding and extending features (discusses further in section \ref{sect:goals}).
 
 FPGAs, however, may not be suitable for prototyping all register-transistor logic (RTL) projects. Larger RTL projects, such as large commercial processors, may greatly exceed the logic cell resources available in today's high-end FPGA devices and may only be prototyped through silicon fabrication, which can be expensive. This resource limitation will not be problem as the project aims to produce a small and minimal design specifically for learning about multi-core architectures.
 
@@ -217,18 +217,42 @@ In serial software programs there may exist many potential opportunities for par
 
 \textit{Speedup} is a term used to describe the potential time improvements to perform an algorithm.
 
-\section{Single core vs. Multi-core vs. Many-core}
-\section{Network-on-chip}
-Network-on-chip (NoC) architectures implement on-chip communication mechanisms that are based on network communication  principles, such as routing, switching, and massive scalability.
+\section{Loosely and Tightly Coupled Processors}
+Multiprocessor systems can be generalised into two architectures: loosely and tightly coupled, and each architecture has advantages and disadvantages. 
+In loosely coupled systems, each processing node is self-contained -- each node has it's own dedicated memory and IO modules. Communication between nodes is performed over a \textit{Message Transfer System (MTS)} \cite{preeti_aritra_2017}  in a master-slave control architecture.
 
-\subsection{OpenPiton}
+Scalability in loosely coupled systems is generally easier to implement as each node can simply be appended to the shared MTS interface without large modifications to the rest of the system. Scalability is an important concern in this project as I wish to test the developed solution with a range of processing nodes.
 
-\subsection{Concurrency Problems}
+As loosely coupled system's nodes feature there own memory and IO modules, they generally perform better in cases where interaction between nodes is not prominent -- each node can store a separate part of the software program in it's memory module allowing simultaneous executing of the program.
+
+In scenarios where inter-node communication is prominent however, access to the MTS interface must be scheduled to avoid access conflicts which introduces delays and idle times in the software programs execution, resulting in lower throughput. Figure \ref{fig:loose} shows a general layout of a loosely coupled multiprocessor system.
+
+Tightly coupled systems feature processing nodes that do not have their own dedicated memory or IO modules -- each node is directly connected to a shared memory module using a dedicated  port. In scenarios where inter-node communication is prominent, tightly coupled systems are generally better suited as nodes are directly connected to a shared memory and do not need to wait to use a shared bus.
+
+\begin{minipage}{0.45\textwidth}
+\begin{figure}[H]
+\centering
+\includegraphics[width=8cm]{../img/loose}
+\caption{A loosely coupled multiprocessor system. Each node features it's own memory and IO modules and uses a Message Transfer System to perform inter-node communication. Image source: \cite{preeti_aritra_2017}.}
+\label{fig:loose}
+\end{figure}
+\end{minipage}
+\begin{minipage}{0.05\textwidth}\hfill\end{minipage}
+\begin{minipage}{0.45\textwidth}
+\begin{figure}[H]
+\centering
+\includegraphics[width=8cm]{../img/tight}
+\caption{A tightly coupled multiprocessor system. Nodes are directly connected to memory and IO modules. Image source: \cite{preeti_aritra_2017}.}
+\label{fig:tight}
+\end{figure}
+\end{minipage}
+
+\section{Parallel Problems}
 The "critical path" in an algorithm is described as the longest sequence of instructions that must be performed sequentially due to data dependencies within the instruction sequence  \cite{bohme2014characterizing}.
 
 Additional problems include access to shared resources and memory coherency in distributed systems. These will be discussed.
 
-\subsubsection{Data Dependencies}
+\subsection{Data Dependencies}
 Data dependencies are a critical obstacle in parallelising serial programs.
 
 
@@ -258,8 +282,13 @@ function no_dependency(a, b):
 \end{figure}
 \end{minipage}
 
-\subsubsection{Access to shared memory}
-\subsubsection{Memory Coherency}
+\subsection{Access to shared memory}
+\subsection{Memory Coherency}
+
+
+\section{Network-on-chip}
+Network-on-chip (NoC) architectures implement on-chip communication mechanisms that are based on network communication  principles, such as routing, switching, and massive scalability.
+
 
 \section{Summary}
     
@@ -269,7 +298,7 @@ function no_dependency(a, b):
 \printcontents[chapters]{}{1}{}
 }
 \noindent\\
-This chapter discusses the the project's requirements, goals, risks, and structure.
+This chapter discusses the the project's requirements, goals, and structure.
 
 \section{Project Deliverables}
 \label{sect:goals}
@@ -394,11 +423,10 @@ The project stages from Table \ref{tb:stages} are displayed below in a Gantt cha
 
 
 \section{Resources}
-This section describes the hardware and software resources required to design and implement the project. 
+This section describes the hardware and software resources required to fulfil the project. 
 
 \subsection{Hardware Resources}
-Core deliverable \ref{cd:vendor} requires the designed RISC core to be implemented and demonstrated on multiple FPGA devices.  Although my design should synthesise for physical IC implementation, due to high costs and lengthy production times, it is not a primary development target.
-
+Core deliverable \ref{cd:vendor} requires the designed RISC core to be implemented and demonstrated on multiple FPGA devices.  Although my design should synthesise for physical IC implementation, due to high costs and lengthy production times, it is not a primary development target. 
 Due to having past experience with Xilinx FPGAs from my placement work and experience with Altera from university modules it was decided to target the Xilinx Spartan 6 XC6SLX9 and the Altera Cyclone V.
 
 \subsubsection{Terasic DE1-SoC Development Board}
@@ -412,12 +440,12 @@ The Terasic DE1-SoC development board features a large Cyclone V FPGA and many p
 \end{figure}
 
 \subsubsection{Minispartan 6+ FPGA Development Board}
-The Minispartan 6+ is a hobbyist FGPA development board with fewer peripherals than the DE1-SoC. The board's simplicity will ease debugging. The board features a Xilinx Spartan 6 XC6LX9 however it's simplicity and Xilinx's software suite will speed up development.
+The Minispartan 6+ is a hobbyist FGPA development board with fewer peripherals than the DE1-SoC. The board features a Xilinx Spartan 6 XC6LX9 which has far fewer resources than the DE1-SoC's Cyclone V however it's simplicity and my familiarity with  Xilinx's software suite will speed up development. The development board is shown in Figure \ref{fig:minispartan}.
 
 \begin{figure}[h]
 \centering 
 \includegraphics[width=10cm]{../img/minispartan}
-\caption{Minispartan-6+ development board featuring the Xilinx Spartan 6 XC6SLX9. Image source: \cite{scarabhardware}.}
+\caption{Minispartan-6+ development board featuring the Xilinx Spartan 6 XC6SLX9. Note that the XC6SLX9 and XC6SLX25 FPGAs share the same board. Image source: \cite{scarabhardware}.}
 \label{fig:minispartan}
 \end{figure}
 
@@ -438,7 +466,7 @@ The RISC core is designed to be used as an academic research and educational too
 
 The processor does not provide any memory protection features and any software running on the processor has full access to all memory.
 
-The processor does not store/track/predict software instructions. The processor uses pipelining techniques to improve performance which results in future instructions entering the pipeline even if the software's logical sequence does not include said instructions. This could result in security vulnerabilities similar to Intel's Spectre vulnerability \cite{kocher2018spectre}.
+The processor does not store/track/predict software instructions. The processor uses pipelining techniques to improve performance which results in future instructions entering the pipeline even if the software's logical sequence does not include these instructions. This could result in security vulnerabilities similar to Intel's Spectre vulnerability \cite{kocher2018spectre}.
 
 
 \chapter{Current Progress}
@@ -488,7 +516,7 @@ Without explicit unsigned and signed instructions, extra instructions would be r
 
 \begin{figure}[h]
 \centering 
-\includegraphics[width=9cm]{../img/isa}
+\includegraphics[width=10cm]{../img/isa}
 \caption{Initial Vmicro16 16-bit instruction set architecture. Coloured regions represent instruction families (bitwise, branching, arithmetic, etc.).}
 \label{fig:isa}
 \end{figure}
@@ -616,7 +644,7 @@ will not return the previously stored value. In addition, because of the target 
 \end{enumerate}
 
 
-\chapter{Future Progress}
+\chapter{Future Work}
 
 {\hypersetup{linkcolor=black}
 \startcontents[chapters]

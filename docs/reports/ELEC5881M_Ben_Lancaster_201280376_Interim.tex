@@ -24,6 +24,9 @@
 % https://tex.stackexchange.com/questions/94224/how-to-create-a-list-with-a-fixed-prefix-and-incremental-numbers
 \usepackage{enumitem}
 
+% strikethrough st
+\usepackage{soul}
+
 % https://tex.stackexchange.com/questions/86120/font-size-of-figure-caption-header
 \usepackage[font=scriptsize,labelfont=bf]{caption}
 
@@ -158,6 +161,7 @@ Date: \today
 
 
 \newpage
+\newgeometry{voffset=-3cm,bottom=0cm}
 \renewcommand*\contentsname{Table of Contents}
 {%\hypersetup{linkcolor=black}
 \tableofcontents
@@ -165,6 +169,7 @@ Date: \today
 %\listoftables}
 %TC:endignore
 
+\restoregeometry
 \newpage
 \chapter{Introduction}
 {%\hypersetup{linkcolor=black}
@@ -246,6 +251,19 @@ Tightly coupled systems feature processing nodes that do not have their own dedi
 \label{fig:tight}
 \end{figure}
 \end{minipage}
+\vspace{0.3cm}
+
+This project will utilise a loosely coupled architecture due to it's easier scalability implementation and my previous experience with single-core processors. Although it will require a scheduler to access the MTS, the experience and knowledge gained from this task will be greatly beneficial for future projects.
+
+\section{Network-on-chip Architectures}
+Network-on-chip (NoC) architectures implement on-chip communication mechanisms that are based on network communication  principles, such as routing, switching, and massive scalability \cite{newnoc}. NoC's can generally support hundreds to millions of processing cores.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=6cm]{../img/noc}
+\caption{A multiprocessor network-on-chip architecture with 16 processing nodes. Nodes are connected in a grid formation with routers and links. Image source: \cite{noc}.}
+\label{}
+\end{figure}
 
 \section{Parallel Problems}
 The "critical path" in an algorithm is described as the longest sequence of instructions that must be performed sequentially due to data dependencies within the instruction sequence  \cite{bohme2014characterizing}.
@@ -285,9 +303,6 @@ function no_dependency(a, b):
 \subsection{Access to shared memory}
 \subsection{Memory Coherency}
 
-
-\section{Network-on-chip}
-Network-on-chip (NoC) architectures implement on-chip communication mechanisms that are based on network communication  principles, such as routing, switching, and massive scalability.
 
 
 \section{Summary}
@@ -410,6 +425,33 @@ The project stages are shown in Table \ref{tb:stages}.
     \caption{Project stages throughout the life cycle of the project.}
     \label{tb:stages}
 \end{table}
+
+\subsection{Project Stage Detail}
+\subsubsection{Stages 1.0 through 1.2 --  Research and Project Conception}
+These stages cover initial research of existing problems and solutions in the multiprocessor area. 
+The instruction set architecture is also proposed that later stages will implement.
+
+\subsubsection{Stages 2.1 through 2.3 -- Processor module Design, Implementation, and Integration}
+These stages cover the design, implementation, and integration of key processor core modules such as the instruction decoder, register sets and local memory.
+Integration of all the modules is a challenging task because some modules have both asynchronous and synchronous signals that need to be timed correctly in order for other modules to receive valid data. An example of this is the register set which has asynchronous read ports that are later clocked in the instruction decode stage.
+
+\subsubsection{Stages 3.1 through 3.4 -- Advanced Processor Implementation}
+These stages add advanced features to the processor to provide a more functional product. Although these stages are classified as extended, their technical requirement to design and implement is not great and so are have time allocations in the project schedule. The extended features that these stages introduce are: pipelined processor stages -- to drastically increase processor performance; provide a memory-mapped peripheral interface through the MMU; provide a Wishbone master interface to the MMU -- allowing external peripherals such as GPIO and LCD displays to be utilised in a modular fashion; and to implement a cache memory for each processor core.
+
+\subsubsection{Stages 4.1 through 4.4 -- Multiprocessor Functionality}
+These stages are dedicated to adding multiprocessor functionality using a loosely coupled architecture to the processor.
+
+\subsubsection{Stages 5.1 through 5.3 -- Debugging Features}
+These stages cover debugging features and are classified as extended due to the large development time required to implement them as well as not being related to multiprocessor systems.
+
+\subsubsection{Stages 6.1 through 6.2 -- Compiler Backends}
+These stages cover the implementation of a compiler backend to ease software writing and programming of the processor.
+
+\subsubsection{Stage 7.1 -- Wishbone Peripherals}
+Additional Wishbone peripherals, such as SPI and timers will be added to produce a more useful multiprocessor system.
+
+\subsubsection{Stage 8.1 -- Final Report}
+This stage is dedicated to the final report write-up. It is expected to be an iterative task that is active throughout the lifespan of the project.
 
 \subsection{Timeline}
 The project stages from Table \ref{tb:stages} are displayed below in a Gantt chart.
@@ -686,15 +728,15 @@ Four months have passed since the start of the project.
 	\\ \hline
     3.3 & Pipelined implementation and verification & Apr 15 &  & On-going
 	\\ \hline
-    3.4 & Cache memory design \& impl & Apr 22 &  & Not planned
+    3.4 & Cache memory design \& impl & \st{Apr 22} &  & Not planned
     \\ \specialrule{2pt}{-2pt}{0pt}
-    4.1 & Multi-core communication interface & TBD & x & Planned
+    4.1 & Multi-core communication interface & Jun 05 & x & Planned
 	\\ \hline
-    4.2 & Shared-memory controller & TBD & x &Planned
+    4.2 & Shared-memory controller & Jun 05 & x &Planned
 	\\ \hline
-    4.3 & Scalable multi-core interface (10s of cores) & TBD & x & Planned
+    4.3 & Scalable multi-core interface (10s of cores) & Jul 01 & x & Planned
 	\\ \hline
-    4.4 & Multi-core example program (reduction) & TBD & x & Planned
+    4.4 & Multi-core example program (reduction) & Jul 10 & x & Planned
     \\ \specialrule{2pt}{-2pt}{0pt}
     5.1 & SPI-FPGA interface for OTG programming & TBD &  & Unknown
 	\\ \hline
@@ -706,9 +748,9 @@ Four months have passed since the start of the project.
 	\\ \hline
     6.2 & Compiler support for multi-core codegen & TBD &  & Unknown 
     \\ \specialrule{2pt}{-2pt}{0pt}
-    7.1 & Wishbone peripherals for demo & TBD & x & Planned
+    7.1 & Wishbone peripherals for demo & Aug 01 & x & Planned
     \\ \specialrule{2pt}{-2pt}{0pt}
-    8.1 & Final Report & TBD & x & Planned
+    8.1 & Final Report & Jun 05 & x & Planned
 	\\ \hline    \end{tabularx}
     \caption{Project stages throughout the life cycle of the project.}
     \label{tb:future_stages}
@@ -736,8 +778,7 @@ Four months have passed since the start of the project.
 \cite{openpiton}
 \cite{satish2009designing}
 \cite{binet2010harnessing}
-\newpage
-\newpage
+\clearpage
 \bibliography{refs}
 \addcontentsline{toc}{chapter}{References}
 

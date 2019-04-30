@@ -105,6 +105,9 @@ School of Electrical and Electronic Engineering
 
 \vspace{2cm}
 \today
+
+\vspace{2cm}
+Word count: 4331
 \end{center}
 \end{titlepage}
 
@@ -118,8 +121,6 @@ This interim report details the 4-month progress on a project to design, impleme
 Current multiprocessor and network-on-chip communication methods have been discussed and how they could be included in this multi-core RISC design. To-date, a 16-bit instruction set architecture has been designed featuring common load/store instructions, comparison, and bitwise operations. A single-core processor has been implemented in Verilog and verified using simulations/test benches running various simple programs.
 
 Future tasks have been planned and will focus on the second stage of the project. Work will start on designing a loosely coupled multiprocessor communication interface and bringing them to the single-core processor.
-
-
 \end{abstract}
 
 \newpage
@@ -213,14 +214,15 @@ FPGAs, however, may not be suitable for prototyping all register-transistor logi
 \printcontents[chapters]{}{1}{}
 }
 
-\section{Parallelism and Amdahl's Law}
-Computational parallelism is the process of performing multiple tasks simultaneously.
+\section{Amdahl's Law and Parallelism}
+In many applications, not restricted to software, there may exists many opportunities for processes or algorithms to be performed in parallel. These algorithms can be split into two parts: a serial part that cannot be parallised, and a part that can be parallelised. Amdahl's Law defines a formula for calculating the maximum \textit{speedup} of a process with potential parallelism opportunities when ran in parallel with $n$ many processors. Speedup is a term used to describe the potential performance improvements of an algorithm using an enhanced resource (in this case, adding parallel processors) compared to the original algorithm. Amdalh's Law is defined below, where the potential speedup $S_p$ is dependant on the portion of program that can be parallelised $p$ and the number of processing cores $n$:
 
-Concurrency differs from parallelism in that only a single process can be running at any time and requires a scheduler to switch the active process. This project will not cover concurrency.
+\begin{equation}
+S_{p} = \frac{1}{(1-p)+\frac{p}{n}}
+\label{eq:amdahl}
+\end{equation}
 
-In serial software programs there may exist many potential opportunities for parallelism. 
-
-\textit{Speedup} is a term used to describe the potential time improvements to perform an algorithm.
+This formula will be used throughout the project to gauge the the performance of the multi-core design running various software algorithms.
 
 \section{Loosely and Tightly Coupled Processors}
 Multiprocessor systems can be generalised into two architectures: loosely and tightly coupled, and each architecture has advantages and disadvantages. 
@@ -253,60 +255,23 @@ Tightly coupled systems feature processing nodes that do not have their own dedi
 \end{minipage}
 \vspace{0.3cm}
 
-This project will utilise a loosely coupled architecture due to it's easier scalability implementation and my previous experience with single-core processors. Although it will require a scheduler to access the MTS, the experience and knowledge gained from this task will be greatly beneficial for future projects.
+This project will utilise a loosely coupled architecture due to it's easier scalability implementation and my previous experience with the design of single-core processors. Although it will require a scheduler to access the MTS, the experience and knowledge gained from this task will be greatly beneficial for future projects.
 
 \section{Network-on-chip Architectures}
 Network-on-chip (NoC) architectures implement on-chip communication mechanisms that are based on network communication  principles, such as routing, switching, and massive scalability \cite{newnoc}. NoC's can generally support hundreds to millions of processing cores.
+Figure \ref{fig:noc} shows an example 16 core network-on-chip architecture. 
+NoC's can scale to very large sizes while not sacrificing performance because each processor core is able to drive the network rather than needing to wait for a shared bus to become free before doing so.
+
+The greater the number of cores in a network-on-chip design, the greater quality of service (QoS) problems arise. As such, network-on-chip architectures suffer the same problems as networks, such as fairness and throughput \cite{nocfairness}.
+
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=6cm]{../img/noc}
 \caption{A multiprocessor network-on-chip architecture with 16 processing nodes. Nodes are connected in a grid formation with routers and links. Image source: \cite{noc}.}
-\label{}
+\label{fig:noc}
 \end{figure}
 
-\section{Parallel Problems}
-The "critical path" in an algorithm is described as the longest sequence of instructions that must be performed sequentially due to data dependencies within the instruction sequence  \cite{bohme2014characterizing}.
-
-Additional problems include access to shared resources and memory coherency in distributed systems. These will be discussed.
-
-\subsection{Data Dependencies}
-Data dependencies are a critical obstacle in parallelising serial programs.
-
-
-\begin{minipage}{0.45\textwidth}
-\begin{figure}[H]
-\centering
-\begin{minted}[linenos]{c}
-function has_dependency(a, b):
-    x = a + b
-    y = x + b
-\end{minted}
-\caption{Sequence of instructions where a data dependency exists between instructions 2 and 3 -- Instruction 3 must wait for variable x to be ready.}
-\label{fig:}
-\end{figure}
-\end{minipage}
-\begin{minipage}{0.05\textwidth}\hfill\end{minipage}
-\begin{minipage}{0.45\textwidth}
-\begin{figure}[H]
-\centering
-\begin{minted}[linenos]{c}
-function no_dependency(a, b):
-    x = a + b
-    y = b + 2
-\end{minted}
-\caption{Sequence of instructions with no data dependencies. This sequence can be ran in parallel using multiple processing cores.}
-\label{fig:}
-\end{figure}
-\end{minipage}
-
-\subsection{Access to shared memory}
-\subsection{Memory Coherency}
-
-
-
-\section{Summary}
-    
 \chapter{Project Overview}
 {%\hypersetup{linkcolor=black}
 \startcontents[chapters]
@@ -699,7 +664,7 @@ will not return the previously stored value. In addition, because of the target 
 \section{Project Status}
 Four months have passed since the start of the project and significant progress has been made to the final deliverable. 
 
-
+The current active stage is 3.3 where the processor pipeline is being verified against of range of simple software sequences. It is important that this verification is thorough and the output is bug free.
 
 \subsection{Updated Project Time Line}
 The project table described in section \ref{sect:timeline} did not allocate times for stages 4.1 and later. This was due to expected high demand from other modules and exams in this time period and so it was decided to not allocate times that would later not be followed.
@@ -728,7 +693,7 @@ Now that this time period is closer, time allocations have been assigned for sta
     \\ \specialrule{2pt}{-2pt}{0pt}
     3.1 & Memory mapped register layout \& impl & Apr 01 &  & On-going
 	\\ \hline
-    3.2 & Wishbone peripheral bus connected to MMU & Apr 081 &  & On-going
+    3.2 & Wishbone peripheral bus connected to MMU & Apr 08 &  & On-going
 	\\ \hline
     3.3 & Pipelined implementation and verification & Apr 15 &  & On-going
 	\\ \hline
@@ -769,7 +734,7 @@ Now that this time period is closer, time allocations have been assigned for sta
 \label{fig:week2_gantt}
 \end{figure}
 
-\chapter{Conclusion}
+%\chapter{Conclusion}
 
 
 %TC:ignore

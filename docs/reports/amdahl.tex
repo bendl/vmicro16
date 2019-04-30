@@ -1,0 +1,150 @@
+\chapter{Performance Analysis}
+
+\section{Performance Consideration}
+The performance [2,10] of a parallel processor depends on complex and hard to define ways on the system's architecture and degree of parallelism in programs
+it executes. There are several simple performance measures such as speedup and processor utilization (efficiency) which provides rough performance estimates.
+The system interconnection structure and main-memory architecture also have a significant impact on performance. 
+
+\subsection{Basic Measures}
+	Here some basic terms are defined which are used to evaluates the performance of parallel processors. 
+
+\subsubsection{Parallelism Degree}
+ 	Individual or average instruction execution times are not very useful, since they don't measure the impact of what might be loosely called the
+system's parallelism degree $n$ [2], e.g. the number of processors or the number of pipeline segments available. Sometimes especially in theoretical studies,
+the time T($n$, $N$) needed to execute more complex operations such as sorting a list of $N$ numbers, or inverting an $N*N$ matrix, is given as a performance
+measure for a machine of parallelism $n$. Such measures may be expressed in approximate form using the $\cal O$-{\em notation} $ \cal O$( $f(n, N)$), where
+stating that T($n$,$N$) = \\$\cal O$( $f(n, N)$) means that there exist constants k and $N_{0}$ > 0, whose exact values are not usually specified, such that
+$T(n, N) \leq kf(n, N)$ for all $N > N_{0}$. As $N$, the problem size or dimension increases beyond some lower limit $N_{0}$, the execution time T($N$) grows
+at a rate that is less, within a constant $k$, than that of the function $f(n, N)$. \par
+\hspace{1in} The performance of an individual processor or processing elements in high performance machines may be measured by the instruction rate or
+instruction bandwidth $b_{l}$, using units MIPS. The corresponding measures of data bandwidth or throughput  $b_{d}$ is typically MflopsS; other multiple such
+as GFLOPS are also used. In parallel computers the interprocessor communication mechanism, and the extent to which they are used, strongly influences overall
+system performance. For example for a system of n processors, each with performance p, maximum or potential performance turns out to be n*p. Performance
+figure like this is obtained for highly parallel programs or algorithms, where the maximum possible parallelism in computation is attained, and
+communication delay is minimized. Under most typical operating conditions, when a mixture of tasks with varying degree of parallelism are encountered,
+significant lower bounds can be expected.
+
+\subsubsection{Speedup}
+Speedup $Sp(n)$ [2,10], is defined as the ratio of the total execution time $T(l)$ on a sequential computer to the corresponding execution time $T(n)$ on the
+parallel
+computer for some class of tasks of interest.\par
+\begin{equation}
+Sp(n) = \frac{T(l)}{T(n)}
+\end{equation}
+\hspace{1in}It is usually reasonable to assume that $T(l) \leq n*T(n)$, in which case $Sp(n) \leq n$.
+
+\subsubsection{Efficiency}
+
+A closely related performance measure, which can be expressed as a single number (a fraction or a percentage), is the efficiency $E_{n}$ [2,10], which is the
+speedup per degree of parallelism, and is defined as follows: 
+\begin{equation}
+E(n) = \frac{S(n)}{n}
+\end{equation}
+$E(n)$ is also an indication of processor {\em utilization}, and may be so named.\par
+\hspace{1in}  In general, speed up and efficiency provide rough estimates of the performance changes that can be expected in a parallel processing system by
+increasing the parallelism degree $n$, e.g. by adding more processors. These measures should be used with caution, however, since they depend on the program
+being run, and can change dramatically from program to program, or from one part of the program to another. 
+
+\section{Amdahl's Law}
+A program or an algorithm {\em Q} may sometimes be characterized by its degree of parallelism $n_{i}$, which is the minimum value of $n$ for which the
+efficiency and speedup reach their maximum values at time i during the execution of {\em Q}. Thus $n_{i}$ represents the maximum level of parallelism that
+can be exploited by {\em Q} at time i.\par
+\hspace{1in}Some indication of the influence of program parallelism on the performance of a parallel computer may be seen from the following analysis.
+Suppose that all computations of interest on a parallel processor can be divided into two simple groups involving floating point arithmetic only: vector
+operations employing vector operands of some fixed length N, and scalar operations where all operands are scalars(N=1). Let $1-f$ be the fraction of all
+floating
+point operations that are executed as scalar operations, and let $f$ be the fractions executed as vector operations. $f$ is thus a measure of the degree of
+parallelism in the program being executed, and varies from 1, corresponding to maximum parallelism (all vector operations), to 0 (all scalar operations).
+Suppose that vector and scalar operations are performed at throughput rates of $V$ and  $S$ Mflops, respectively. Let the total CPU time be $t$ . Let a given
+algorithm has $N$ flops. Then, relation of $f, N, V, S, t$ are given by the following useful formula:
+\begin{equation}
+t = \frac{(1-f)N}{S} + \frac{fN}{V}
+\end{equation}
+
+ Equation 4.3 can be used to evaluated the performance of parallel processors in the context of vector and scalar operations. It is found out that the parallel
+processor is very sensitive to the scalar operations. A very small fraction of scalar operations drops the system performance by a significant amount. Hence
+it is worthwhile to devote considerable effort to "vectorize" or "parallelize" programs for such machines to eliminate scalar operations. With $1-f$
+interpreted broadly as the fraction of nonparallelizable operations or instructions. This equation is often referred as {\bf {\em Amdahl's Law}}
+[2,10]. If the algorithm had been executed completely with the lower speed $S$, the CPU time would have been $t = \frac{N}{S}$, where $N$ is the number
+of operations algorithm involves. This implies that the relative gain in the CPU time obtained from executing the portion $fN$ at the speed $V$ instead
+of the much lower speed $S$ is bounded by $\frac{1}{1-f}$. Thus, $f$ must be rather close to 1 in order to benefit significantly from high computational
+speed.
+
+\subsection{General form of Amdahl's Law}
+Assume that the execution of an algorithm consists of executing the consecutive parts $A_{1}, A_{2},.....,A_{n}$ such that the $N_{j}$ flops of part $A_{j}$
+are executed at a speed of $r_{j}$ Mflops. Then the overall performance $r$ [10] for the $N = N_{1} + N_{2} +.....+ N_{n}$ flops is given by
+\begin{equation}
+r = \frac{N}{ \frac{N_{1}}{r_{1}} + \frac{N_{2}}{r_{2}} +....+ \frac{N_{n}}{r_{n}}} Mflops
+\end{equation}
+This follows directly from the observation that the CPU time $t_{j}$ for the execution of part $A_{j}$ is given by $t_{j} = \frac{N_{j}}{r_{j}}$ microseconds.
+\par
+\hspace{1in} From Amdahl's law we can study the effect of different speeds for separate parts of a computational task. It is seen that the improvements in the
+execution of computations usually are obtained only after the startup time. This fact implies that the computational speed depends strongly on the amount (and
+type) of the work. 
+
+\subsection{Amdahl's Law for Pipeline Processors}
+Pipeline processors give result after startup time. Once the pipeline is filled the results come in comparatively shorter duration. For large vectors computing
+speed will be large compared to the short vectors, where it is barely noticeable. The performance $r_{N}$ for a given loop of length can be formulated in
+terms of $r_{\infty}$ and $n_{1/2}$ [10]. The values of these parameters are characteristic for a specific loop; they represent the performance in Mflops for
+very long loop length ($r_{\infty}$), and the loop length for which the performance of about 1/2$r_{\infty}$ Mflops is achieved ($n_{1/2}$). For many
+situations we have fairly good approximation that 
+\begin{equation}
+r_{N} = \frac{r_{\infty}}{n_{1/2}/N + 1}
+\end{equation}
+According to 4.5, for a loop length $N=qn_{1/2}$ a performance of $r_{\infty}$q/(1+q) Mflops will be obtained. Consequently, it is highly
+desirable that values of $n_{1/2}$ should be small relative to $N$. As a rule of thumb $n_{1/2}$ and $r_{\infty}$ are proportional to
+the number of pipelines of a given computer. For larger number of pipelines the value of $r_{\infty}$ will be larger. For a $p$-processor model system
+this approach will lead to an increase of $r_{\infty}$ and $n_{1/2}$ by a factor of $p$ relative to the single processor execution for multiple loops. In
+general, on a $p$ processor model $r_{\infty}$ grows less than with $p$, and $n_{1/2}$ grows faster, because of synchronization effect.
+
+\subsection{Amdahl's Law for Parallel Processing}
+\subsubsection{A simple model}
+Let $t_{j}$ denote the wall clock time to execute a given job on $j$ parallel processors. The speedup, $S_{p}$, for a system of $p$ processors is then by
+definition
+\begin{equation}
+S_{p} = \frac{t_{1}}{t_{p}}
+\end{equation}
+The efficiency, $E_{P}$ of the $p$ processor model is given by,
+\begin{equation}
+E_{p} = \frac{S_{p}}{p}
+\end{equation}
+It can be seen that $0\leq E_{p} \leq 1$ 
+Let us assume for simplicity that a job consists of basic operations all carried out with the same computational speed and that a fraction $f$ of these
+operations can be carried out in parallel on $p$ processors, while the rest of the work can keep only one processor busy. The wall clock time for the parallel
+part is then given by $\frac{ft_{1}}{p}$; and , if we ignore all synchronization overhead, the time for the serial part is given by $(1-f)t_{1}$. Consequently,
+the total time for the $p-processor$ model is given by:
+\begin{equation}
+t_{p} = \frac{ft_{1}}{p} + (1-f)t_{1} = \frac{t_{1}(f+(1-f)p)}{p} \geq (1-f)t_{1}
+\end{equation}
+From this equation speedup $S_{p}$ can be calculated directly:
+\begin{equation}
+S_{p} = \frac{p}{(f+(1-f)p)}
+\end{equation}
+For $f < 1$ the speedup $S_{p}$ is bounded by $S_{p} \leq \frac{1}{1-f}$. This equation 4.9 is known as {\bf Ware's law}[10]. This equation is devised having
+assumption of an idealized system. For practical purpose, it will be more complicated.\par
+\hspace{1in}In most practical situations it is quite unrealistic to assume that a given job consists of only two parts, a strictly serial part and one that can
+execute in parallel on $p$ processors. Often, some parts can be executed in parallel on $p$ processors while other parts can still be executed in parallel but
+on fewer than $p$ processors. It is seen that an increase in the number of processors usually goes along with an increase in the problem size. Let the
+non-parallel part of the computations be denoted by $\alpha{M} = 1 - f$, where $M$ is a measure of the total number of operations. For any algorithm,
+$\alpha(M)$ decreases when $M$ is increased. Thus, an "effective parallel algorithm" is defined as an algorithm for which $\alpha(M)$ goes to zero when $M$
+grows. If the parallel part can be executed in parallel on $q$ processors, then it follows for such an algorithm that 
+\begin{equation}
+S_{p} = \frac{q}{1+(q-1)\alpha(M)}
+\end{equation}	
+\begin{equation}
+E_{p} = \frac{1}{1+(q-1)\alpha(M)}
+\end{equation}	
+These two equations are known as {\bf Moler's equations}[10], hence $S_{q}$ grows to q and $E_{q}$ grows to 1 for growing $M$. If local memory is sufficiently
+large enough, then $S_{p}$ will be close to $q$. In many situations memory size is a bottleneck in realizing large speedups, simply because it often limits the
+problem size.
+\subsubsection{Gustafson's Model}
+The basic premise of the Amdahl's law is that the proportion of code that can be vectorized or parallelized remains constant as vector length that is, problem
+size increases. An alternative model, Gustafson's model [10], can be based on fixing the computation time rather than the problem size, as $f$ varies. Thus, in
+Gustafson's model, if we assume that the problem can be solved in an unit time on our parallel machine, then the time in serial computation is $1-f$ and in
+parallel computation is $f$, then if there are $p$ processors in our parallel system, the time for a uniprocessor to perform the same job would be $1-f+fp$.
+Then the speedup, $S_{p,f}$, is given by:
+\begin{equation}
+S_{p,f} = p+(1-p)(1-f)
+\end{equation}
+As the number of processors increases, so does the proportion of the work in parallel mode, and speedup is not limited in the same way as in Amdahl's law.
+

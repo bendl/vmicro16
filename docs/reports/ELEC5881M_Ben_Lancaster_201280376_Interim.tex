@@ -278,11 +278,33 @@ The project's deliverables are split into two sections: core deliverables (CD) -
 \subsection{Core Deliverables (CD)}
 The project's core deliverables are described below.
 \begin{enumerate}[leftmargin=2\parindent, label=\bfseries CD\arabic*]
-    \item{Design a compact 16-bit RISC instruction set architecture.}\label{cd:isa}
-    \item{Design and implement a Verilog RISC core that implements the ISA in \ref{cd:isa}.}\label{cd:core}
-    \item{Design and implement an on-chip interconnect for multi-core processing (2 to 32 cores) using the RISC core from \ref{cd:core}.}\label{cd:interconnect}
-    \item{Analyse performance of serial and parallel software algorithms, such as parallel DFT \cite{dft}, on the processor.}\label{cd:software}
-    \item{Allow the RISC core to be easily compiled to multiple FPGA vendors (Xilinx, Altera).}\label{cd:vendor}
+\item{\textbf{Design a compact 16-bit RISC instruction set architecture.}\\
+The instruction set will be the primary interface to control the processor from software. An instruction set will be required to implement the custom multi-core communication interface.
+
+It was decided to design a new instruction set rather than to extend an existing architecture as this will increase my knowledge of the constraints to consider when designing instruction sets and processors.
+}\label{cd:isa}
+
+\item{\textbf{Design and implement a Verilog RISC core that implements the ISA in \ref{cd:isa}.}\\
+The Verilog RISC core will be able to run software program written for the instruction set architecture.
+}\label{cd:core}
+
+\item{\textbf{Design and implement an on-chip interconnect for multi-core processing (2 to 32 cores) using the RISC core from \ref{cd:core}.}\\
+The interconnect will be a chief requirement to enable multi-core communication. The interconnect should support up to 32 cores, however FPGA implementation constraints may limit this due to limited resources.
+
+The interconnect will control communication between the cores to enable software parallelism.
+}\label{cd:interconnect}
+
+\item{\textbf{Analyse performance of serial and parallel software algorithms, such as parallel DFT \cite{dft}, on the processor.}\\
+To evaluate the effectiveness of the developed solution, a serial and parallel implementation of a simple computing algorithm (parallel reduction, sorting) will be ran on the processor and it's performance analysed. Effectiveness will be rated on total algorithm run-time and the speed-up gained by adding more cores.
+}\label{cd:software}
+
+\item{\textbf{Allow the RISC core to be easily compiled to multiple FPGA vendors (Xilinx, Altera).}\\
+The developed solution should be generic and portable to allow it to be used across a wide-range of FPGA vendors and devices.
+
+Verilog is a generic implementation-independent hardware-description language and so designing implementation specific modules is recommended.
+
+A key consideration for this requirement is to consider the varying hard IP provided by the FPGA vendors (such as BRAM, ethernet, and PCIe \cite{xilinxbram,alterabram}). To overcome this problem, the developed Verilog code will conditionally compile where vendor specific requirements are present.
+}\label{cd:vendor}
 \end{enumerate}
 
 \subsection{Extended Deliverables (ED)}
@@ -513,6 +535,10 @@ This project's RISC processor implements these two hazard detectors and solution
 It was decided to use a memory management unit (MMU) to make it easier and extensible to communicate with external peripherals or additional registers. This method would transparently use the existing \verb|LW|/\verb|SW| instructions which removes the requirement for a unique instruction for each peripheral. 
 
 \subsubsection{Proposed Memory Mapped Addresses}
+The peripheral addresses are currently based on classes. For example, a memory-mapped address may use the upper byte to address a peripheral and the lower byte to address a register/function in that peripheral.
+
+Later in the project, I plan to rewrite the addressing scheme to use a simpler address format which is closer to commonly used peripheral addressing schemes used today.
+
 The proposed memory mapped addresses for each system and peripheral are listed below.
 
 \begin{table}[h]
@@ -534,7 +560,7 @@ The proposed memory mapped addresses for each system and peripheral are listed b
     \verb|0x1XYZ| & Master core controller (X = slave select, Y = instruction, Z = data)
     \\ \hline 
     \end{tabularx}
-    \caption{Project stages throughout the life cycle of the project.}
+    \caption{Provisional memory-mapped addresses table.}
     \label{tb:mmu}
 \end{table}
 

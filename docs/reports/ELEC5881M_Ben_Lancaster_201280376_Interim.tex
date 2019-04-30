@@ -6,7 +6,7 @@
 %\usepackage{classicthesis}
 \usepackage[sc]{mathpazo}
 
-%\usepackage{helvet}
+%\usepackaghelvet}
 %\renewcommand{\familydefault}{\sfdefault}
 
 \linespread{1.1}
@@ -15,7 +15,7 @@
 \usepackage[sort,numbers,sectionbib]{natbib}
 %\usepackage{natbib}
 %\usepackage{biblatex}
-\bibliographystyle{IEEEtran}
+\bibliographystyle{IEEEtranUrldate}
 \renewcommand{\bibname}{References}
 
 % http://ctan.org/pkg/lipsum
@@ -113,11 +113,11 @@ School of Electrical and Electronic Engineering
 %\lipsum[1-3]
 
 \begin{abstract}
-This interim report details the 4-month progress on a project to design, implement, and verify, a multi-core FPGA RISC processor. The project has been split into two stages: firstly to build a functional single-core RISC processor, and then secondly to add multi-core principles and functionality to it.
+This interim report details the 4-month progress on a project to design, implement, and verify, a multi-core FPGA RISC processor. The project has been split into two stages: firstly to build a functional single-core RISC processor, and then secondly to add multiprocessor principles and functionality to it.
 
-Current multi-core and network-on-chip communication methods have been discussed and how they could be included in this multi-core RISC design. To-date, a 16-bit instruction set architecture has been designed featuring common load/store instructions, comparison, and bitwise operations. A single-core processor has been implemented in Verilog and verified using simulations/test benches running various simple programs.
+Current multiprocessor and network-on-chip communication methods have been discussed and how they could be included in this multi-core RISC design. To-date, a 16-bit instruction set architecture has been designed featuring common load/store instructions, comparison, and bitwise operations. A single-core processor has been implemented in Verilog and verified using simulations/test benches running various simple programs.
 
-Future tasks have been planned and will focus on the second stage of the project. Work will start on designing multi-core communication interfaces and bringing them to the single-core processor.
+Future tasks have been planned and will focus on the second stage of the project. Work will start on designing a loosely coupled multiprocessor communication interface and bringing them to the single-core processor.
 
 
 \end{abstract}
@@ -161,7 +161,7 @@ Date: \today
 
 
 \newpage
-\newgeometry{voffset=-3cm,bottom=0cm}
+\newgeometry{voffset=-4cm,bottom=-4cm}
 \renewcommand*\contentsname{Table of Contents}
 {%\hypersetup{linkcolor=black}
 \tableofcontents
@@ -326,7 +326,8 @@ The project's core deliverables are described below.
 The instruction set will be the primary interface to control the processor from software. An instruction set will be required to implement the custom multi-core communication interface.
 
 It was decided to design a new instruction set rather than to extend an existing architecture as this will increase my knowledge of the constraints to consider when designing instruction sets and processors.
-}\label{cd:isa}
+}
+\label{cd:isa}
 
 \item{\textbf{Design and implement a Verilog RISC core that implements the ISA in \ref{cd:isa}.}\\
 The Verilog RISC core will be able to run software program written for the instruction set architecture.
@@ -354,7 +355,8 @@ A key consideration for this requirement is to consider the varying hard IP prov
 \subsection{Extended Deliverables (ED)}
 The project's extended deliverables are described below.
 \begin{enumerate}[leftmargin=2\parindent, label=\bfseries ED\arabic*]
-    \item{Design a RISC core with an instructions-per-clock (IPC) rating of at least 1.0 (a single-cycle CPU).}\label{ed:ipc}
+    \item{Design a RISC core with an instructions-per-clock (IPC) rating of at least 1.0 (a single-cycle CPU).}
+\label{ed:ipc}
     \item{Design a RISC core with a pipe-lined data path to increase the design's clock speed.}\label{ed:pipeline}
     \item{Design a scalable multi-core interconnect supporting arbitrary (more than 32) RISC core instances (manycore) using Network-on-Chip (NoC) architecture.}\label{ed:scale}
     \item{Design a compiler-backend for the PRCO304 \cite{prco304} compiler to support the ISA from1 \ref{cd:isa}. This will make it easier to build complex multi-core software for the processor.}\label{ed:compiler}
@@ -365,7 +367,8 @@ The project's extended deliverables are described below.
     \item{Processor external debugger using host-processor link.}\label{ed:debug}
 \end{enumerate}
 
-\section{Project Timeline}\label{sect:timeline}
+\section{Project Timeline}
+\label{sect:timeline}
 \subsection{Project Stages}
 The project is split up into many stages to aid planning and management of the project. There are 8 unique stage areas: 1. Inital project conception; 2 Basic RISC core development; 3. Extended RISC core development; 4. Multi-core development; 5. Processor quality-of-life (QoL) improvements; 6. Compiler development; 7. Demo preparation, and 8. Final report.
 
@@ -692,15 +695,16 @@ will not return the previously stored value. In addition, because of the target 
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 }
-\noindent\\
-This chapter discusses planned future work
 
 \section{Project Status}
-Four months have passed since the start of the project. 
+Four months have passed since the start of the project and significant progress has been made to the final deliverable. 
+
 
 
 \subsection{Updated Project Time Line}
+The project table described in section \ref{sect:timeline} did not allocate times for stages 4.1 and later. This was due to expected high demand from other modules and exams in this time period and so it was decided to not allocate times that would later not be followed.
 
+Now that this time period is closer, time allocations have been assigned for stages 4, 7, and 8.
 
 \begin{table}[h]
     \small
@@ -756,6 +760,8 @@ Four months have passed since the start of the project.
     \label{tb:future_stages}
 \end{table}
 
+
+\subsection{Updated Project Gantt Chart}
 \begin{figure}[H]
 \centering 
 \includegraphics[width=12cm]{../img/week2_gantt}
@@ -763,24 +769,31 @@ Four months have passed since the start of the project.
 \label{fig:week2_gantt}
 \end{figure}
 
-%\section{Multi-core Functionality}
-%\section{Interconnect Goals}
-%\section{Interconnect Layout}
-%\subsection{Bus Design}
-%\subsection{Core Pin Assignments}
-%\section{Core-to-core Communication}
-%\section{Shared-Resource Control}
-%\subsection{Resource Scheduling}
-%\section{Verification}
-%\section{Conclusion}
-    
+\chapter{Conclusion}
 
-\cite{openpiton}
-\cite{satish2009designing}
-\cite{binet2010harnessing}
+
+%TC:ignore
 \clearpage
 \bibliography{refs}
 \addcontentsline{toc}{chapter}{References}
+
+%\newgeometry{voffset=-4cm,bottom=-4cm}
+\chapter*{Appendix A - Code Listing}
+\addcontentsline{toc}{chapter}{Appendix A - Code Listing}
+
+\section*{vmicro16.v}
+The single core RISC processor is defined in this file. It contains many submodules such as the decoder and local memory.
+\inputminted[fontsize=\tiny,baselinestretch=1,linenos]{systemverilog}{../../vmicro16/vmicro16.v}
+
+
+\section*{vmicro16\_soc.v}
+\inputminted[fontsize=\tiny,baselinestretch=1,linenos]{systemverilog}{../../vmicro16/vmicro16_soc.v}
+
+\section*{vmicro16\_isa.v}
+\inputminted[fontsize=\tiny,baselinestretch=1,linenos]{systemverilog}{../../vmicro16/vmicro16_isa.v}
+
+
+%TC:endignore
 
 %\chapter{RISC Core Design}
 %{\hypersetup{linkcolor=black}

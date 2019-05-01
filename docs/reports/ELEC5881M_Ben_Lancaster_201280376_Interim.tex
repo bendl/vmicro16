@@ -77,7 +77,7 @@
 \textbf{
 %%PRCO304 - Project Initiation Document
 %Highlight Reports
-Multi-core RISC Processor Design and Implementation (Rev. 1.00)
+Multi-core RISC Processor Design and Implementation (Rev. 2.02)
 }
 
 \vspace{0.4cm}
@@ -107,7 +107,7 @@ School of Electrical and Electronic Engineering
 \today
 
 \vspace{2cm}
-Word count: 4331
+Word count: 4689
 \end{center}
 \end{titlepage}
 
@@ -118,7 +118,7 @@ Word count: 4331
 \begin{abstract}
 This interim report details the 4-month progress on a project to design, implement, and verify, a multi-core FPGA RISC processor. The project has been split into two stages: firstly to build a functional single-core RISC processor, and then secondly to add multiprocessor principles and functionality to it.
 
-Current multiprocessor and network-on-chip communication methods have been discussed and how they could be included in this multi-core RISC design. To-date, a 16-bit instruction set architecture has been designed featuring common load/store instructions, comparison, and bitwise operations. A single-core processor has been implemented in Verilog and verified using simulations/test benches running various simple programs.
+Current multiprocessor and network-on-chip communication methods have been discussed and how they could be included in this multi-core RISC design. To-date, a 16-bit instruction set architecture has been designed featuring common load/store instructions, comparison, and bitwise operations. A single-core processor has been implemented in Verilog and verified using simulations/test benches running various simple software programs.
 
 Future tasks have been planned and will focus on the second stage of the project. Work will start on designing a loosely coupled multiprocessor communication interface and bringing them to the single-core processor.
 \end{abstract}
@@ -137,7 +137,7 @@ Date & Version & Changes \\
 04/04/2019 & 2.00 & Initial processor RTL diagram. \\ \hline
 01/04/2019 & 1.00 & Initial section outline. \\ \hline
 \end{tabularx}
-\caption{Document revisions.}
+\caption*{Document revisions.}
 \end{table}
 
 %\newpage
@@ -304,7 +304,7 @@ The interconnect will be a chief requirement to enable multi-core communication.
 The interconnect will control communication between the cores to enable software parallelism.
 }\label{cd:interconnect}
 
-\item{\textbf{Analyse performance of serial and parallel software algorithms, such as parallel DFT \cite{dft}, on the processor.}\\
+\item{\textbf{Analyse performance of serial and parallel software algorithms, such as parallel DFT, on the processor.}\\
 To evaluate the effectiveness of the developed solution, a serial and parallel implementation of a simple computing algorithm (parallel reduction, sorting) will be ran on the processor and it's performance analysed. Effectiveness will be rated on total algorithm run-time and the speed-up gained by adding more cores.
 }\label{cd:software}
 
@@ -325,7 +325,7 @@ The project's extended deliverables are described below.
     \item{Design a RISC core with a pipe-lined data path to increase the design's clock speed.}\label{ed:pipeline}
     \item{Design a scalable multi-core interconnect supporting arbitrary (more than 32) RISC core instances (manycore) using Network-on-Chip (NoC) architecture.}\label{ed:scale}
     \item{Design a compiler-backend for the PRCO304 \cite{prco304} compiler to support the ISA from1 \ref{cd:isa}. This will make it easier to build complex multi-core software for the processor.}\label{ed:compiler}
-    \item{The RISC core can communicate to peripherals via a memory-mapped addresses using the Wishbone \cite{wishbone} bus.}\label{ed:mmu}
+    \item{The RISC core can communicate to peripherals via a memory-mapped addresses using the Wishbone bus.}\label{ed:mmu}
     \item{Implement various memory-mapped peripherals such as UART, GPIO, LCD, to aid visual representation of the processor during the demonstration viva.}\label{ed:peripherals} 
     \item{Store instruction memory in SPI flash.}\label{ed:flash}
     \item{Reprogram instruction memory at runtime from host computer.}\label{ed:program}
@@ -488,7 +488,7 @@ The processor does not store/track/predict software instructions. The processor 
 This chapter discusses the current progress made towards the project, including designs, implementation, and current results.
 
 \section{RISC Core}
-Following the project time line described in section \ref{sect:timeline}, the first couple months have been dedicated to the design and implementation of the instruction set architecture and RISC core with stages 1-3. Good progress has been made in both deliverables, the ISA and the RISC core, and the progress is on-time with the initial project time line.
+Following the project time line described in section \ref{sect:timeline}, the first couple months have been dedicated to the design and implementation of the instruction set architecture and RISC core with stages 1-3. Good progress has been made in both deliverables, the ISA and the RISC core, and the progress is on-time with the initial project time line. The core has been nicknamed \textit{Vmicro16} -- short for Verilog microprocessor 16-bit.
 
 \subsection{Instruction Set Architecture}
 A 16-bit instruction set architecture (ISA) has been designed using an iterative approach. There currently exists 32 unique instructions covering most generic RISC operations (add, load/store, branch, compare, etc.) and atleast 16 opcodes available to be provide multi-core communication and functionality. This number should be adequate to support these features when the work begins on the multi-core project stages (stages 4-7).
@@ -543,7 +543,7 @@ A disadvantage with this single file approach is that some external Verilog veri
 \begin{figure}[H]
 \centering 
 \includegraphics[width=10cm]{../img/risc}
-\caption{Vmicro16 RISC 5-stage RTL diagram.}
+\caption{Vmicro16 RISC 5-stage RTL diagram showing: instruction pipelining (data passed forward through clocked register banks at each stage); branch address calculation; ALU operand calculation (rd2 or imm); and program counter incrementing.}
 \label{fig:risc}
 \end{figure}
 
@@ -565,7 +565,7 @@ This project's RISC processor implements these two hazard detectors and solution
 \begin{figure}[h]
 \centering 
 \includegraphics[width=10cm]{../img/stall}
-\caption{Pipeline stall detection logic. }
+\caption{Pipeline data hazard detection. The register selects are passed forward through each stage and compared to the IDEX (latest instruction) register selects. If they match, the latest instruction depends on the output of an instruction in the pipeline, the IFID and IDEX stages are stalled to allow the instruction in the pipeline to commit.}
 \label{fig:stall}
 \end{figure}
 
@@ -576,8 +576,7 @@ It was decided to use a memory management unit (MMU) to make it easier and exten
 The peripheral addresses are currently based on classes. For example, a memory-mapped address may use the upper byte to address a peripheral and the lower byte to address a register/function in that peripheral.
 
 Later in the project, I plan to rewrite the addressing scheme to use a simpler address format which is closer to commonly used peripheral addressing schemes used today.
-
-The proposed memory mapped addresses for each system and peripheral are listed below.
+The proposed memory mapped addresses for each system and peripheral are listed below.% in Table \ref{tb:mmu}.
 
 \begin{table}[h]
     \small
@@ -604,7 +603,7 @@ The proposed memory mapped addresses for each system and peripheral are listed b
 
 \subsubsection{ALU Design}
 The Vmicro16's ALU is an asynchronous module that has 3 inputs: data a; data b; and opcode op, and outputs data value c.
-The ALU is able to operand on both register data (\verb|rd1| and \verb|rd2|) and immediate values. A switch is used to set the \verb|b| input to either the \verb|rd2| or \verb|imm| value from the previous stage.
+The ALU is able to operate on both register data (\verb|rd1| and \verb|rd2|) and immediate values. A switch is used to set the \verb|b| input to either the \verb|rd2| or \verb|imm| value from the previous stage.
 
 Currently, the ALU does not store flags to indicate overflow, equality, or zero values in the module itself. Instead the ALU outputs the result of the \verb|CMP|, which calculates such flags, to be written back to the register set in the write-back stage. This means that in order to perform a conditional operation, such as a branch, the register containing the \verb|CMP| flags must be included in the instruction.
 
@@ -673,6 +672,10 @@ Now that this time period is closer, time allocations have been assigned for sta
 
 The updated project status is shown in Table \ref{tb:future_stages} and in Figure \ref{fig:future_stages}.
 
+
+\subsection{Future Work}
+May and early June are reserved for work on other modules and preparation for exams. From mid-June, work will resume on verifying the end of stage 3 and then work will start on stage 4 (focussed on designing and implementing multiprocessor features). After stage 4, software algorithms will be compiled for the ISA and evaluated against Amdahl's Law.
+
 \begin{table}[h]
     \small
     \begin{tabularx}{\textwidth}{|l|l|l|l|X|}
@@ -699,7 +702,7 @@ The updated project status is shown in Table \ref{tb:future_stages} and in Figur
 	\\ \hline
     3.3 & Pipeline implementation and verification & Apr 15 &  & On-going
 	\\ \hline
-    3.4 & Cache memory design \& impl & \st{Apr 22} &  & Not planned
+    3.4 & Cache memory design \& impl & \st{Apr 22} &  & Cancelled
     \\ \specialrule{2pt}{-2pt}{0pt}
     4.1 & Multi-core communication interface & Jun 05 & x & Planned
 	\\ \hline
@@ -723,12 +726,11 @@ The updated project status is shown in Table \ref{tb:future_stages} and in Figur
     \\ \specialrule{2pt}{-2pt}{0pt}
     8.1 & Final Report & Jun 05 & x & Planned
 	\\ \hline    \end{tabularx}
-    \caption{Project stages throughout the life cycle of the project.}
+    \caption{Updated project stages.}
     \label{tb:future_stages}
 \end{table}
 
 
-\subsection{Updated Project Gantt Chart}
 \begin{figure}[H]
 \centering 
 \includegraphics[width=12cm]{../img/week2_gantt}
@@ -736,12 +738,13 @@ The updated project status is shown in Table \ref{tb:future_stages} and in Figur
 \label{fig:future_stages}
 \end{figure}
 
-\subsection{Future Work}
-test
+\chapter{Conclusion}
+With the end of Moore's Law coming, processor designers must use other strategies to continue improving performance of processors -- multiprocessor and parallelism being a primary strategy. This projects sets out to improve my knowledge on multiprocessor communication by designing, implementing, and verifying a multiprocessor -- and I believe starting from scratch is the best way to accomplish this learning task.
 
+To date, a compact 16-bit RISC instruction set has been designed and implemented in a Verilog single-core processor. Whilst single-core verification is still on-going, good progress has been made and extended deliverables from stage 3, such as instruction pipelining and memory-mapped peripherals via a Wishbone bus, has been implemented successfully.
 
-%\chapter{Conclusion}
-
+Stage 5's extended deliverables and the cache memory have been cancelled but they do not effect the core functionality of the processor. 
+The planned project time-line for future stages is  realistic and accomplishing the projects goals appears achievable.
 
 %TC:ignore
 \clearpage
@@ -769,116 +772,5 @@ The single core RISC processor is defined in this file. It contains many submodu
 
 
 %TC:endignore
-
-%\chapter{RISC Core Design}
-%{\hypersetup{linkcolor=black}
-%\startcontents[chapters]
-%\printcontents[chapters]{}{1}{}
-%}
-%    \section{Design Goals}
-%    \section{Instruction Set Architecture}
-%        \subsection{Data Sizes}
-%        \subsection{Registers}
-%        \subsection{Endianness}
-%    \section{High Level Design}
-%    \section{Memory-mapped peripherals}
-%        \subsection{Wishbone Master Bus}
-%    \section{Optimisations}
-%        \subsection{Pipelining}
-%        \subsection{Stall Avoidance}
-%    \section{Core Verification}
-%    \section{Conclusion}
-%        
-%\chapter{Multi-core Communication Design}
-%{\hypersetup{linkcolor=black}
-%\startcontents[chapters]
-%\printcontents[chapters]{}{1}{}
-%}
-%    \section{Interconnect Goals}
-%    \section{Interconnect Layout}
-%        \subsection{Bus Design}
-%        \subsection{Core Pin Assignments}
-%    \section{Core-to-core Communication}
-%    \section{Shared-Resource Control}
-%        \subsection{Resource Scheduling}
-%    \section{Verification}
-%    \section{Conclusion}
-%
-%\chapter{Core Analysis}
-%{\hypersetup{linkcolor=black}
-%\startcontents[chapters]
-%\printcontents[chapters]{}{1}{}
-%}
-%    \section{FPGA Implementation Analysis}
-%        \subsection{Space/Resource Usage}
-%        \subsection{Static Timing Analysis}
-%    \section{Speed Analysis}
-%        \subsection{Parallel Reduction Algorithms}
-%        \subsection{Parallel DFT Algorithm}
-%
-%
-%\chapter{Conclusion}
-%{\hypersetup{linkcolor=black}
-%\startcontents[chapters]
-%\printcontents[chapters]{}{1}{}
-%}
-%    \section{RISC Core Review}
-%    \section{Multi-core Review}
-%    \section{Verification Review}
-%    \section{Goal Review}
-
-%
-%\chapter*{Preface}
-%\label{sect:preface}
-%This report discusses the design, implementation, and verification, of an FPGA-based embedded processor (processor) and compiler.
-%
-%
-%A field-programmable gate array (FPGA) is a reprogrammable logic device that enables digital electronic designs to be realised and executed on-chip. FPGAs utilise configurable logic blocks (CLB) that can be configured to emulate primitive gates. Connecting these primitive gates with others allows the engineer to realise complex logic such as combinational gates, multiplexers, and lookup-tables. Modern FPGA devices also include components such as block-RAMs, DLLs, and DSP blocks.
-%
-%An embedded processor will be designed using the Verilog hardware description language (HDL). A HDL can be thought of as a front-end to a software compiler. Other HDL front-ends exist such as VHDL. The HDL is synthesised into an retargetable intermediate form consisting of nets - a form describing the gates, flip-flops, and their interconnections. After this synthesis takes place, the intermediate net list form is transformed into implementation specific forms. As this processor is designed for FPGA implementation, processes such as "place and route" are utilised to map the net list to physical resources on the FPGA. Different processes are performed for different implementations, such as for ASICs and CPLDs.
-%
-%\newpage
-%\chapter{RISC Machines}
-%{%\hypersetup{linkcolor=black}
-%\startcontents[chapters]
-%\printcontents[chapters]{}{1}{}
-%}
-%
-%\section{Introduction}
-%\lipsum[1]
-%
-%This \mintinline{c}{
-%int main(int argc, char** argv);
-%} is the.
-%
-%\begin{figure}[H]
-%\centering
-%\mintinline{c}{
-%int main(int argc, char** argv);
-%}
-%\caption{Foo bar}
-%\end{figure}
-%\lipsum[2]
-%
-%\section{Background}
-%\lipsum[1-2]
-%\subsection{Soft-core Embedded Processors}
-%\lipsum[1-2]
-%\subsection{Compilers}
-%\lipsum[1-2]
-%\section{Project Overview}
-%\lipsum[1-2]
-%
-%This \mintinline{c}{
-%int main(int argc, char** argv);
-%} is the.
-%
-%\begin{figure}[H]
-%\centering
-%\mintinline{c}{
-%int main(int argc, char** argv);
-%}
-%\caption{Foo bar}
-%\end{figure}
 
 \end{document}

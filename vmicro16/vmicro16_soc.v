@@ -33,7 +33,6 @@ module vmicro16_soc (
             //.wb_stall_o    (wb_stall_o), 
             //.wb_err_o      (wb_err_o), 
     );
-    
 
     vmicro16_cpu core (
         .clk    (clk),

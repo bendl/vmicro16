@@ -259,7 +259,7 @@ This project will utilise a loosely coupled architecture due to it's easier scal
 
 \section{Network-on-chip Architectures}
 Network-on-chip (NoC) architectures implement on-chip communication mechanisms that are based on network communication  principles, such as routing, switching, and massive scalability \cite{newnoc}. NoC's can generally support hundreds to millions of processing cores.
-Figure \ref{fig:noc} shows an example 16 core network-on-chip architecture. 
+Figure \ref{fig:noc} shows an example 16-core network-on-chip architecture. 
 NoC's can scale to very large sizes while not sacrificing performance because each processor core is able to drive the network rather than needing to wait for a shared bus to become free before doing so.
 
 The greater the number of cores in a network-on-chip design, the greater quality of service (QoS) problems arise. As such, network-on-chip architectures suffer the same problems as networks, such as fairness and throughput \cite{nocfairness}.
@@ -641,14 +641,14 @@ The decoder extracts register selects and operands from the input instruction. T
 In Figure \ref{fig:decoder}, it can be seen that the first 8 opcode cases are represented using the same 15-11 bits, however the \verb|VMICRO16_OP_BIT| instructions require another bit range to be compared to determine the output opcode.
 
 \subsection{Verification}
-Currently, the only verification method used is manual inspection of the output waveforms of a test bench.
+Currently, the only verification method used is manual inspection of the output waveforms of a test bench. For now, it is easier and faster to spot erroneous states by hand due to the large complexity of the pipeline. Later in the project, automatic test benches will be utilised. 
 
 \subsubsection{Known Bugs}
-Several known bugs exist within the RISC core however none are critical as they can be easily avoided in software.
+Known bugs exist within the RISC core however none are critical as they can be easily avoided in software.
 
 \begin{enumerate}[leftmargin=3\parindent, label=\bfseries BUG\arabic*, style=nextline]
 \item{\textbf{Stall detection does not consider load/store instructions.}\\
-Due to pipelining techniques used by the processor and lack of address checking in the \verb|EXME| and \verb|MEWB| stages, \verb|LW| instructions immediately after \verb|SW| instructions:\\ \verb|    SW R0 (R2+16)|\\ \verb|    LW R1 (R2+16)|\\
+Due to instruction pipelining techniques used by the processor and lack of address checking in the \verb|EXME| and \verb|MEWB| stages, \verb|LW| instructions immediately after \verb|SW| instructions:\\ \verb|    SW R0 (R2+16)|\\ \verb|    LW R1 (R2+16)|\\
 will not return the previously stored value. In addition, because of the target address is calculated by the ALU (e.g. \verb|R2+16|), detecting matching addresses at IFID and IDEX stage is not trivial, and because of this, a hardware fix is not planned for the final version. It is possible to overcome this problem in software by placing at least 5 \verb|NOP| instructions after each \verb|SW|. 
 }\label{bug:swlw}
 \end{enumerate}
@@ -656,7 +656,7 @@ will not return the previously stored value. In addition, because of the target 
 
 \chapter{Future Work}
 
-{\hypersetup{linkcolor=black}
+{%\hypersetup{linkcolor=black}
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 }
@@ -664,12 +664,14 @@ will not return the previously stored value. In addition, because of the target 
 \section{Project Status}
 Four months have passed since the start of the project and significant progress has been made to the final deliverable. 
 
-The current active stage is 3.3 where the processor pipeline is being verified against of range of simple software sequences. It is important that this verification is thorough and the output is bug free.
+The current active stage is \textit{3.3 Pipeline Implementation and Verification} where the processor pipeline is being verified against of range of simple software sequences. It is important that this verification is thorough and the output is bug free as future additions to the processor will utilise this foundation.
 
 \subsection{Updated Project Time Line}
 The project table described in section \ref{sect:timeline} did not allocate times for stages 4.1 and later. This was due to expected high demand from other modules and exams in this time period and so it was decided to not allocate times that would later not be followed.
 
-Now that this time period is closer, time allocations have been assigned for stages 4, 7, and 8.
+Now that this time period is closer, time allocations have been assigned for stages 4, 7, and 8. The state of stage 5's extended deliverables, to implement debugging interfaces, have changed from \textit{Unknown} to \textit{Cancelled} due to expected high workload from other modules in the next month. The cancellation of these stages will not severely affect the final functionality of the deliverable however it will make debugging the processor slightly more difficult. It was decided to remove these extended features to allow for more time to be spent on core functionality.
+
+The updated project status is shown in Table \ref{tb:future_stages} and in Figure \ref{fig:future_stages}.
 
 \begin{table}[h]
     \small
@@ -695,7 +697,7 @@ Now that this time period is closer, time allocations have been assigned for sta
 	\\ \hline
     3.2 & Wishbone peripheral bus connected to MMU & Apr 08 &  & On-going
 	\\ \hline
-    3.3 & Pipelined implementation and verification & Apr 15 &  & On-going
+    3.3 & Pipeline implementation and verification & Apr 15 &  & On-going
 	\\ \hline
     3.4 & Cache memory design \& impl & \st{Apr 22} &  & Not planned
     \\ \specialrule{2pt}{-2pt}{0pt}
@@ -707,11 +709,11 @@ Now that this time period is closer, time allocations have been assigned for sta
 	\\ \hline
     4.4 & Multi-core example program (reduction) & Jul 10 & x & Planned
     \\ \specialrule{2pt}{-2pt}{0pt}
-    5.1 & SPI-FPGA interface for OTG programming & TBD &  & Unknown
+    5.1 & SPI-FPGA interface for OTG programming & \st{TBD} &  & Cancelled
 	\\ \hline
-    5.2 & FPGA-PC interfacing & TBD &  & Unknown
+    5.2 & FPGA-PC interfacing & \st{TBD} &  & Cancelled
 	\\ \hline
-    5.3 & FPGA-PC debugging (instruction breakpoints) & TBD & & Unknown
+    5.3 & FPGA-PC debugging (instruction breakpoints) & \st{TBD} & & Cancelled
     \\ \specialrule{2pt}{-2pt}{0pt}
     6.1 & Compiler backend for vmicro16 & TBD &  & Unknown
 	\\ \hline
@@ -731,8 +733,12 @@ Now that this time period is closer, time allocations have been assigned for sta
 \centering 
 \includegraphics[width=12cm]{../img/week2_gantt}
 \caption{Updated project time gantt chart showing time allocations for stage 4.}
-\label{fig:week2_gantt}
+\label{fig:future_stages}
 \end{figure}
+
+\subsection{Future Work}
+test
+
 
 %\chapter{Conclusion}
 
@@ -744,9 +750,13 @@ Now that this time period is closer, time allocations have been assigned for sta
 
 %\newgeometry{voffset=-4cm,bottom=-4cm}
 \chapter*{Appendix A - Code Listing}
+
+\markboth{Appendix A - Code Listing}{}
+
 \addcontentsline{toc}{chapter}{Appendix A - Code Listing}
 
 \section*{vmicro16.v}
+
 The single core RISC processor is defined in this file. It contains many submodules such as the decoder and local memory.
 \inputminted[fontsize=\tiny,baselinestretch=1,linenos]{systemverilog}{../../vmicro16/vmicro16.v}
 

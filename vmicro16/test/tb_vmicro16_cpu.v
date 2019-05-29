@@ -1,13 +1,13 @@
 `timescale 1ns / 1ps
 
-module tb_vmicro16_cpu;
+module tb_vmicro16_core;
 
     // Inputs
     reg clk;
     reg reset;
 
     // Instantiate the Unit Under Test (UUT)
-    vmicro16_cpu uut (
+    vmicro16_core uut (
         .clk(clk), 
         .reset(reset)
     );

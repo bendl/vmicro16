@@ -33,16 +33,30 @@ module vmicro16_bram # (
     // not synthesizable
     integer i;
     initial begin
-        for (i = 0; i < MEM_DEPTH; i = i + 1) mem[i] <= 0;
-        mem[0]  = {`VMICRO16_OP_MOVI, 3'h0}; mem[1]  = { 8'h00 };
-        mem[2]  = {`VMICRO16_OP_MOVI, 3'h1}; mem[3]  = { 8'h01 };
-        mem[4]  = {`VMICRO16_OP_MOVI, 3'h2}; mem[5]  = { 8'h02 };
-        mem[6]  = {`VMICRO16_OP_MOVI, 3'h3}; mem[7]  = { 8'h03 };
-        mem[8]  = {`VMICRO16_OP_MOVI, 3'h4}; mem[9]  = { 8'h04 };
-        mem[10] = {`VMICRO16_OP_MOVI, 3'h5}; mem[11] = { 8'h05 };
-        mem[12] = {`VMICRO16_OP_MOVI, 3'h6}; mem[13] = { 8'h06 };
-        mem[14] = {`VMICRO16_OP_MOVI, 3'h7}; mem[15] = { 8'h07 };
-        mem[16] = {`VMICRO16_OP_HALT, 3'h0}; mem[17] = { 8'h00 };
+        for (i = 0; i < MEM_DEPTH; i = i + 1) mem[i] = 0;
+        //mem[0]  = {`VMICRO16_OP_MOVI, 3'h0}; mem[1]  = { 8'h00 };
+        //mem[2]  = {`VMICRO16_OP_MOVI, 3'h1}; mem[3]  = { 8'h01 };
+        //mem[4]  = {`VMICRO16_OP_MOVI, 3'h2}; mem[5]  = { 8'h02 };
+        //mem[6]  = {`VMICRO16_OP_MOVI, 3'h3}; mem[7]  = { 8'h03 };
+        //mem[8]  = {`VMICRO16_OP_MOVI, 3'h4}; mem[9]  = { 8'h04 };
+        //mem[10] = {`VMICRO16_OP_MOVI, 3'h5}; mem[11] = { 8'h05 };
+        //mem[12] = {`VMICRO16_OP_MOVI, 3'h6}; mem[13] = { 8'h06 };
+        //mem[14] = {`VMICRO16_OP_MOVI, 3'h7}; mem[15] = { 8'h07 };
+        //mem[16] = {`VMICRO16_OP_HALT, 3'h0}; mem[17] = { 8'h00 };
+        //mem[0]  = {`VMICRO16_OP_MOVI, 3'h0, 8'h00 };
+        //mem[1]  = {`VMICRO16_OP_MOVI, 3'h1, 8'h01 };
+        //mem[2]  = {`VMICRO16_OP_MOVI, 3'h2, 8'h02 };
+        //mem[3]  = {`VMICRO16_OP_MOVI, 3'h3, 8'h03 };
+        //mem[4]  = {`VMICRO16_OP_MOVI, 3'h4, 8'h04 };
+        //mem[5]  = {`VMICRO16_OP_MOVI, 3'h5, 8'h05 };
+        //mem[6]  = {`VMICRO16_OP_MOVI, 3'h6, 8'h06 };
+        //mem[7]  = {`VMICRO16_OP_MOVI, 3'h7, 8'h07 };
+        //mem[8]  = {`VMICRO16_OP_HALT, 3'h0, 8'h00 };
+
+        mem[0] = {`VMICRO16_OP_NOP, 11'h00};
+        mem[1] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h2, 5'b11111};
+        mem[2] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h2, 5'b11111};
+        mem[3] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h2, 5'b11111};
     end
 
     always @(posedge clk) begin
@@ -91,7 +105,7 @@ module vmicro16_regs # (
     always @(posedge clk) 
         if (reset)
             for(i = 0; i < CELL_DEPTH; i = i + 1) 
-                regs[i] <= {(CELL_WIDTH-1){1'b0}};
+                regs[i] <= i;
         
         else if (we) begin
             $display($time, "\tREGS #%s: Writing %h to reg[%d]", 
@@ -155,88 +169,88 @@ module vmicro16_dec # (
 
     // exme_op
     always @(*) case (opcode)
-    `VMICRO16_OP_HALT, // TODO: stop ifid
-    `VMICRO16_OP_NOP:     alu_op = `VMICRO16_ALU_NOP;
-    
-    `VMICRO16_OP_LW:      alu_op = `VMICRO16_ALU_LW;
-    `VMICRO16_OP_SW:      alu_op = `VMICRO16_ALU_SW;
+        `VMICRO16_OP_HALT,    // TODO: stop ifid
+        `VMICRO16_OP_NOP:     alu_op = `VMICRO16_ALU_NOP;
+        
+        `VMICRO16_OP_LW:      alu_op = `VMICRO16_ALU_LW;
+        `VMICRO16_OP_SW:      alu_op = `VMICRO16_ALU_SW;
 
-    `VMICRO16_OP_MOV:     alu_op = `VMICRO16_ALU_MOV;
-    `VMICRO16_OP_MOVI:    alu_op = `VMICRO16_ALU_MOVI;
-    `VMICRO16_OP_MOVI_L:      alu_op = `VMICRO16_ALU_MOVI_L; 
+        `VMICRO16_OP_MOV:     alu_op = `VMICRO16_ALU_MOV;
+        `VMICRO16_OP_MOVI:    alu_op = `VMICRO16_ALU_MOVI;
+        `VMICRO16_OP_MOVI_L:  alu_op = `VMICRO16_ALU_MOVI_L; 
 
-    `VMICRO16_OP_BR:      alu_op = `VMICRO16_ALU_BR;
-    
-    `VMICRO16_OP_BIT:     casez (simm5)
-        `VMICRO16_OP_BIT_OR:      alu_op = `VMICRO16_ALU_BIT_OR;
-        `VMICRO16_OP_BIT_XOR:     alu_op = `VMICRO16_ALU_BIT_XOR;
-        `VMICRO16_OP_BIT_AND:     alu_op = `VMICRO16_ALU_BIT_AND;
-        `VMICRO16_OP_BIT_NOT:     alu_op = `VMICRO16_ALU_BIT_NOT;
-        `VMICRO16_OP_BIT_LSHFT:   alu_op = `VMICRO16_ALU_BIT_LSHFT;
-        `VMICRO16_OP_BIT_RSHFT:   alu_op = `VMICRO16_ALU_BIT_RSHFT;
-        default:      alu_op = `VMICRO16_ALU_BAD; endcase
+        `VMICRO16_OP_BR:      alu_op = `VMICRO16_ALU_BR;
+        
+        `VMICRO16_OP_BIT:     casez (simm5)
+            `VMICRO16_OP_BIT_OR:      alu_op = `VMICRO16_ALU_BIT_OR;
+            `VMICRO16_OP_BIT_XOR:     alu_op = `VMICRO16_ALU_BIT_XOR;
+            `VMICRO16_OP_BIT_AND:     alu_op = `VMICRO16_ALU_BIT_AND;
+            `VMICRO16_OP_BIT_NOT:     alu_op = `VMICRO16_ALU_BIT_NOT;
+            `VMICRO16_OP_BIT_LSHFT:   alu_op = `VMICRO16_ALU_BIT_LSHFT;
+            `VMICRO16_OP_BIT_RSHFT:   alu_op = `VMICRO16_ALU_BIT_RSHFT;
+            default:                  alu_op = `VMICRO16_ALU_BAD; endcase
 
-    `VMICRO16_OP_ARITH_U:     casez (simm5)
-        `VMICRO16_OP_ARITH_UADD:  alu_op = `VMICRO16_ALU_ARITH_UADD;
-        `VMICRO16_OP_ARITH_USUB:  alu_op = `VMICRO16_ALU_ARITH_USUB;
-        `VMICRO16_OP_ARITH_UADDI: alu_op = `VMICRO16_ALU_ARITH_UADDI;
-        default:      alu_op = `VMICRO16_ALU_BAD; endcase
-    
-    `VMICRO16_OP_ARITH_S:     casez (simm5)
-        `VMICRO16_OP_ARITH_SADD:  alu_op = `VMICRO16_ALU_ARITH_SADD;
-        `VMICRO16_OP_ARITH_SSUB:  alu_op = `VMICRO16_ALU_ARITH_SSUB;
-        `VMICRO16_OP_ARITH_SSUBI: alu_op = `VMICRO16_ALU_ARITH_SSUBI; 
-        default:      alu_op = `VMICRO16_ALU_BAD; endcase
-    
-    default: begin
-        alu_op = `VMICRO16_ALU_BAD;
-        $display($time, "\tDEC: unknown opcode: %h", opcode);
-    end
+        `VMICRO16_OP_ARITH_U:     casez (simm5)
+            `VMICRO16_OP_ARITH_UADD:  alu_op = `VMICRO16_ALU_ARITH_UADD;
+            `VMICRO16_OP_ARITH_USUB:  alu_op = `VMICRO16_ALU_ARITH_USUB;
+            `VMICRO16_OP_ARITH_UADDI: alu_op = `VMICRO16_ALU_ARITH_UADDI;
+            default:                  alu_op = `VMICRO16_ALU_BAD; endcase
+        
+        `VMICRO16_OP_ARITH_S:     casez (simm5)
+            `VMICRO16_OP_ARITH_SADD:  alu_op = `VMICRO16_ALU_ARITH_SADD;
+            `VMICRO16_OP_ARITH_SSUB:  alu_op = `VMICRO16_ALU_ARITH_SSUB;
+            `VMICRO16_OP_ARITH_SSUBI: alu_op = `VMICRO16_ALU_ARITH_SSUBI; 
+            default:                  alu_op = `VMICRO16_ALU_BAD; endcase
+        
+        default: begin
+            alu_op = `VMICRO16_ALU_BAD;
+            $display($time, "\tDEC: unknown opcode: %h", opcode);
+        end
     endcase
 
     // Register writes
     always @(*) case (opcode)
-    `VMICRO16_OP_LW,
-    `VMICRO16_OP_MOV,
-    `VMICRO16_OP_MOVI,
-    `VMICRO16_OP_MOVI_L,
-    `VMICRO16_OP_ARITH_U,
-    `VMICRO16_OP_ARITH_S,
-    `VMICRO16_OP_CMP,
-    `VMICRO16_OP_SETC:      has_we = 1'b1;
-    default:        has_we = 1'b0;
+        `VMICRO16_OP_LW,
+        `VMICRO16_OP_MOV,
+        `VMICRO16_OP_MOVI,
+        `VMICRO16_OP_MOVI_L,
+        `VMICRO16_OP_ARITH_U,
+        `VMICRO16_OP_ARITH_S,
+        `VMICRO16_OP_CMP,
+        `VMICRO16_OP_SETC:      has_we = 1'b1;
+        default:                has_we = 1'b0;
     endcase
 
     // Contains 8-bit immediate
     always @(*) case (opcode)
-    `VMICRO16_OP_MOVI,
-    `VMICRO16_OP_CMP:       has_imm8 = 1'b1;
-    default:        has_imm8 = 1'b0;
+        `VMICRO16_OP_MOVI,
+        `VMICRO16_OP_CMP:       has_imm8 = 1'b1;
+        default:                has_imm8 = 1'b0;
     endcase
 
     // Contains 12-bit immediate
     always @(*) case (opcode)
-    `VMICRO16_OP_MOVI_L:    has_imm12 = 1'b1;
-    default:        has_imm12 = 1'b0;
+        `VMICRO16_OP_MOVI_L:    has_imm12 = 1'b1;
+        default:                has_imm12 = 1'b0;
     endcase
     
     // Will branch the pc
     always @(*) case (opcode)
-    `VMICRO16_OP_BR:    has_br = 1'b1;
-    default:        has_br = 1'b0;
+        `VMICRO16_OP_BR:    has_br = 1'b1;
+        default:            has_br = 1'b0;
     endcase
     
     // Requires external memory
     always @(*) case (opcode)
-    `VMICRO16_OP_LW,
-    `VMICRO16_OP_SW:    has_mem = 1'b1;
-    default:        has_mem = 1'b0;
+        `VMICRO16_OP_LW,
+        `VMICRO16_OP_SW:    has_mem = 1'b1;
+        default:            has_mem = 1'b0;
     endcase
     
     // Requires external memory write
     always @(*) case (opcode)
-    `VMICRO16_OP_SW:    has_mem_we = 1'b1;
-    default:        has_mem_we = 1'b0;
+        `VMICRO16_OP_SW:    has_mem_we = 1'b1;
+        default:            has_mem_we = 1'b0;
     endcase
 endmodule
 
@@ -297,32 +311,37 @@ module vmicro16_core # (
     input       reset
 );
     reg  [2:0] r_state;
-    localparam STATE_IF = 0;
-    localparam STATE_R2 = 1;
-    localparam STATE_ME = 2;
-    localparam STATE_WB = 3;
+    localparam STATE_O  = 0;
+    localparam STATE_IF = 1;
+    localparam STATE_R1 = 2;
+    localparam STATE_R2 = 3;
+    localparam STATE_ME = 4;
+    localparam STATE_WB = 5;
 
     reg  [15:0] r_pc;
     reg  [15:0] r_instr;
     wire [15:0] w_mem_instr_out;
 
-    reg  [4:0]  r_instr_opcode;
-    reg  [4:0]  r_instr_alu_op;
-    reg  [2:0]  r_instr_rsd;
-    reg  [2:0]  r_instr_rsa;
-    reg  [15:0] r_instr_rdd;
-    reg  [15:0] r_instr_rda;
-    reg  [7:0]  r_instr_imm8;
-    reg  [4:0]  r_instr_simm5;
-    reg         r_instr_has_imm8;
-    reg         r_instr_has_we;
-    reg         r_instr_has_br;
-    reg         r_instr_has_mem;
-    reg         r_instr_has_mem_we;
-    reg         r_instr_halt;
+    wire  [4:0]  r_instr_opcode;
+    wire  [4:0]  r_instr_alu_op;
+    wire  [2:0]  r_instr_rsd;
+    wire  [2:0]  r_instr_rsa;
+    reg   [15:0] r_instr_rdd;
+    reg   [15:0] r_instr_rda;
+    wire  [7:0]  r_instr_imm8;
+    wire  [4:0]  r_instr_simm5;
+    wire         r_instr_has_imm8;
+    wire         r_instr_has_we;
+    wire         r_instr_has_br;
+    wire         r_instr_has_mem;
+    wire         r_instr_has_mem_we;
+    wire         r_instr_halt;
 
-    reg  [15:0] r_alu_out;
-    reg  [2:0]  r_reg_rs;
+    wire [15:0] r_alu_out;
+    reg  [2:0]  r_reg_rs1;
+    wire [15:0] r_reg_rd1;
+    reg  [15:0] r_reg_wd;
+    //wire [15:0] r_reg_rd2;
 
     reg  [15:0] r_mem_scratch_addr;
     reg  [15:0] r_mem_scratch_in;
@@ -330,33 +349,50 @@ module vmicro16_core # (
     reg         r_mem_scratch_we;
 
     always @(*) begin
-        r_reg_rs = 0;
-        if (r_state == STATE_IF) begin
-            r_reg_rs    = r_instr_rsd;
-            r_instr_rdd = r_reg_rd;
+        r_reg_rs1 = 0;
+        if (r_state == STATE_R1) begin
+            r_reg_rs1    = r_instr_rsd;
+            r_instr_rdd = r_reg_rd1;
         end
-        else begin
-            r_reg_rs    = r_instr_rsa;
-            r_instr_rda = r_reg_rd;
+        else if (r_state == STATE_R2) begin
+            r_reg_rs1    = r_instr_rsa;
+            r_instr_rda = r_reg_rd1;
+        end else begin
+            r_reg_rs1   = 3'hX;
+            r_instr_rda = r_instr_rda;
         end
     end
 
     always @(posedge clk)
         if (reset) begin
             r_pc    <= 0;
-            r_state <= STATE_IF;
+            r_state <= STATE_O;
+            r_instr <= 0;
         end else begin
-            if (r_state == STATE_IF) begin
-                r_pc    <= r_pc + 1;
+            if (r_state == STATE_O)
+                r_state <= STATE_IF;
+            
+            else if (r_state == STATE_IF) begin
                 r_instr <= w_mem_instr_out;
                 
+                r_state <= STATE_R1;
+            end
+            else if (r_state == STATE_R1) begin
                 r_state <= STATE_R2;
             end
             else if (r_state == STATE_R2) begin
+                if (r_instr_has_mem)
+                    r_state <= STATE_ME;
+                else
+                    r_state <= STATE_WB;
+            end
+            else if (r_state == STATE_ME) begin
+                // TODO: wait for mmu to finish
                 r_state <= STATE_WB;
             end
             else if (r_state == STATE_WB) begin
                 r_state <= STATE_IF;
+                r_pc    <= r_pc + 1;
             end
         end
 
@@ -372,6 +408,24 @@ module vmicro16_core # (
         .mem_we     (0), 
         .mem_out    (w_mem_instr_out)
     );
+
+
+    always @(*) begin
+        r_mem_scratch_addr = 16'hXX;
+        r_reg_wd           = 16'hXX;
+
+        // LW/SW
+        if (r_instr_has_mem) begin
+            r_reg_wd = r_mem_scratch_out;
+            // LW: rd <= mem[r_alu_out]
+            r_mem_scratch_addr = r_alu_out;
+            // SW: mem[r_alu_out] <= rd
+            if (r_instr_has_mem_we)
+                r_mem_scratch_in = r_instr_rdd;
+        end else begin
+            r_reg_wd = r_alu_out;
+        end
+    end
 
     vmicro16_bram # (
         .MEM_WIDTH(16),
@@ -408,8 +462,12 @@ module vmicro16_core # (
         .clk    (clk),
         .reset  (reset),
 
-        .rs1    (r_reg_rs),
-        .rd1    (r_reg_rd)
+        .rs1    (r_reg_rs1),
+        .rd1    (r_reg_rd1),
+        
+        .we     (r_instr_has_we && (r_state == STATE_WB)),
+        .ws1    (r_instr_rsd),
+        .wd     (r_reg_wd) // either alu_c or mem_out
     );
 
     vmicro16_alu alu (

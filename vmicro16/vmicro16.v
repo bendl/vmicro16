@@ -32,7 +32,18 @@ module vmicro16_bram # (
 
     // not synthesizable
     integer i;
-    initial for (i = 0; i < MEM_DEPTH; i = i + 1) mem[i] <= 0;
+    initial begin
+        for (i = 0; i < MEM_DEPTH; i = i + 1) mem[i] <= 0;
+        mem[0]  = {`VMICRO16_OP_MOVI, 3'h0}; mem[1]  = { 8'h00 };
+        mem[2]  = {`VMICRO16_OP_MOVI, 3'h1}; mem[3]  = { 8'h01 };
+        mem[4]  = {`VMICRO16_OP_MOVI, 3'h2}; mem[5]  = { 8'h02 };
+        mem[6]  = {`VMICRO16_OP_MOVI, 3'h3}; mem[7]  = { 8'h03 };
+        mem[8]  = {`VMICRO16_OP_MOVI, 3'h4}; mem[9]  = { 8'h04 };
+        mem[10] = {`VMICRO16_OP_MOVI, 3'h5}; mem[11] = { 8'h05 };
+        mem[12] = {`VMICRO16_OP_MOVI, 3'h6}; mem[13] = { 8'h06 };
+        mem[14] = {`VMICRO16_OP_MOVI, 3'h7}; mem[15] = { 8'h07 };
+        mem[16] = {`VMICRO16_OP_HALT, 3'h0}; mem[17] = { 8'h00 };
+    end
 
     always @(posedge clk) begin
         // synchronous WRITE_FIRST (page 13)
@@ -61,9 +72,9 @@ module vmicro16_regs # (
     input reset,
     // Dual port register reads
     input      [CELL_SEL_BITS-1:0]  rs1, // port 1
-    output reg [CELL_WIDTH-1   :0]  rd1,
+    output     [CELL_WIDTH-1   :0]  rd1,
     input      [CELL_SEL_BITS-1:0]  rs2, // port 2
-    output reg [CELL_WIDTH-1   :0]  rd2,
+    output     [CELL_WIDTH-1   :0]  rd2,
     // EX/WB final stage write back
     input                           we,
     input [CELL_SEL_BITS-1:0]       ws1,
@@ -113,9 +124,9 @@ module vmicro16_dec # (
     output [INSTR_OP_WIDTH-1:0] opcode,
     output [INSTR_RS_WIDTH-1:0] rd,
     output [INSTR_RS_WIDTH-1:0] ra,
-    output [7:0]        imm8,
-    output [11:0]           imm12,
-    output [4:0]        simm5,
+    output [7:0]                imm8,
+    output [11:0]               imm12,
+    output [4:0]                simm5,
 
     // This can be freely increased without affecting the isa
     output reg [ALU_OP_WIDTH-1:0] alu_op,
@@ -280,30 +291,55 @@ endmodule
 
 module vmicro16_core # (
     parameter MEM_INSTR_DEPTH   = 64,
-    parameter MEM_SCRATCH_DEPTH = 64,
+    parameter MEM_SCRATCH_DEPTH = 64
 ) (
     input       clk,
     input       reset
 );
     reg  [2:0] r_state;
     localparam STATE_IF = 0;
-    localparam STATE_ME = 1;
-    localparam STATE_WB = 2;
+    localparam STATE_R2 = 1;
+    localparam STATE_ME = 2;
+    localparam STATE_WB = 3;
 
     reg  [15:0] r_pc;
     reg  [15:0] r_instr;
     wire [15:0] w_mem_instr_out;
 
+    reg  [4:0]  r_instr_opcode;
     reg  [4:0]  r_instr_alu_op;
     reg  [2:0]  r_instr_rsd;
     reg  [2:0]  r_instr_rsa;
-    reg  [15:0] r_instr_rsd;
-    reg  [15:0] r_instr_rsa;
+    reg  [15:0] r_instr_rdd;
+    reg  [15:0] r_instr_rda;
+    reg  [7:0]  r_instr_imm8;
+    reg  [4:0]  r_instr_simm5;
+    reg         r_instr_has_imm8;
+    reg         r_instr_has_we;
+    reg         r_instr_has_br;
+    reg         r_instr_has_mem;
+    reg         r_instr_has_mem_we;
+    reg         r_instr_halt;
+
+    reg  [15:0] r_alu_out;
+    reg  [2:0]  r_reg_rs;
 
     reg  [15:0] r_mem_scratch_addr;
     reg  [15:0] r_mem_scratch_in;
     wire [15:0] r_mem_scratch_out;
     reg         r_mem_scratch_we;
+
+    always @(*) begin
+        r_reg_rs = 0;
+        if (r_state == STATE_IF) begin
+            r_reg_rs    = r_instr_rsd;
+            r_instr_rdd = r_reg_rd;
+        end
+        else begin
+            r_reg_rs    = r_instr_rsa;
+            r_instr_rda = r_reg_rd;
+        end
+    end
 
     always @(posedge clk)
         if (reset) begin
@@ -313,11 +349,19 @@ module vmicro16_core # (
             if (r_state == STATE_IF) begin
                 r_pc    <= r_pc + 1;
                 r_instr <= w_mem_instr_out;
+                
+                r_state <= STATE_R2;
+            end
+            else if (r_state == STATE_R2) begin
+                r_state <= STATE_WB;
+            end
+            else if (r_state == STATE_WB) begin
+                r_state <= STATE_IF;
             end
         end
 
     vmicro16_bram # (
-        .MEM_WIDTH(15),
+        .MEM_WIDTH(16),
         .MEM_DEPTH(MEM_INSTR_DEPTH)
     ) mem_instr (
         .clk        (clk), 
@@ -330,7 +374,7 @@ module vmicro16_core # (
     );
 
     vmicro16_bram # (
-        .MEM_WIDTH(15),
+        .MEM_WIDTH(16),
         .MEM_DEPTH(MEM_SCRATCH_DEPTH)
     ) mem_scratch (
         .clk        (clk), 
@@ -342,11 +386,37 @@ module vmicro16_core # (
         .mem_out    (r_mem_scratch_out)
     );
 
+    vmicro16_dec dec (
+        // input
+        .instr          (r_instr),
+        // output async
+        .opcode         (r_instr_opcode),
+        .rd             (r_instr_rsd),
+        .ra             (r_instr_rsa),
+        .imm8           (r_instr_imm8),
+        .simm5          (r_instr_simm5),
+        .alu_op         (r_instr_alu_op),
+        .has_imm8       (r_instr_has_imm8),
+        .has_we         (r_instr_has_we),
+        .has_br         (r_instr_has_br),
+        .has_mem        (r_instr_has_mem),
+        .has_mem_we     (r_instr_has_mem_we),
+        .halt           (r_instr_halt)
+    );
 
-    vmicro16_dec (
-        .instr (r_instr),
-        .r_opcode (r_opcode),
-        .r_rd     (r_instr_rd1)
+    vmicro16_regs regs (
+        .clk    (clk),
+        .reset  (reset),
+
+        .rs1    (r_reg_rs),
+        .rd1    (r_reg_rd)
+    );
+
+    vmicro16_alu alu (
+        .op (r_instr_alu_op),
+        .a  (r_instr_rdd),
+        .b  (r_instr_rda),
+        .c  (r_alu_out)
     );
 
 

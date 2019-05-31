@@ -12,8 +12,7 @@ module vmicro16_soc (
     wire [15:0] wb_miso_data_i; // seperate data_o and data_i buses
     wire        wb_miso_ack_i;
 
-    vmicro16_core # (
-    ) c1 (
+    vmicro16_core c1 (
         .clk    (clk),
         .reset  (reset)
     );

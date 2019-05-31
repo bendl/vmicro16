@@ -53,10 +53,15 @@ module vmicro16_bram # (
         //mem[7]  = {`VMICRO16_OP_MOVI, 3'h7, 8'h07 };
         //mem[8]  = {`VMICRO16_OP_HALT, 3'h0, 8'h00 };
 
-        mem[0] = {`VMICRO16_OP_NOP, 11'h00};
-        mem[1] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h2, 5'b11111};
-        mem[2] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h2, 5'b11111};
-        mem[3] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h2, 5'b11111};
+        //mem[0] = {`VMICRO16_OP_NOP, 11'h00};
+        //mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h3          };
+        //mem[1] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h0, 5'b11111};
+        //mem[2] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h0, 5'b11111};
+        //mem[3] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h0, 5'b11111};
+        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h3          };
+        mem[1] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h0, 5'b11111};
+        mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h7, 5'h3};    // mem[$7] <= $4
+        mem[3] = {`VMICRO16_OP_LW,      3'h6, 3'h7, 5'h3};    // r6 <= mem[$7]
     end
 
     always @(posedge clk) begin
@@ -346,7 +351,7 @@ module vmicro16_core # (
     reg  [15:0] r_mem_scratch_addr;
     reg  [15:0] r_mem_scratch_in;
     wire [15:0] r_mem_scratch_out;
-    reg         r_mem_scratch_we;
+    wire        r_mem_scratch_we = r_instr_has_mem_we && (r_state == STATE_ME);
 
     always @(*) begin
         r_reg_rs1 = 0;
@@ -356,7 +361,12 @@ module vmicro16_core # (
         end
         else if (r_state == STATE_R2) begin
             r_reg_rs1    = r_instr_rsa;
-            r_instr_rda = r_reg_rd1;
+
+            if (r_instr_has_imm8)
+                r_instr_rda = r_instr_imm8;
+            else
+                r_instr_rda = r_reg_rd1;
+
         end else begin
             r_reg_rs1   = 3'hX;
             r_instr_rda = r_instr_rda;
@@ -374,6 +384,7 @@ module vmicro16_core # (
             
             else if (r_state == STATE_IF) begin
                 r_instr <= w_mem_instr_out;
+                r_pc    <= r_pc + 1;
                 
                 r_state <= STATE_R1;
             end
@@ -384,7 +395,7 @@ module vmicro16_core # (
                 if (r_instr_has_mem)
                     r_state <= STATE_ME;
                 else
-                    r_state <= STATE_WB;
+                    r_state <= STATE_IF;
             end
             else if (r_state == STATE_ME) begin
                 // TODO: wait for mmu to finish
@@ -392,7 +403,6 @@ module vmicro16_core # (
             end
             else if (r_state == STATE_WB) begin
                 r_state <= STATE_IF;
-                r_pc    <= r_pc + 1;
             end
         end
 
@@ -458,6 +468,13 @@ module vmicro16_core # (
         .halt           (r_instr_halt)
     );
 
+    reg r_reg_we;
+    always @(*)
+        if (r_instr_has_mem)
+            r_reg_we = r_instr_has_we && (r_state == STATE_WB);
+        else
+            r_reg_we = r_instr_has_we && (r_state == STATE_R2);
+    
     vmicro16_regs regs (
         .clk    (clk),
         .reset  (reset),
@@ -465,7 +482,7 @@ module vmicro16_core # (
         .rs1    (r_reg_rs1),
         .rd1    (r_reg_rd1),
         
-        .we     (r_instr_has_we && (r_state == STATE_WB)),
+        .we     (r_reg_we),
         .ws1    (r_instr_rsd),
         .wd     (r_reg_wd) // either alu_c or mem_out
     );

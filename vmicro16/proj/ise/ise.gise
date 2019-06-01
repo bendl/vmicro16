@@ -30,6 +30,7 @@
     <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="isim"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_CMD" xil_pn:name="isim.cmd"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_LOG" xil_pn:name="isim.log"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="tb_vmicro16_core_isim_beh.exe"/>
     <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_vmicro16_cpu_beh.prj"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="tb_vmicro16_cpu_isim_beh.exe"/>
     <file xil_pn:fileType="FILE_ISIM_MISC" xil_pn:name="tb_vmicro16_cpu_isim_beh.wdb"/>
@@ -40,7 +41,7 @@
     <file xil_pn:fileType="FILE_XST_STX" xil_pn:name="tb_vmicro16_soc.stx"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_REPORT" xil_pn:name="tb_vmicro16_soc.syr"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST" xil_pn:name="tb_vmicro16_soc.xst"/>
-    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_vmicro16_soc_beh.prj"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_vmicro16_soc_beh.prj"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="tb_vmicro16_soc_isim_beh.exe"/>
     <file xil_pn:fileType="FILE_ISIM_MISC" xil_pn:name="tb_vmicro16_soc_isim_beh.wdb"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_vmicro16_soc_stx_beh.prj"/>
@@ -59,6 +60,7 @@
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_REPORT" xil_pn:name="vmicro16_core.syr"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST" xil_pn:name="vmicro16_core.xst"/>
     <file xil_pn:fileType="FILE_HTML" xil_pn:name="vmicro16_core_envsettings.html"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="vmicro16_core_mmu_isim_beh.exe"/>
     <file xil_pn:fileType="FILE_HTML" xil_pn:name="vmicro16_core_summary.html"/>
     <file xil_pn:fileType="FILE_XRPT" xil_pn:name="vmicro16_core_xst.xrpt"/>
     <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="vmicro16_cpu.prj"/>
@@ -91,9 +93,10 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1559405011" xil_pn:in_ck="-7391072006113803751" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1559405011">
+    <transform xil_pn:end_ts="1559417017" xil_pn:in_ck="-2965488295424798521" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1559417017">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="../../apb_intercon.v"/>
       <outfile xil_pn:name="../../clog2.v"/>
       <outfile xil_pn:name="../../test/tb_vmicro16_cpu.v"/>
       <outfile xil_pn:name="../../test/tb_vmicro16_soc.v"/>
@@ -101,11 +104,11 @@
       <outfile xil_pn:name="../../vmicro16_isa.v"/>
       <outfile xil_pn:name="../../vmicro16_soc.v"/>
     </transform>
-    <transform xil_pn:end_ts="1559168913" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="512942154895326247" xil_pn:start_ts="1559168913">
+    <transform xil_pn:end_ts="1559412486" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="512942154895326247" xil_pn:start_ts="1559412486">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1559168913" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="8881976593908466149" xil_pn:start_ts="1559168913">
+    <transform xil_pn:end_ts="1559412486" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="8881976593908466149" xil_pn:start_ts="1559412486">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
@@ -113,9 +116,10 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1559405012" xil_pn:in_ck="-7391072006113803751" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1559405011">
+    <transform xil_pn:end_ts="1559417017" xil_pn:in_ck="-2965488295424798521" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1559417017">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="../../apb_intercon.v"/>
       <outfile xil_pn:name="../../clog2.v"/>
       <outfile xil_pn:name="../../test/tb_vmicro16_cpu.v"/>
       <outfile xil_pn:name="../../test/tb_vmicro16_soc.v"/>
@@ -123,7 +127,7 @@
       <outfile xil_pn:name="../../vmicro16_isa.v"/>
       <outfile xil_pn:name="../../vmicro16_soc.v"/>
     </transform>
-    <transform xil_pn:end_ts="1559405023" xil_pn:in_ck="-7391072006113803751" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-9125384734343796275" xil_pn:start_ts="1559405012">
+    <transform xil_pn:end_ts="1559417028" xil_pn:in_ck="-2965488295424798521" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-9125384734343796275" xil_pn:start_ts="1559417017">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="fuse.log"/>
@@ -133,7 +137,7 @@
       <outfile xil_pn:name="tb_vmicro16_soc_isim_beh.exe"/>
       <outfile xil_pn:name="xilinxsim.ini"/>
     </transform>
-    <transform xil_pn:end_ts="1559405027" xil_pn:in_ck="4322302960195757484" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-4595198152029455632" xil_pn:start_ts="1559405023">
+    <transform xil_pn:end_ts="1559417031" xil_pn:in_ck="-8030800199283893045" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-4595198152029455632" xil_pn:start_ts="1559417028">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="isim.cmd"/>
@@ -173,6 +177,7 @@
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
       <status xil_pn:value="OutOfDateForInputs"/>
+      <status xil_pn:value="InputAdded"/>
       <status xil_pn:value="InputChanged"/>
       <outfile xil_pn:name="_xmsgs/xst.xmsgs"/>
       <outfile xil_pn:name="vmicro16_core.lso"/>

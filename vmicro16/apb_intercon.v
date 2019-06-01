@@ -6,18 +6,30 @@
 // and outputs an address for the peripheral
 
 module apb_intercon_s # (
-    BUS_WIDTH   = 16,
-    SLAVE_PORTS = 3,
+    BUS_WIDTH    = 16,
+    MASTER_PORTS = 1,
+    SLAVE_PORTS  = 3
 ) (
-    input                     S_PCLK,
-    // SLAVE Interface to a master
-    input  [BUS_WIDTH-1:0]    S_PADDR,
-    input                     S_PWRITE,
-    input                     S_PSELx,
-    input                     S_PENABLE,
-    input  [BUS_WIDTH-1:0]    S_PWDATA,
-    output                    S_PRDATA,
-    output                    S_PREADY,
+    input clk,
+    input reset,
+
+    //
+    //input  [MASTER_PORTS*BUS_WIDTH-1:0] S_MEM_ADDR,
+    //input  [MASTER_PORTS*BUS_WIDTH-1:0] S_MEM_IN,
+    //input  [MASTER_PORTS*BUS_WIDTH-1:0] S_MEM_OUT,
+    //input  [MASTER_PORTS-1:0]           S_MEM_WE,
+    //input  [MASTER_PORTS-1:0]           S_REQ,
+    //output [MASTER_PORTS-1:0]           S_ACK,
+    //output [MASTER_PORTS-1:0]           S_MEM_BUSY,
+    //
+
+    input  [MASTER_PORTS*BUS_WIDTH-1:0] S_PADDR,
+    input  [MASTER_PORTS-1:0]           S_PWRITE,
+    input  [MASTER_PORTS-1:0]           S_PSELx,
+    input  [MASTER_PORTS-1:0]           S_PENABLE,
+    input  [MASTER_PORTS*BUS_WIDTH-1:0] S_PWDATA,
+    output [MASTER_PORTS*BUS_WIDTH-1:0] S_PRDATA,
+    output [MASTER_PORTS-1:0]           S_PREADY,
 
     // MASTER interface to a slave
     output  [BUS_WIDTH-1:0]   M_PADDR,
@@ -28,13 +40,10 @@ module apb_intercon_s # (
     output                    M_PENABLE,
     output  [BUS_WIDTH-1:0]   M_PWDATA,
     //shared inout
-    input                     M_PRDATA,
+    input   [BUS_WIDTH-1:0]   M_PRDATA,
     //shared inout
     input                     M_PREADY
 );
-    wire s_apb_write = S_PSELx & S_PENABLE & S_PWRITE;
-    wire s_apb_read  = S_PSELx & ~S_PWRITE;
-    
     assign M_PADDR  = S_PADDR;
     assign M_PWRITE = S_PWRITE;
     assign M_PWDATA = S_PWDATA;
@@ -42,9 +51,8 @@ module apb_intercon_s # (
     // interconnect is ready while it's slaves are ready
     assign S_PREADY = M_PREADY;
 
-    assign MPSELx[0] = (S_PADDR >= 16'h80 && S_PADDR <= 16'h8F);
-    assign MPSELx[1] = (S_PADDR >= 16'h90 && S_PADDR <= 16'h9F);
-    assign MPSELx[2] = (S_PADDR >= 16'hA0 && S_PADDR <= 16'hAF);
-    assign MPSELx[3] = (S_PADDR >= 16'hB0 && S_PADDR <= 16'hBF);
+    assign M_PSELx[0] = (S_PADDR >= 16'h80 && S_PADDR <= 16'h8F);
+    assign M_PSELx[1] = (S_PADDR >= 16'h90 && S_PADDR <= 16'h9F);
+    assign M_PSELx[2] = (S_PADDR >= 16'hA0 && S_PADDR <= 16'hAF);
 
 endmodule

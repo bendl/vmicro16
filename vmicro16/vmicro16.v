@@ -58,18 +58,22 @@ module vmicro16_bram # (
         //mem[1] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h0, 5'b11111};
         //mem[2] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h0, 5'b11111};
         //mem[3] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h0, 5'b11111};
-        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h3          };
-        mem[1] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h0, 5'b11111};
-        mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h7, 5'h3};    // mem[$7+3] <= $4
-        mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'h5};
-        mem[4] = {`VMICRO16_OP_LW,      3'h6, 3'h7, 5'h3};    // r6 <= mem[$7+3]
+        
+        //mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h3          };
+        //mem[1] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h0, 5'b11111};
+        //mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h7, 5'h3};    // mem[$7+3] <= $4
+        //mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'h5};
+        //mem[4] = {`VMICRO16_OP_LW,      3'h6, 3'h7, 5'h3};    // r6 <= mem[$7+3]
+
+        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h81};
+        mem[1] = {`VMICRO16_OP_SW,      3'h6, 3'h0, 5'h1}; // MMU[0x81] = 6
     end
 
     always @(posedge clk) begin
         // synchronous WRITE_FIRST (page 13)
         if (mem_we) begin
             mem[mem_addr] <= mem_in;
-            $display($time, "\tMEM: W mem[%h] <= %h", mem_addr, mem_in);
+            $display($time, "\tTIM0: W TIM0[%h] <= %h", mem_addr, mem_in);
         end else begin
             mem_out <= mem[mem_addr];
         end
@@ -83,8 +87,8 @@ module vmicro16_core_mmu # (
     parameter MEM_WIDTH    = 16,
     parameter MEM_DEPTH    = 256,
     // TIM0 addr
-    parameter ADDR_TIM0_S  = 16'h80,
-    parameter ADDR_TIM0_E  = 16'hBF
+    parameter ADDR_TIM0_S  = 16'h00,
+    parameter ADDR_TIM0_E  = 16'h3F
 ) (
     input clk,
     input reset,
@@ -92,32 +96,32 @@ module vmicro16_core_mmu # (
     input  req,
     output busy,
     
-    // Output WB interface
-
+    // From core
     input      [MEM_WIDTH-1:0] mem_addr,
     input      [MEM_WIDTH-1:0] mem_in,
     input                      mem_we,
-    output reg [MEM_WIDTH-1:0] mem_out
-);
-    localparam MMU_STATE_IDLE = 0;
-    localparam MMU_STATE_BUSY = 1;
-    reg [2:0] mmu_state;
+    output reg [MEM_WIDTH-1:0] mem_out,
 
-    // mmu_state fsm
-    always @(posedge clk) begin
-        if(reset) begin
-            mmu_state <= MMU_STATE_IDLE;
-        end else begin
-            case (mmu_state)
-                MMU_STATE_IDLE:
-                    if (req)
-                        if (!tim0_en)
-                            mmu_state <= MMU_STATE_BUSY;
-            endcase
-        end
-    end
+    // TO APB interconnect
+    output reg [MEM_WIDTH-1:0]   M_PADDR,
+    //shared
+    output reg                   M_PWRITE,
+    output reg                   M_PSELx,
+    //shared
+    output reg                   M_PENABLE,
+    output reg [MEM_WIDTH-1:0]   M_PWDATA,
+    //shared inout
+    input      [MEM_WIDTH-1:0]   M_PRDATA,
+    //shared inout
+    input                        M_PREADY
+);
+    localparam MMU_STATE_T0 = 0;
+    localparam MMU_STATE_T1 = 1;
+    localparam MMU_STATE_T2 = 2;
+    reg [2:0] mmu_state = MMU_STATE_T1;
 
     reg [MEM_WIDTH-1:0] per_out;
+    wire [MEM_WIDTH-1:0] tim0_out;
 
     // Output port
     always @(*)
@@ -128,19 +132,38 @@ module vmicro16_core_mmu # (
 
     // tightly integrated memory usage
     wire tim0_en   = (mem_addr >= ADDR_TIM0_S) && (mem_addr <=  ADDR_TIM0_E);
-    wire tim0_addr = (mem_addr - ADDR_TIM0_S);
+    wire [MEM_WIDTH-1:0] tim0_addr = (mem_addr - ADDR_TIM0_S);
     wire tim0_we   = (tim0_en && mem_we);
 
-    // Clocked when req is high
-    reg [MEM_WIDTH-1:0] r_mem_addr;
-    reg [MEM_WIDTH-1:0] r_mem_in;
-    reg                 r_mem_we;
+    // APB master to slave interface
     always @(posedge clk) begin
-        if (req) begin
-            r_mem_addr <= mem_addr;
-            r_mem_in   <= mem_in;
-            r_mem_we   <= mem_we;
+        if (reset) begin
+            mmu_state <= MMU_STATE_T1;
+            M_PENABLE <= 0;
+            M_PADDR   <= 0;
+            M_PWDATA  <= 0;
+            M_PSELx   <= 0;
+            M_PWRITE  <= 0;
         end
+        
+        else
+        case (mmu_state)
+            MMU_STATE_T1: begin
+                if (req) begin
+                    M_PENABLE <= 0;
+                    M_PADDR   <= mem_addr;
+                    M_PWDATA  <= mem_in;
+                    M_PSELx   <= 1;
+                    M_PWRITE  <= mem_we;
+
+                    mmu_state <= MMU_STATE_T2;
+                end
+            end
+
+            MMU_STATE_T2: begin
+                M_PENABLE <= 1;
+            end
+        endcase
     end
 
     // Each M core has a TIM0 scratch memory
@@ -390,16 +413,20 @@ endmodule
 
 module vmicro16_core # (
     parameter MEM_INSTR_DEPTH   = 64,
-    parameter MEM_SCRATCH_DEPTH = 64
+    parameter MEM_SCRATCH_DEPTH = 64,
+    parameter MEM_WIDTH         = 16
 ) (
     input       clk,
     input       reset,
-
-    output [15:0] mmu_addr,
-    output [15:0] mmu_wdata,
-    output        mmu_we,
-    input  [15:0] mmu_rdata,
-    input         mmu_busy
+    
+    // TO APB interconnect
+    output  [MEM_WIDTH-1:0]     w_PADDR,
+    output                      w_PWRITE,
+    output                      w_PSELx,
+    output                      w_PENABLE,
+    output  [MEM_WIDTH-1:0]     w_PWDATA,
+    input   [MEM_WIDTH-1:0]     w_PRDATA,
+    input                       w_PREADY
 );
     reg  [2:0] r_state;
     localparam STATE_O  = 0;
@@ -438,6 +465,8 @@ module vmicro16_core # (
     reg  [15:0] r_mem_scratch_in;
     wire [15:0] r_mem_scratch_out;
     wire        r_mem_scratch_we = r_instr_has_mem_we && (r_state == STATE_ME);
+    reg         r_mem_scratch_req;
+    wire        r_mem_scratch_busy;
 
     always @(*) begin
         r_reg_rs1 = 0;
@@ -464,6 +493,7 @@ module vmicro16_core # (
             r_pc    <= 0;
             r_state <= STATE_O;
             r_instr <= 0;
+            r_mem_scratch_req <= 0;
         end else begin
             if (r_state == STATE_O)
                 r_state <= STATE_IF;
@@ -478,14 +508,17 @@ module vmicro16_core # (
                 r_state <= STATE_R2;
             end
             else if (r_state == STATE_R2) begin
-                if (r_instr_has_mem)
+                if (r_instr_has_mem) begin
                     r_state <= STATE_ME;
-                else
+                    r_mem_scratch_req <= 1;
+                end else
                     r_state <= STATE_IF;
             end
             else if (r_state == STATE_ME) begin
+                // Pulse req
+                r_mem_scratch_req <= 0;
                 // TODO: wait for mmu to finish
-                r_state <= STATE_WB;
+                //r_state <= STATE_WB;
             end
             else if (r_state == STATE_WB) begin
                 r_state <= STATE_IF;
@@ -523,17 +556,30 @@ module vmicro16_core # (
         end
     end
 
-    vmicro16_bram # (
-        .MEM_WIDTH(16),
-        .MEM_DEPTH(MEM_SCRATCH_DEPTH)
+    // TO APB interconnect
+    vmicro16_core_mmu # (
+        .MEM_WIDTH   (16),
+        .MEM_DEPTH   (MEM_SCRATCH_DEPTH),
+        .ADDR_TIM0_S (16'h00),
+        .ADDR_TIM1_E (16'h3F)
     ) mem_scratch (
         .clk        (clk), 
         .reset      (reset), 
+        .req        (r_mem_scratch_req),
+        .busy       (r_mem_scratch_busy),
         // port 1
         .mem_addr   (r_mem_scratch_addr), 
         .mem_in     (r_mem_scratch_in), 
         .mem_we     (r_mem_scratch_we), 
-        .mem_out    (r_mem_scratch_out)
+        .mem_out    (r_mem_scratch_out),
+        // APB master to slave
+        .M_PADDR    (w_PADDR),
+        .M_PWRITE   (w_PWRITE),
+        .M_PSELx    (w_PSELx),
+        .M_PENABLE  (w_PENABLE),
+        .M_PWDATA   (w_PWDATA),
+        .M_PRDATA   (w_PRDATA),
+        .M_PREADY   (w_PREADY)
     );
 
     vmicro16_dec dec (

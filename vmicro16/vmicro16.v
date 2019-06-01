@@ -393,7 +393,13 @@ module vmicro16_core # (
     parameter MEM_SCRATCH_DEPTH = 64
 ) (
     input       clk,
-    input       reset
+    input       reset,
+
+    output [15:0] mmu_addr,
+    output [15:0] mmu_wdata,
+    output        mmu_we,
+    input  [15:0] mmu_rdata,
+    input         mmu_busy
 );
     reg  [2:0] r_state;
     localparam STATE_O  = 0;

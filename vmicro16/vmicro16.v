@@ -60,8 +60,9 @@ module vmicro16_bram # (
         //mem[3] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h0, 5'b11111};
         mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h3          };
         mem[1] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h0, 5'b11111};
-        mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h7, 5'h3};    // mem[$7] <= $4
-        mem[3] = {`VMICRO16_OP_LW,      3'h6, 3'h7, 5'h3};    // r6 <= mem[$7]
+        mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h7, 5'h3};    // mem[$7+3] <= $4
+        mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'h5};
+        mem[4] = {`VMICRO16_OP_LW,      3'h6, 3'h7, 5'h3};    // r6 <= mem[$7+3]
     end
 
     always @(posedge clk) begin
@@ -76,6 +77,85 @@ module vmicro16_bram # (
 
     // TODO: Reset impl = every clock while reset is asserted, clear each cell
     //       one at a time, mem[i++] <= 0
+endmodule
+
+module vmicro16_core_mmu # (
+    parameter MEM_WIDTH    = 16,
+    parameter MEM_DEPTH    = 256,
+    // TIM0 addr
+    parameter ADDR_TIM0_S  = 16'h80,
+    parameter ADDR_TIM0_E  = 16'hBF
+) (
+    input clk,
+    input reset,
+    
+    input  req,
+    output busy,
+    
+    // Output WB interface
+
+    input      [MEM_WIDTH-1:0] mem_addr,
+    input      [MEM_WIDTH-1:0] mem_in,
+    input                      mem_we,
+    output reg [MEM_WIDTH-1:0] mem_out
+);
+    localparam MMU_STATE_IDLE = 0;
+    localparam MMU_STATE_BUSY = 1;
+    reg [2:0] mmu_state;
+
+    // mmu_state fsm
+    always @(posedge clk) begin
+        if(reset) begin
+            mmu_state <= MMU_STATE_IDLE;
+        end else begin
+            case (mmu_state)
+                MMU_STATE_IDLE:
+                    if (req)
+                        if (!tim0_en)
+                            mmu_state <= MMU_STATE_BUSY;
+            endcase
+        end
+    end
+
+    reg [MEM_WIDTH-1:0] per_out;
+
+    // Output port
+    always @(*)
+        if (tim0_en)
+            mem_out = tim0_out;
+        else
+            mem_out = per_out;
+
+    // tightly integrated memory usage
+    wire tim0_en   = (mem_addr >= ADDR_TIM0_S) && (mem_addr <=  ADDR_TIM0_E);
+    wire tim0_addr = (mem_addr - ADDR_TIM0_S);
+    wire tim0_we   = (tim0_en && mem_we);
+
+    // Clocked when req is high
+    reg [MEM_WIDTH-1:0] r_mem_addr;
+    reg [MEM_WIDTH-1:0] r_mem_in;
+    reg                 r_mem_we;
+    always @(posedge clk) begin
+        if (req) begin
+            r_mem_addr <= mem_addr;
+            r_mem_in   <= mem_in;
+            r_mem_we   <= mem_we;
+        end
+    end
+
+    // Each M core has a TIM0 scratch memory
+    vmicro16_bram # (
+        .MEM_WIDTH  (MEM_WIDTH),
+        .MEM_DEPTH  (MEM_DEPTH)
+    ) TIM0 (
+        .clk        (clk),
+        .reset      (reset),
+        .mem_addr   (tim0_addr),
+        .mem_in     (mem_in),
+        .mem_we     (tim0_we),
+        .mem_out    (tim0_out)
+    );
+
 endmodule
 
 module vmicro16_regs # (
@@ -428,7 +508,7 @@ module vmicro16_core # (
         if (r_instr_has_mem) begin
             r_reg_wd = r_mem_scratch_out;
             // LW: rd <= mem[r_alu_out]
-            r_mem_scratch_addr = r_alu_out;
+            r_mem_scratch_addr = (r_alu_out + r_instr_simm5);
             // SW: mem[r_alu_out] <= rd
             if (r_instr_has_mem_we)
                 r_mem_scratch_in = r_instr_rdd;

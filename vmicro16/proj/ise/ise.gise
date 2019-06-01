@@ -34,17 +34,33 @@
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="tb_vmicro16_cpu_isim_beh.exe"/>
     <file xil_pn:fileType="FILE_ISIM_MISC" xil_pn:name="tb_vmicro16_cpu_isim_beh.wdb"/>
     <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_vmicro16_cpu_stx_beh.prj"/>
-    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_vmicro16_soc.prj"/>
+    <file xil_pn:fileType="FILE_CMD_LOG" xil_pn:name="tb_vmicro16_soc.cmd_log"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_LSO" xil_pn:name="tb_vmicro16_soc.lso"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_vmicro16_soc.prj"/>
     <file xil_pn:fileType="FILE_XST_STX" xil_pn:name="tb_vmicro16_soc.stx"/>
-    <file xil_pn:fileType="FILE_XST" xil_pn:name="tb_vmicro16_soc.xst"/>
-    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_vmicro16_soc_beh.prj"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_REPORT" xil_pn:name="tb_vmicro16_soc.syr"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST" xil_pn:name="tb_vmicro16_soc.xst"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_vmicro16_soc_beh.prj"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="tb_vmicro16_soc_isim_beh.exe"/>
     <file xil_pn:fileType="FILE_ISIM_MISC" xil_pn:name="tb_vmicro16_soc_isim_beh.wdb"/>
-    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_vmicro16_soc_stx_beh.prj"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="tb_vmicro16_soc_stx_beh.prj"/>
+    <file xil_pn:fileType="FILE_HTML" xil_pn:name="tb_vmicro16_soc_summary.html"/>
+    <file xil_pn:fileType="FILE_XRPT" xil_pn:name="tb_vmicro16_soc_xst.xrpt"/>
     <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="vmicro16_alu.prj"/>
     <file xil_pn:fileType="FILE_XST_STX" xil_pn:name="vmicro16_alu.stx"/>
     <file xil_pn:fileType="FILE_VERILOG_INSTTEMPLATE" xil_pn:name="vmicro16_alu.tfi"/>
     <file xil_pn:fileType="FILE_XST" xil_pn:name="vmicro16_alu.xst"/>
+    <file xil_pn:fileType="FILE_CMD_LOG" xil_pn:name="vmicro16_core.cmd_log"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_LSO" xil_pn:name="vmicro16_core.lso"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGC" xil_pn:name="vmicro16_core.ngc"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGR" xil_pn:name="vmicro16_core.ngr"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="vmicro16_core.prj"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_STX" xil_pn:name="vmicro16_core.stx"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_REPORT" xil_pn:name="vmicro16_core.syr"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST" xil_pn:name="vmicro16_core.xst"/>
+    <file xil_pn:fileType="FILE_HTML" xil_pn:name="vmicro16_core_envsettings.html"/>
+    <file xil_pn:fileType="FILE_HTML" xil_pn:name="vmicro16_core_summary.html"/>
+    <file xil_pn:fileType="FILE_XRPT" xil_pn:name="vmicro16_core_xst.xrpt"/>
     <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="vmicro16_cpu.prj"/>
     <file xil_pn:fileType="FILE_XST_STX" xil_pn:name="vmicro16_cpu.stx"/>
     <file xil_pn:fileType="FILE_XST" xil_pn:name="vmicro16_cpu.xst"/>
@@ -53,8 +69,19 @@
     <file xil_pn:fileType="FILE_VERILOG_INSTTEMPLATE" xil_pn:name="vmicro16_ifid.tfi"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="vmicro16_ifid_isim_beh.exe"/>
     <file xil_pn:fileType="FILE_VERILOG_INSTTEMPLATE" xil_pn:name="vmicro16_mewb.tfi"/>
+    <file xil_pn:fileType="FILE_CMD_LOG" xil_pn:name="vmicro16_soc.cmd_log"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_LSO" xil_pn:name="vmicro16_soc.lso"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGC" xil_pn:name="vmicro16_soc.ngc"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGR" xil_pn:name="vmicro16_soc.ngr"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="vmicro16_soc.prj"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_STX" xil_pn:name="vmicro16_soc.stx"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_REPORT" xil_pn:name="vmicro16_soc.syr"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST" xil_pn:name="vmicro16_soc.xst"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="vmicro16_soc_isim_beh.exe"/>
+    <file xil_pn:fileType="FILE_HTML" xil_pn:name="vmicro16_soc_summary.html"/>
+    <file xil_pn:fileType="FILE_XRPT" xil_pn:name="vmicro16_soc_xst.xrpt"/>
     <file xil_pn:fileType="FILE_VERILOG_INSTTEMPLATE" xil_pn:name="vmicro16_wb.tfi"/>
+    <file xil_pn:fileType="FILE_FITTER_REPORT" xil_pn:name="webtalk_pn.xml"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_INI" xil_pn:name="xilinxsim.ini"/>
     <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="xst"/>
   </files>
@@ -64,7 +91,7 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1559321601" xil_pn:in_ck="-7391072006113803751" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1559321601">
+    <transform xil_pn:end_ts="1559405011" xil_pn:in_ck="-7391072006113803751" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1559405011">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="../../clog2.v"/>
@@ -82,11 +109,11 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1559168913" xil_pn:name="TRAN_regenerateCoresSim" xil_pn:prop_ck="-6033553120051716242" xil_pn:start_ts="1559168913">
+    <transform xil_pn:end_ts="1559404784" xil_pn:name="TRAN_regenerateCoresSim" xil_pn:prop_ck="7587349490744651965" xil_pn:start_ts="1559404784">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1559321601" xil_pn:in_ck="-7391072006113803751" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1559321601">
+    <transform xil_pn:end_ts="1559405012" xil_pn:in_ck="-7391072006113803751" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1559405011">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="../../clog2.v"/>
@@ -96,7 +123,7 @@
       <outfile xil_pn:name="../../vmicro16_isa.v"/>
       <outfile xil_pn:name="../../vmicro16_soc.v"/>
     </transform>
-    <transform xil_pn:end_ts="1559321610" xil_pn:in_ck="-7391072006113803751" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-9125384734343796275" xil_pn:start_ts="1559321601">
+    <transform xil_pn:end_ts="1559405023" xil_pn:in_ck="-7391072006113803751" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-9125384734343796275" xil_pn:start_ts="1559405012">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="fuse.log"/>
@@ -106,12 +133,58 @@
       <outfile xil_pn:name="tb_vmicro16_soc_isim_beh.exe"/>
       <outfile xil_pn:name="xilinxsim.ini"/>
     </transform>
-    <transform xil_pn:end_ts="1559321614" xil_pn:in_ck="4322302960195757484" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-4595198152029455632" xil_pn:start_ts="1559321610">
+    <transform xil_pn:end_ts="1559405027" xil_pn:in_ck="4322302960195757484" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-4595198152029455632" xil_pn:start_ts="1559405023">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="isim.cmd"/>
       <outfile xil_pn:name="isim.log"/>
       <outfile xil_pn:name="tb_vmicro16_soc_isim_beh.wdb"/>
+    </transform>
+    <transform xil_pn:end_ts="1559321919" xil_pn:name="TRAN_copyInitialToXSTAbstractSynthesis" xil_pn:start_ts="1559321919">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1559321919" xil_pn:name="TRAN_schematicsToHdl" xil_pn:prop_ck="-8799493648715785580" xil_pn:start_ts="1559321919">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1559321919" xil_pn:name="TRAN_regenerateCores" xil_pn:prop_ck="7587349490744651965" xil_pn:start_ts="1559321919">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1559321919" xil_pn:name="TRAN_SubProjectAbstractToPreProxy" xil_pn:start_ts="1559321919">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1559321919" xil_pn:name="TRAN_xawsTohdl" xil_pn:prop_ck="3916139555625749974" xil_pn:start_ts="1559321919">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1559321919" xil_pn:name="TRAN_SubProjectPreToStructuralProxy" xil_pn:prop_ck="250970745411629038" xil_pn:start_ts="1559321919">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1559321919" xil_pn:name="TRAN_platgen" xil_pn:prop_ck="-4086040873533373753" xil_pn:start_ts="1559321919">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1559321952" xil_pn:in_ck="-1257326073256595683" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="5797603211840898988" xil_pn:start_ts="1559321919">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="WarningsGenerated"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForInputs"/>
+      <status xil_pn:value="InputChanged"/>
+      <outfile xil_pn:name="_xmsgs/xst.xmsgs"/>
+      <outfile xil_pn:name="vmicro16_core.lso"/>
+      <outfile xil_pn:name="vmicro16_core.ngc"/>
+      <outfile xil_pn:name="vmicro16_core.ngr"/>
+      <outfile xil_pn:name="vmicro16_core.prj"/>
+      <outfile xil_pn:name="vmicro16_core.stx"/>
+      <outfile xil_pn:name="vmicro16_core.syr"/>
+      <outfile xil_pn:name="vmicro16_core.xst"/>
+      <outfile xil_pn:name="vmicro16_core_xst.xrpt"/>
+      <outfile xil_pn:name="webtalk_pn.xml"/>
+      <outfile xil_pn:name="xst"/>
     </transform>
   </transforms>
 

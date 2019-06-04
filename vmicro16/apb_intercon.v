@@ -44,15 +44,20 @@ module apb_intercon_s # (
     //shared inout
     input                     M_PREADY
 );
-    assign M_PADDR  = S_PADDR;
-    assign M_PWRITE = S_PWRITE;
-    assign M_PWDATA = S_PWDATA;
-    assign S_PWDATA = M_PWDATA;
-    // interconnect is ready while it's slaves are ready
-    assign S_PREADY = M_PREADY;
+    // TODO: Round robin scheduling
 
+    // Pass through
+    assign M_PADDR    = S_PADDR[BUS_WIDTH-1:0];
+    assign M_PWRITE   = S_PWRITE;
     assign M_PSELx[0] = (S_PADDR >= 16'h80 && S_PADDR <= 16'h8F);
     assign M_PSELx[1] = (S_PADDR >= 16'h90 && S_PADDR <= 16'h9F);
     assign M_PSELx[2] = (S_PADDR >= 16'hA0 && S_PADDR <= 16'hAF);
+    assign M_PENABLE  = S_PENABLE;
+    assign M_PWDATA   = S_PWDATA[BUS_WIDTH-1:0];
+    assign M_PWDATA   = S_PWDATA[BUS_WIDTH-1:0];
+    // interconnect is ready while it's slaves are ready
+    assign S_PREADY   = M_PREADY;
+    assign S_PRDATA   = M_PRDATA;
+
 
 endmodule

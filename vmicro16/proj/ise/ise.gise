@@ -93,11 +93,12 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1559417017" xil_pn:in_ck="-2965488295424798521" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1559417017">
+    <transform xil_pn:end_ts="1559657951" xil_pn:in_ck="2025023002386905410" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1559657951">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="../../apb_intercon.v"/>
       <outfile xil_pn:name="../../clog2.v"/>
+      <outfile xil_pn:name="../../formal.v"/>
       <outfile xil_pn:name="../../test/tb_vmicro16_cpu.v"/>
       <outfile xil_pn:name="../../test/tb_vmicro16_soc.v"/>
       <outfile xil_pn:name="../../vmicro16.v"/>
@@ -116,20 +117,23 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1559417017" xil_pn:in_ck="-2965488295424798521" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1559417017">
+    <transform xil_pn:end_ts="1559657952" xil_pn:in_ck="2025023002386905410" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1559657951">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="../../apb_intercon.v"/>
       <outfile xil_pn:name="../../clog2.v"/>
+      <outfile xil_pn:name="../../formal.v"/>
       <outfile xil_pn:name="../../test/tb_vmicro16_cpu.v"/>
       <outfile xil_pn:name="../../test/tb_vmicro16_soc.v"/>
       <outfile xil_pn:name="../../vmicro16.v"/>
       <outfile xil_pn:name="../../vmicro16_isa.v"/>
       <outfile xil_pn:name="../../vmicro16_soc.v"/>
     </transform>
-    <transform xil_pn:end_ts="1559417028" xil_pn:in_ck="-2965488295424798521" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-9125384734343796275" xil_pn:start_ts="1559417017">
+    <transform xil_pn:end_ts="1559657965" xil_pn:in_ck="2025023002386905410" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-9125384734343796275" xil_pn:start_ts="1559657952">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="OutputChanged"/>
       <outfile xil_pn:name="fuse.log"/>
       <outfile xil_pn:name="isim"/>
       <outfile xil_pn:name="isim.log"/>
@@ -137,9 +141,11 @@
       <outfile xil_pn:name="tb_vmicro16_soc_isim_beh.exe"/>
       <outfile xil_pn:name="xilinxsim.ini"/>
     </transform>
-    <transform xil_pn:end_ts="1559417031" xil_pn:in_ck="-8030800199283893045" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-4595198152029455632" xil_pn:start_ts="1559417028">
+    <transform xil_pn:end_ts="1559657969" xil_pn:in_ck="-8030800199283893045" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-4595198152029455632" xil_pn:start_ts="1559657965">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="OutputChanged"/>
       <outfile xil_pn:name="isim.cmd"/>
       <outfile xil_pn:name="isim.log"/>
       <outfile xil_pn:name="tb_vmicro16_soc_isim_beh.wdb"/>

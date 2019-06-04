@@ -10,6 +10,7 @@
 `include "vmicro16_isa.v"
 
 `include "clog2.v"
+`include "formal.v"
 
 // This module aims to be a SYNCHRONOUS, WRITE_FIRST BLOCK RAM
 //   https://www.xilinx.com/support/documentation/user_guides/ug473_7Series_Memory_Resources.pdf
@@ -66,7 +67,9 @@ module vmicro16_bram # (
         //mem[4] = {`VMICRO16_OP_LW,      3'h6, 3'h7, 5'h3};    // r6 <= mem[$7+3]
 
         mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h81};
-        mem[1] = {`VMICRO16_OP_SW,      3'h6, 3'h0, 5'h1}; // MMU[0x81] = 6
+        mem[1] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
+        mem[2] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x81] = 6
+        mem[3] = {`VMICRO16_OP_SW,      3'h3, 3'h0, 5'h2}; // MMU[0x81] = 6
     end
 
     always @(posedge clk) begin
@@ -82,6 +85,8 @@ module vmicro16_bram # (
     // TODO: Reset impl = every clock while reset is asserted, clear each cell
     //       one at a time, mem[i++] <= 0
 endmodule
+
+
 
 module vmicro16_core_mmu # (
     parameter MEM_WIDTH    = 16,
@@ -162,6 +167,16 @@ module vmicro16_core_mmu # (
 
             MMU_STATE_T2: begin
                 M_PENABLE <= 1;
+                // Slave has output a ready signal (finished)
+                if (M_PREADY) begin
+                    M_PENABLE <= 0;
+                    M_PADDR   <= 0;
+                    M_PWDATA  <= 0;
+                    M_PSELx   <= 0;
+                    M_PWRITE  <= 0;
+                    mmu_state <= MMU_STATE_T1;
+                end
+
             end
         endcase
     end
@@ -178,17 +193,15 @@ module vmicro16_core_mmu # (
         .mem_we     (tim0_we),
         .mem_out    (tim0_out)
     );
-
 endmodule
+
 
 module vmicro16_regs # (
     parameter CELL_WIDTH     = 16,
     parameter CELL_DEPTH     = 8,
     parameter CELL_SEL_BITS  = `clog2(CELL_DEPTH),
     parameter CELL_DEFAULTS  = 0,
-    parameter DEBUG_NAME     = "",
-    parameter SYNCHRONOUS    = 0,
-    parameter DUAL_PORT_READ = 0
+    parameter DEBUG_NAME     = ""
 ) (
     input clk, 
     input reset,
@@ -228,7 +241,46 @@ module vmicro16_regs # (
 
     assign rd1 = regs[rs1];
     assign rd2 = regs[rs2];
+endmodule
 
+module vmicro16_regs_apb # (
+    parameter BUS_WIDTH  = 16,
+    parameter CELL_DEPTH = 8
+) (
+    input clk,
+    input reset,
+    // APB Slave to master interface
+    input  [`clog2(CELL_DEPTH)-1:0] S_PADDR,
+    input                           S_PWRITE,
+    input                           S_PSELx,
+    input                           S_PENABLE,
+    input  [BUS_WIDTH-1:0]          S_PWDATA,
+    
+    inout [BUS_WIDTH-1:0]           S_PRDATA,
+    inout                           S_PREADY
+);
+    wire [15:0] rd1;
+
+    assign S_PRDATA = (S_PSELx & S_PENABLE) ? rd1 : 1'bZ;
+    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1   : 1'bZ;
+    assign reg_we   = (S_PSELx & S_PENABLE & S_PWRITE);
+
+    always @(*) 
+        `rassert(reg_we == (S_PSELx & S_PENABLE & S_PWRITE))
+
+    vmicro16_regs # (
+        .CELL_DEPTH(CELL_DEPTH)
+    ) regs_apb (
+        .clk    (clk),
+        .reset  (reset),
+
+        .rs1    (S_PADDR),
+        .rd1    (rd1),
+        
+        .we     (reg_we),
+        .ws1    (S_PADDR),
+        .wd     (S_PWDATA) // either alu_c or mem_out
+    );
 endmodule
 
 // Decoder is hard to parameterise as it's very closely linked to the ISA.

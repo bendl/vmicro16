@@ -1,15 +1,18 @@
 
 module vmicro16_soc #(
     parameter CORES     = 1,
-    parameter SLAVES    = 3,
+    parameter SLAVES    = 4,
     parameter APB_WIDTH = 16,
 
     parameter SLAVE_ADDR_REGS0_APB  = 0,
     parameter SLAVE_ADDR_REGS1_APB  = 1,
-    parameter SLAVE_ADDR_REGS2_APB  = 2
+    parameter SLAVE_ADDR_REGS2_APB  = 2,
+    parameter SLAVE_ADDR_UART0_APB  = 3
 ) (
     input clk,
     input reset
+    
+    // TODO: Make SoC output a master to slave APB interface
 );
     // Intercon input: Master apb interfaces
     wire [CORES*APB_WIDTH-1:0] w_PADDR;
@@ -98,9 +101,22 @@ module vmicro16_soc #(
         .S_PRDATA   (M_PRDATA),
         .S_PREADY   (M_PREADY)
     );
+    
+    apb_uart_tx apb_uart_inst (
+        .clk        (clk),
+        .reset      (reset),
+        // apb slave to master interface
+        .S_PADDR    (M_PADDR),
+        .S_PWRITE   (M_PWRITE),
+        .S_PSELx    (M_PSELx[SLAVE_ADDR_UART0_APB]),
+        .S_PENABLE  (M_PENABLE),
+        .S_PWDATA   (M_PWDATA),
+        .S_PRDATA   (M_PRDATA),
+        .S_PREADY   (M_PREADY)
+    );
 
     genvar i;
-    generate for(i = 0; i < CORES; i = i + 1) begin
+    generate for(i = 0; i < CORES; i = i + 1) begin : cores
         vmicro16_core c1 (
             .clk        (clk),
             .reset      (reset),

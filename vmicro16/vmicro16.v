@@ -77,6 +77,13 @@ module vmicro16_bram # (
         mem[6] = {`VMICRO16_OP_MOVI,    3'h0, 8'hA0};
         mem[7] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
         mem[8] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x81] = 6
+
+        mem[9]  = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0}; // UART0
+        mem[10] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41}; // ascii A
+        mem[11] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+
+        mem[12] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
+        mem[13] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
     end
 
     always @(posedge clk) begin
@@ -466,7 +473,7 @@ module vmicro16_alu # (
         // TODO: Parameterise
         default: begin
             $display($time, "\tALU: unknown op: %h", op);
-            c = {(DATA_WIDTH-1){1'bZZZZ}};
+            c = 16'hXXXX;
         end
     endcase
 endmodule
@@ -596,7 +603,7 @@ module vmicro16_core # (
         // port 1
         .mem_addr   (r_pc), 
         .mem_in     (16'hXX), 
-        .mem_we     (0), 
+        .mem_we     (1'b0),  // READ only memory
         .mem_out    (w_mem_instr_out)
     );
 

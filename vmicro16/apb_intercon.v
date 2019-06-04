@@ -6,9 +6,9 @@
 // and outputs an address for the peripheral
 
 module apb_intercon_s # (
-    BUS_WIDTH    = 16,
-    MASTER_PORTS = 1,
-    SLAVE_PORTS  = 3
+    parameter BUS_WIDTH    = 16,
+    parameter MASTER_PORTS = 1,
+    parameter SLAVE_PORTS  = 4
 ) (
     input clk,
     input reset,
@@ -52,6 +52,7 @@ module apb_intercon_s # (
     assign M_PSELx[0] = (S_PADDR >= 16'h80 && S_PADDR <= 16'h8F);
     assign M_PSELx[1] = (S_PADDR >= 16'h90 && S_PADDR <= 16'h9F);
     assign M_PSELx[2] = (S_PADDR >= 16'hA0 && S_PADDR <= 16'hAF);
+    assign M_PSELx[3] = (S_PADDR >= 16'hB0 && S_PADDR <= 16'hB1);
     assign M_PENABLE  = S_PENABLE;
     assign M_PWDATA   = S_PWDATA[BUS_WIDTH-1:0];
     assign M_PWDATA   = S_PWDATA[BUS_WIDTH-1:0];

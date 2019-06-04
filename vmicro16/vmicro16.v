@@ -69,7 +69,14 @@ module vmicro16_bram # (
         mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h81};
         mem[1] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
         mem[2] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x81] = 6
-        mem[3] = {`VMICRO16_OP_SW,      3'h3, 3'h0, 5'h2}; // MMU[0x81] = 6
+
+        mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'h91};
+        mem[4] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
+        mem[5] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x81] = 6
+
+        mem[6] = {`VMICRO16_OP_MOVI,    3'h0, 8'hA0};
+        mem[7] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
+        mem[8] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x81] = 6
     end
 
     always @(posedge clk) begin
@@ -102,10 +109,10 @@ module vmicro16_core_mmu # (
     output busy,
     
     // From core
-    input      [MEM_WIDTH-1:0] mem_addr,
-    input      [MEM_WIDTH-1:0] mem_in,
-    input                      mem_we,
-    output reg [MEM_WIDTH-1:0] mem_out,
+    input      [MEM_WIDTH-1:0]  mem_addr,
+    input      [MEM_WIDTH-1:0]  mem_in,
+    input                       mem_we,
+    output reg [MEM_WIDTH-1:0]  mem_out,
 
     // TO APB interconnect
     output reg [MEM_WIDTH-1:0]   M_PADDR,
@@ -127,6 +134,8 @@ module vmicro16_core_mmu # (
 
     reg [MEM_WIDTH-1:0] per_out;
     wire [MEM_WIDTH-1:0] tim0_out;
+
+    assign busy = mmu_state == MMU_STATE_T1;
 
     // Output port
     always @(*)
@@ -569,8 +578,9 @@ module vmicro16_core # (
             else if (r_state == STATE_ME) begin
                 // Pulse req
                 r_mem_scratch_req <= 0;
-                // TODO: wait for mmu to finish
-                //r_state <= STATE_WB;
+                // Wait for MMU to finish
+                if (!r_mem_scratch_busy)
+                    r_state <= STATE_WB;
             end
             else if (r_state == STATE_WB) begin
                 r_state <= STATE_IF;

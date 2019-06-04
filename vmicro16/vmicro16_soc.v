@@ -104,7 +104,6 @@ module vmicro16_soc #(
         vmicro16_core c1 (
             .clk        (clk),
             .reset      (reset),
-
             .w_PADDR    (w_PADDR[APB_WIDTH*i +:APB_WIDTH]),
             .w_PWRITE   (w_PWRITE[i]),
             .w_PSELx    (w_PSELx[i]),

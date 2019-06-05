@@ -48,6 +48,17 @@ module apb_uart_tx # (
         else
             uart_rx_rdy_clear <= 0;
 
+    reg disp_once = 0;
+    always @(posedge clk)
+        if (apb_we) begin
+            disp_once <= 1;
+            if (disp_once == 0)
+                $display($time, "\t\tUART <= %h", S_PWDATA[7:0]);
+        end
+        else
+            disp_once <= 0;
+    
+
     uart uart_blocking (
         .clk_50m    (clk),
 

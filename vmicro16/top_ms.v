@@ -17,6 +17,7 @@ module top_ms # (
     ) soc (
         .clk     (CLK50),
         .reset   (~SW[0]),
+        
         .uart_tx (TXD),
         .gpio0   (LEDS)
     );

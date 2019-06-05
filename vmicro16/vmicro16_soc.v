@@ -15,7 +15,7 @@ module vmicro16_soc #(
     input clk,
     input reset,
 
-    input  uart_rx,
+    //input  uart_rx,
     output uart_tx,
     output [GPIO_PINS-1:0] gpio0
 );
@@ -57,54 +57,6 @@ module vmicro16_soc #(
         .M_PWDATA   (M_PWDATA),
         .M_PRDATA   (M_PRDATA),
         .M_PREADY   (M_PREADY)
-    );
-
-    vmicro16_regs_apb # (
-        .BUS_WIDTH  (APB_WIDTH),
-        .CELL_DEPTH (8)
-    ) regs0_apb (
-        .clk        (clk),
-        .reset      (reset),
-        // apb slave to master interface
-        .S_PADDR    (M_PADDR),
-        .S_PWRITE   (M_PWRITE),
-        .S_PSELx    (M_PSELx[SLAVE_ADDR_REGS0_APB]),
-        .S_PENABLE  (M_PENABLE),
-        .S_PWDATA   (M_PWDATA),
-        .S_PRDATA   (M_PRDATA),
-        .S_PREADY   (M_PREADY)
-    );
-
-    vmicro16_regs_apb # (
-        .BUS_WIDTH  (APB_WIDTH),
-        .CELL_DEPTH (8)
-    ) regs1_apb (
-        .clk        (clk),
-        .reset      (reset),
-        // apb slave to master interface
-        .S_PADDR    (M_PADDR),
-        .S_PWRITE   (M_PWRITE),
-        .S_PSELx    (M_PSELx[SLAVE_ADDR_REGS1_APB]),
-        .S_PENABLE  (M_PENABLE),
-        .S_PWDATA   (M_PWDATA),
-        .S_PRDATA   (M_PRDATA),
-        .S_PREADY   (M_PREADY)
-    );
-
-    vmicro16_regs_apb # (
-        .BUS_WIDTH  (APB_WIDTH),
-        .CELL_DEPTH (8)
-    ) regs2_apb (
-        .clk        (clk),
-        .reset      (reset),
-        // apb slave to master interface
-        .S_PADDR    (M_PADDR),
-        .S_PWRITE   (M_PWRITE),
-        .S_PSELx    (M_PSELx[SLAVE_ADDR_REGS2_APB]),
-        .S_PENABLE  (M_PENABLE),
-        .S_PWDATA   (M_PWDATA),
-        .S_PRDATA   (M_PRDATA),
-        .S_PREADY   (M_PREADY)
     );
 
     vmicro16_gpio_apb # (

@@ -2,27 +2,15 @@
 //
 //
 
-// accepts an unfiltered MMU address
-// and outputs an address for the peripheral
-
 module apb_intercon_s # (
     parameter BUS_WIDTH    = 16,
     parameter MASTER_PORTS = 1,
     parameter SLAVE_PORTS  = 5
 ) (
-    input clk,
-    input reset,
+    //input clk,
+    //input reset,
 
-    //
-    //input  [MASTER_PORTS*BUS_WIDTH-1:0] S_MEM_ADDR,
-    //input  [MASTER_PORTS*BUS_WIDTH-1:0] S_MEM_IN,
-    //input  [MASTER_PORTS*BUS_WIDTH-1:0] S_MEM_OUT,
-    //input  [MASTER_PORTS-1:0]           S_MEM_WE,
-    //input  [MASTER_PORTS-1:0]           S_REQ,
-    //output [MASTER_PORTS-1:0]           S_ACK,
-    //output [MASTER_PORTS-1:0]           S_MEM_BUSY,
-    //
-
+    // APB master interface (from cores)
     input  [MASTER_PORTS*BUS_WIDTH-1:0] S_PADDR,
     input  [MASTER_PORTS-1:0]           S_PWRITE,
     input  [MASTER_PORTS-1:0]           S_PSELx,
@@ -37,7 +25,7 @@ module apb_intercon_s # (
     output                    M_PWRITE,
     output  [SLAVE_PORTS-1:0] M_PSELx,
     //shared
-    output                       M_PENABLE,
+    output                    M_PENABLE,
     output  [BUS_WIDTH-1:0]   M_PWDATA,
     //shared inout
     input   [BUS_WIDTH-1:0]   M_PRDATA,

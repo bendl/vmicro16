@@ -15,10 +15,25 @@ module vmicro16_soc #(
     input clk,
     input reset,
 
+    // Peripherals (master to slave)
+    output [15:0]         M_PADDR,
+    output                M_PWRITE,
+    output [SLAVES-1:0]   M_PSELx,  // not shared
+    output                M_PENABLE,
+    output [15:0]         M_PWDATA, 
+    inout  [15:0]         M_PRDATA, // input to intercon
+    inout                 M_PREADY, // input to intercon
+
     //input  uart_rx,
     output uart_tx,
-    output [GPIO_PINS-1:0] gpio0
+    output [GPIO_PINS-1:0] gpio0,
+    output [7:0] dbug0
 );
+    reg [7:0] r_dbug0 = 0;
+    assign dbug0 = r_dbug0;
+    always @(posedge clk)
+        r_dbug0 <= r_dbug0 + 1;
+
     // Intercon input: Master apb interfaces
     wire [CORES*APB_WIDTH-1:0] w_PADDR;
     wire [CORES-1:0]           w_PWRITE;
@@ -27,20 +42,13 @@ module vmicro16_soc #(
     wire [CORES*APB_WIDTH-1:0] w_PWDATA;
     wire [CORES*APB_WIDTH-1:0] w_PRDATA;
     wire [CORES-1:0]           w_PREADY;
-    // Intercon output: single shared bus to each slave
-    wire [15:0]         M_PADDR;
-    wire                M_PWRITE;
-    wire [SLAVES-1:0]   M_PSELx;  // not shared
-    wire                M_PENABLE;
-    wire [15:0]         M_PWDATA; 
-    wire [15:0]         M_PRDATA; // input to intercon
-    wire                M_PREADY; // input to intercon
+
     apb_intercon_s # (
         .MASTER_PORTS(CORES),
         .SLAVE_PORTS (SLAVES)
     ) apb (
-        .clk        (clk),
-        .reset      (reset),
+        //.clk        (clk),
+        //.reset      (reset),
         // APB master to slave
         .S_PADDR    (w_PADDR),
         .S_PWRITE   (w_PWRITE),
@@ -78,7 +86,6 @@ module vmicro16_soc #(
     
     apb_uart_tx apb_uart_inst (
         .clk        (clk),
-        .reset      (reset),
         // apb slave to master interface
         .S_PADDR    (M_PADDR),
         .S_PWRITE   (M_PWRITE),
@@ -92,21 +99,34 @@ module vmicro16_soc #(
         .rx_wire    (uart_rx)
     );
 
-    genvar i;
-    generate for(i = 0; i < CORES; i = i + 1) begin : cores
-        vmicro16_core c1 (
-            .clk        (clk),
-            .reset      (reset),
-            .w_PADDR    (w_PADDR[APB_WIDTH*i +:APB_WIDTH]),
-            .w_PWRITE   (w_PWRITE[i]),
-            .w_PSELx    (w_PSELx[i]),
-            .w_PENABLE  (w_PENABLE[i]),
-            .w_PWDATA   (w_PWDATA[APB_WIDTH*i +:APB_WIDTH]),
-            .w_PRDATA   (w_PRDATA[APB_WIDTH*i +:APB_WIDTH]),
-            .w_PREADY   (w_PREADY[i])
-        );
-    end
-    endgenerate
+    vmicro16_core c1 (
+        .clk        (clk),
+        .reset      (reset),
+
+        .w_PADDR    (w_PADDR[APB_WIDTH*0 +:APB_WIDTH]),
+        .w_PWRITE   (w_PWRITE[0]),
+        .w_PSELx    (w_PSELx[0]),
+        .w_PENABLE  (w_PENABLE[0]),
+        .w_PWDATA   (w_PWDATA[APB_WIDTH*0 +:APB_WIDTH]),
+        .w_PRDATA   (w_PRDATA[APB_WIDTH*0 +:APB_WIDTH]),
+        .w_PREADY   (w_PREADY[0])
+    );
+
+    //genvar i;
+    //generate for(i = 0; i < CORES; i = i + 1) begin : cores
+    //    vmicro16_core c1 (
+    //        .clk        (clk),
+    //        .reset      (reset),
+    //        .w_PADDR    (w_PADDR[APB_WIDTH*i +:APB_WIDTH]),
+    //        .w_PWRITE   (w_PWRITE[i]),
+    //        .w_PSELx    (w_PSELx[i]),
+    //        .w_PENABLE  (w_PENABLE[i]),
+    //        .w_PWDATA   (w_PWDATA[APB_WIDTH*i +:APB_WIDTH]),
+    //        .w_PRDATA   (w_PRDATA[APB_WIDTH*i +:APB_WIDTH]),
+    //        .w_PREADY   (w_PREADY[i])
+    //    );
+    //end
+    //endgenerate
 
 
 endmodule

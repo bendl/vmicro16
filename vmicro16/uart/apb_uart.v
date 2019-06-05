@@ -5,7 +5,6 @@ module apb_uart_tx # (
     parameter CELL_DEPTH = 8
 ) (
     input clk,
-    input reset,
 
     // APB Slave to master interface
     input  [1:0]                    S_PADDR,

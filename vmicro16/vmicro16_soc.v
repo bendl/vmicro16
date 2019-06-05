@@ -1,18 +1,23 @@
 
 module vmicro16_soc #(
     parameter CORES     = 1,
-    parameter SLAVES    = 4,
+    parameter SLAVES    = 5,
     parameter APB_WIDTH = 16,
+
+    parameter GPIO_PINS = 4,
 
     parameter SLAVE_ADDR_REGS0_APB  = 0,
     parameter SLAVE_ADDR_REGS1_APB  = 1,
     parameter SLAVE_ADDR_REGS2_APB  = 2,
-    parameter SLAVE_ADDR_UART0_APB  = 3
+    parameter SLAVE_ADDR_UART0_APB  = 3,
+    parameter SLAVE_ADDR_GPIO0_APB  = 4
 ) (
     input clk,
-    input reset
-    
-    // TODO: Make SoC output a master to slave APB interface
+    input reset,
+
+    input  uart_rx,
+    output uart_tx,
+    output [GPIO_PINS-1:0] gpio0
 );
     // Intercon input: Master apb interfaces
     wire [CORES*APB_WIDTH-1:0] w_PADDR;
@@ -55,7 +60,7 @@ module vmicro16_soc #(
     );
 
     vmicro16_regs_apb # (
-        .BUS_WIDTH  (16),
+        .BUS_WIDTH  (APB_WIDTH),
         .CELL_DEPTH (8)
     ) regs0_apb (
         .clk        (clk),
@@ -71,7 +76,7 @@ module vmicro16_soc #(
     );
 
     vmicro16_regs_apb # (
-        .BUS_WIDTH  (16),
+        .BUS_WIDTH  (APB_WIDTH),
         .CELL_DEPTH (8)
     ) regs1_apb (
         .clk        (clk),
@@ -87,7 +92,7 @@ module vmicro16_soc #(
     );
 
     vmicro16_regs_apb # (
-        .BUS_WIDTH  (16),
+        .BUS_WIDTH  (APB_WIDTH),
         .CELL_DEPTH (8)
     ) regs2_apb (
         .clk        (clk),
@@ -101,6 +106,23 @@ module vmicro16_soc #(
         .S_PRDATA   (M_PRDATA),
         .S_PREADY   (M_PREADY)
     );
+
+    vmicro16_gpio_apb # (
+        .BUS_WIDTH  (APB_WIDTH),
+        .PORTS      (GPIO_PINS)
+    ) gpio0_apb (
+        .clk        (clk),
+        .reset      (reset),
+        // apb slave to master interface
+        .S_PADDR    (M_PADDR),
+        .S_PWRITE   (M_PWRITE),
+        .S_PSELx    (M_PSELx[SLAVE_ADDR_GPIO0_APB]),
+        .S_PENABLE  (M_PENABLE),
+        .S_PWDATA   (M_PWDATA),
+        .S_PRDATA   (M_PRDATA),
+        .S_PREADY   (M_PREADY),
+        .gpio       (gpio0)
+    );
     
     apb_uart_tx apb_uart_inst (
         .clk        (clk),
@@ -112,7 +134,10 @@ module vmicro16_soc #(
         .S_PENABLE  (M_PENABLE),
         .S_PWDATA   (M_PWDATA),
         .S_PRDATA   (M_PRDATA),
-        .S_PREADY   (M_PREADY)
+        .S_PREADY   (M_PREADY),
+        // uart wires
+        .tx_wire    (uart_tx),
+        .rx_wire    (uart_rx)
     );
 
     genvar i;

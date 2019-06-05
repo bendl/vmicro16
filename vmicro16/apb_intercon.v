@@ -8,7 +8,7 @@
 module apb_intercon_s # (
     parameter BUS_WIDTH    = 16,
     parameter MASTER_PORTS = 1,
-    parameter SLAVE_PORTS  = 4
+    parameter SLAVE_PORTS  = 5
 ) (
     input clk,
     input reset,
@@ -37,7 +37,7 @@ module apb_intercon_s # (
     output                    M_PWRITE,
     output  [SLAVE_PORTS-1:0] M_PSELx,
     //shared
-    output                    M_PENABLE,
+    output                       M_PENABLE,
     output  [BUS_WIDTH-1:0]   M_PWDATA,
     //shared inout
     input   [BUS_WIDTH-1:0]   M_PRDATA,
@@ -53,6 +53,7 @@ module apb_intercon_s # (
     assign M_PSELx[1] = (S_PADDR >= 16'h90 && S_PADDR <= 16'h9F);
     assign M_PSELx[2] = (S_PADDR >= 16'hA0 && S_PADDR <= 16'hAF);
     assign M_PSELx[3] = (S_PADDR >= 16'hB0 && S_PADDR <= 16'hB1);
+    assign M_PSELx[4] = (S_PADDR == 16'hC0);
     assign M_PENABLE  = S_PENABLE;
     assign M_PWDATA   = S_PWDATA[BUS_WIDTH-1:0];
     assign M_PWDATA   = S_PWDATA[BUS_WIDTH-1:0];

@@ -66,24 +66,21 @@ module vmicro16_bram # (
         //mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'h5};
         //mem[4] = {`VMICRO16_OP_LW,      3'h6, 3'h7, 5'h3};    // r6 <= mem[$7+3]
 
+        // REGS0
         mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h81};
         mem[1] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
         mem[2] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x81] = 6
-
-        mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'h91};
-        mem[4] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
-        mem[5] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x81] = 6
-
-        mem[6] = {`VMICRO16_OP_MOVI,    3'h0, 8'hA0};
-        mem[7] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
-        mem[8] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x81] = 6
-
-        mem[9]  = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0}; // UART0
-        mem[10] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41}; // ascii A
-        mem[11] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-
-        mem[12] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
-        mem[13] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        // GPIO0
+        mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
+        mem[4] = {`VMICRO16_OP_MOVI,    3'h1, 8'h05};
+        mem[5] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        // UART0
+        mem[6]  = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0}; // UART0
+        mem[7] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41}; // ascii A
+        mem[8] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        // UART0
+        mem[9] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
+        mem[10] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
     end
 
     always @(posedge clk) begin
@@ -123,15 +120,12 @@ module vmicro16_core_mmu # (
 
     // TO APB interconnect
     output reg [MEM_WIDTH-1:0]   M_PADDR,
-    //shared
     output reg                   M_PWRITE,
     output reg                   M_PSELx,
-    //shared
     output reg                   M_PENABLE,
     output reg [MEM_WIDTH-1:0]   M_PWDATA,
-    //shared inout
+    // from interconnect
     input      [MEM_WIDTH-1:0]   M_PRDATA,
-    //shared inout
     input                        M_PREADY
 );
     localparam MMU_STATE_T0 = 0;
@@ -139,7 +133,8 @@ module vmicro16_core_mmu # (
     localparam MMU_STATE_T2 = 2;
     reg [2:0] mmu_state = MMU_STATE_T1;
 
-    reg [MEM_WIDTH-1:0] per_out;
+    reg [15:0] per_out = 16'h0000;
+
     wire [MEM_WIDTH-1:0] tim0_out;
 
     assign busy = mmu_state == MMU_STATE_T1;
@@ -272,12 +267,12 @@ module vmicro16_regs_apb # (
     input                           S_PENABLE,
     input  [BUS_WIDTH-1:0]          S_PWDATA,
     
-    inout [BUS_WIDTH-1:0]           S_PRDATA,
-    inout                           S_PREADY
+    output [BUS_WIDTH-1:0]           S_PRDATA,
+    output                           S_PREADY
 );
     wire [15:0] rd1;
 
-    assign S_PRDATA = (S_PSELx & S_PENABLE) ? rd1 : 1'bZ;
+    assign S_PRDATA = (S_PSELx & S_PENABLE) ? rd1 : 16'hZZZZ;
     assign S_PREADY = (S_PSELx & S_PENABLE) ? 1   : 1'bZ;
     assign reg_we   = (S_PSELx & S_PENABLE & S_PWRITE);
 
@@ -297,6 +292,35 @@ module vmicro16_regs_apb # (
         .ws1    (S_PADDR),
         .wd     (S_PWDATA) // either alu_c or mem_out
     );
+endmodule
+
+
+module vmicro16_gpio_apb # (
+    parameter BUS_WIDTH  = 16,
+    parameter PORTS      = 8
+) (
+    input clk,
+    input reset,
+    // APB Slave to master interface
+    input  [0:0]                    S_PADDR, // not used
+    input                           S_PWRITE,
+    input                           S_PSELx,
+    input                           S_PENABLE,
+    input  [BUS_WIDTH-1:0]          S_PWDATA,
+    
+    output [BUS_WIDTH-1:0]          S_PRDATA,
+    output                          S_PREADY,
+    output reg [PORTS-1:0]          gpio
+);
+    assign S_PRDATA = 16'hZZZZ; // no output
+    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1 : 1'bZ;
+    assign ports_we   = (S_PSELx & S_PENABLE & S_PWRITE);
+
+    always @(posedge clk)
+        if (reset)
+            gpio <= 0;
+        else if (ports_we)
+            gpio <= S_PWDATA[PORTS-1:0];
 endmodule
 
 // Decoder is hard to parameterise as it's very closely linked to the ISA.
@@ -496,7 +520,7 @@ module vmicro16_core # (
     input   [MEM_WIDTH-1:0]     w_PRDATA,
     input                       w_PREADY
 );
-    reg  [2:0] r_state;
+    reg  [2:0] r_state = STATE_O;
     localparam STATE_O  = 0;
     localparam STATE_IF = 1;
     localparam STATE_R1 = 2;
@@ -504,8 +528,8 @@ module vmicro16_core # (
     localparam STATE_ME = 4;
     localparam STATE_WB = 5;
 
-    reg  [15:0] r_pc;
-    reg  [15:0] r_instr;
+    reg  [15:0] r_pc    = 0;
+    reg  [15:0] r_instr = 0;
     wire [15:0] w_mem_instr_out;
 
     wire  [4:0]  r_instr_opcode;
@@ -539,7 +563,7 @@ module vmicro16_core # (
     always @(*) begin
         r_reg_rs1 = 0;
         if (r_state == STATE_R1) begin
-            r_reg_rs1    = r_instr_rsd;
+            r_reg_rs1   = r_instr_rsd;
             r_instr_rdd = r_reg_rd1;
         end
         else if (r_state == STATE_R2) begin
@@ -630,7 +654,7 @@ module vmicro16_core # (
         .MEM_WIDTH   (16),
         .MEM_DEPTH   (MEM_SCRATCH_DEPTH),
         .ADDR_TIM0_S (16'h00),
-        .ADDR_TIM1_E (16'h3F)
+        .ADDR_TIM0_E (16'h3F)
     ) mem_scratch (
         .clk        (clk), 
         .reset      (reset), 

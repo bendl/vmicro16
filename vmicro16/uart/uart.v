@@ -1,5 +1,6 @@
 //https://github.com/jamieiles/uart/blob/master/uart.v
 
+(* keep_hierarchy = "yes" *)
 module uart (
         input wire clk_50m,
 
@@ -17,12 +18,14 @@ module uart (
 );
     wire rxclk_en, txclk_en;
 
+    (* keep_hierarchy = "yes" *)
     baud_rate_gen uart_baud(
         .clk_50m(clk_50m),
         .rxclk_en(rxclk_en),
         .txclk_en(txclk_en)
     );
-        
+    
+    (* keep_hierarchy = "yes" *)
     transmitter uart_tx(
         .din(din),
         .wr_en(wr_en),

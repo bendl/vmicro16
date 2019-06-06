@@ -28,22 +28,22 @@ module vmicro16_soc #(
         dbug0 <= dbug0 + 1;
 
     // Peripherals (master to slave)
-    wire [15:0]         M_PADDR;
-    wire                M_PWRITE;
-    wire [SLAVES-1:0]   M_PSELx;  // not shared
-    wire                M_PENABLE;
-    wire [15:0]         M_PWDATA; 
-    wire [15:0]         M_PRDATA; // input to intercon
-    wire                M_PREADY; // input
+    (*dont_touch="true"*) wire [15:0]         M_PADDR;
+    (*dont_touch="true"*) wire                M_PWRITE;
+    (*dont_touch="true"*) wire [SLAVES-1:0]   M_PSELx;  // not shared
+    (*dont_touch="true"*) wire                M_PENABLE;
+    (*dont_touch="true"*) wire [15:0]         M_PWDATA; 
+    (*dont_touch="true"*) wire [15:0]         M_PRDATA; // input to intercon
+    (*dont_touch="true"*) wire                M_PREADY; // input
 
     // Master apb interfaces
-    wire [CORES*APB_WIDTH-1:0] w_PADDR;
-    wire [CORES-1:0]           w_PWRITE;
-    wire [CORES-1:0]           w_PSELx;
-    wire [CORES-1:0]           w_PENABLE;
-    wire [CORES*APB_WIDTH-1:0] w_PWDATA;
-    wire [CORES*APB_WIDTH-1:0] w_PRDATA;
-    wire [CORES-1:0]           w_PREADY;
+    (*dont_touch="true"*) wire [CORES*APB_WIDTH-1:0] w_PADDR;
+    (*dont_touch="true"*) wire [CORES-1:0]           w_PWRITE;
+    (*dont_touch="true"*) wire [CORES-1:0]           w_PSELx;
+    (*dont_touch="true"*) wire [CORES-1:0]           w_PENABLE;
+    (*dont_touch="true"*) wire [CORES*APB_WIDTH-1:0] w_PWDATA;
+    (*dont_touch="true"*) wire [CORES*APB_WIDTH-1:0] w_PRDATA;
+    (*dont_touch="true"*) wire [CORES-1:0]           w_PREADY;
 
     (*dont_touch="true"*)
     (* keep_hierarchy = "yes" *)

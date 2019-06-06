@@ -16,6 +16,7 @@
 //   https://www.xilinx.com/support/documentation/user_guides/ug473_7Series_Memory_Resources.pdf
 //   https://www.xilinx.com/support/documentation/user_guides/ug383.pdf
 //   https://www.xilinx.com/support/documentation/sw_manuals/xilinx2016_4/ug901-vivado-synthesis.pdf
+(* keep_hierarchy = "yes" *)
 module vmicro16_bram # (
     parameter MEM_WIDTH    = 16,
     parameter MEM_DEPTH    = 256
@@ -108,7 +109,7 @@ module vmicro16_bram # (
     //       one at a time, mem[i++] <= 0
 endmodule
 
-
+(* keep_hierarchy = "yes" *)
 module vmicro16_core_mmu # (
     parameter MEM_WIDTH    = 16,
     parameter MEM_DEPTH    = 64,
@@ -173,7 +174,6 @@ module vmicro16_core_mmu # (
             casex (mmu_state)
                 MMU_STATE_T1: begin
                     if (req) begin
-                        M_PENABLE <= 0;
                         M_PADDR   <= mmu_addr;
                         M_PWDATA  <= mmu_in;
                         M_PSELx   <= 1;
@@ -184,6 +184,7 @@ module vmicro16_core_mmu # (
                 end
 
                 MMU_STATE_T2: begin
+                    M_PENABLE <= 1;
                     if (M_PREADY == 1'b1) begin
                         // Slave has output a ready signal (finished)
                         M_PENABLE <= 0;
@@ -192,8 +193,6 @@ module vmicro16_core_mmu # (
                         M_PSELx   <= 0;
                         M_PWRITE  <= 0;
                         mmu_state <= MMU_STATE_T1;
-                    end else begin
-                        M_PENABLE <= 1;
                     end
                 end
             endcase
@@ -215,6 +214,7 @@ module vmicro16_core_mmu # (
 endmodule
 
 
+(* keep_hierarchy = "yes" *)
 module vmicro16_regs # (
     parameter CELL_WIDTH     = 16,
     parameter CELL_DEPTH     = 8,
@@ -267,6 +267,8 @@ module vmicro16_regs # (
     //assign rd2 = regs[rs2];
 endmodule
 
+(* keep_hierarchy = "yes" *)
+(* dont_touch = "yes" *)
 module vmicro16_regs_apb # (
     parameter BUS_WIDTH  = 16,
     parameter CELL_DEPTH = 8
@@ -312,6 +314,7 @@ endmodule
 
 
 (*dont_touch="true"*)
+(* keep_hierarchy = "yes" *)
 module vmicro16_gpio_apb # (
     parameter BUS_WIDTH  = 16,
     parameter PORTS      = 8
@@ -343,6 +346,7 @@ module vmicro16_gpio_apb # (
 endmodule
 
 // Decoder is hard to parameterise as it's very closely linked to the ISA.
+(* keep_hierarchy = "yes" *)
 module vmicro16_dec # (
     parameter INSTR_WIDTH    = 16,
     parameter INSTR_OP_WIDTH = 5,
@@ -473,6 +477,7 @@ module vmicro16_dec # (
     endcase
 endmodule
 
+(* keep_hierarchy = "yes" *)
 module vmicro16_alu # (
     parameter OP_WIDTH   = 5,
     parameter DATA_WIDTH = 16
@@ -522,6 +527,7 @@ module vmicro16_alu # (
 endmodule
 
 (*dont_touch="true"*)
+(* keep_hierarchy = "yes" *)
 module vmicro16_core # (
     parameter MEM_INSTR_DEPTH   = 64,
     parameter MEM_SCRATCH_DEPTH = 64,

@@ -35,6 +35,7 @@ module top_ms # (
     //wire [15:0]         M_PRDATA; // input to intercon
     //wire                M_PREADY; // input to intercon
 
+    (* keep_hierarchy = "yes" *)
     vmicro16_soc # (
         .GPIO_PINS (GPIO_PINS)
     ) soc (
@@ -50,10 +51,10 @@ module top_ms # (
         //.M_PREADY   (M_PREADY),
         
         .uart_tx (TXD),
-        .gpio0   (LEDS[3:0]),
+        .gpio0   (LEDS[7:0])
 
         //.dbug0   (LEDS[3:0]),
-        .dbug1   (LEDS[7:4])
+        //.dbug1   (LEDS[7:4])
     );
 
 endmodule

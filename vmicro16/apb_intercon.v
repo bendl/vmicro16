@@ -3,6 +3,7 @@
 //
 
 (*dont_touch="true"*)
+(* keep_hierarchy = "yes" *)
 module apb_intercon_s # (
     parameter BUS_WIDTH    = 16,
     parameter MASTER_PORTS = 1,
@@ -37,7 +38,8 @@ module apb_intercon_s # (
 
     // Pass through
     assign M_PADDR    = S_PADDR[BUS_WIDTH-1:0];
-    assign M_PWRITE   = |S_PWRITE;
+    
+    (*dont_touch="true"*) assign M_PWRITE   = |S_PWRITE;
     assign M_PSELx[0] = (|S_PSELx) & (S_PADDR >= 16'h80 && S_PADDR <= 16'h8F);
     assign M_PSELx[1] = (|S_PSELx) & (S_PADDR >= 16'h90 && S_PADDR <= 16'h9F);
     assign M_PSELx[2] = (|S_PSELx) & (S_PADDR >= 16'hA0 && S_PADDR <= 16'hAF);

@@ -88,12 +88,12 @@ module vmicro16_bram # (
         mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
         mem[3] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
         // UART0
-        //mem[4]  = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0}; // UART0
-        //mem[5] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41}; // ascii A
-        //mem[6] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[4] = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0};      // UART0
+        mem[5] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41};      // ascii A
+        mem[6] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; 
         //// UART0
-        //mem[7] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
-        //mem[8] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[7] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
+        mem[8] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
     end
 
     always @(posedge clk) begin

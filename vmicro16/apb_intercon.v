@@ -45,6 +45,7 @@ module apb_intercon_s # (
     //assign M_PSELx[2] = (|S_PSELx) & (S_PADDR >= 16'hA0 && S_PADDR <= 16'hAF);
     //assign M_PSELx[3] = (|S_PSELx) & (S_PADDR >= 16'hB0 && S_PADDR <= 16'hB1);
     assign M_PSELx[0] = (|S_PSELx) & (S_PADDR == 16'h00C0);
+    assign M_PSELx[1] = (|S_PSELx) & (S_PADDR >= 16'h00B0 && S_PADDR <= 16'h00B1);
     assign M_PENABLE  = |S_PENABLE;
     assign M_PWDATA   = S_PWDATA[BUS_WIDTH-1:0];
     assign M_PWDATA   = S_PWDATA[BUS_WIDTH-1:0];

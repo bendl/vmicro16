@@ -27,32 +27,33 @@ module top_ms # (
         else
             por_reset <= 0;
 
-    wire [15:0]         M_PADDR;
-    wire                M_PWRITE;
-    wire [5-1:0]        M_PSELx;  // not shared
-    wire                M_PENABLE;
-    wire [15:0]         M_PWDATA; 
-    wire [15:0]         M_PRDATA; // input to intercon
-    wire                M_PREADY; // input to intercon
+    //wire [15:0]         M_PADDR;
+    //wire                M_PWRITE;
+    //wire [5-1:0]        M_PSELx;  // not shared
+    //wire                M_PENABLE;
+    //wire [15:0]         M_PWDATA; 
+    //wire [15:0]         M_PRDATA; // input to intercon
+    //wire                M_PREADY; // input to intercon
 
     vmicro16_soc # (
         .GPIO_PINS (GPIO_PINS)
     ) soc (
         .clk     (CLK50),
-        .reset   (por_reset | SW[0]),
+        .reset   (por_reset | (~SW[0])),
 
-        .M_PADDR    (M_PADDR),
-        .M_PWRITE   (M_PWRITE),
-        .M_PSELx    (M_PSELx),
-        .M_PENABLE  (M_PENABLE),
-        .M_PWDATA   (M_PWDATA),
-        .M_PRDATA   (M_PRDATA),
-        .M_PREADY   (M_PREADY),
+        //.M_PADDR    (M_PADDR),
+        //.M_PWRITE   (M_PWRITE),
+        //.M_PSELx    (M_PSELx),
+        //.M_PENABLE  (M_PENABLE),
+        //.M_PWDATA   (M_PWDATA),
+        //.M_PRDATA   (M_PRDATA),
+        //.M_PREADY   (M_PREADY),
         
         .uart_tx (TXD),
-        .gpio0   (LEDS[7:4]),
+        .gpio0   (LEDS[3:0]),
 
-        .dbug0   (LEDS[3:0])
+        //.dbug0   (LEDS[3:0]),
+        .dbug1   (LEDS[7:4])
     );
 
 endmodule

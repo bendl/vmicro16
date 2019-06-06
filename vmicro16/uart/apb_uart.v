@@ -1,5 +1,7 @@
 // AUTHOR: BDL
 
+(*dont_touch="true"*)
+(* keep_hierarchy = "yes" *)
 module apb_uart_tx # (
     parameter BUS_WIDTH  = 16,
     parameter CELL_DEPTH = 8
@@ -15,8 +17,8 @@ module apb_uart_tx # (
     input                           S_PENABLE,
     input  [BUS_WIDTH-1:0]          S_PWDATA,
     
-    output  [BUS_WIDTH-1:0]      S_PRDATA,
-    output reg                   S_PREADY,
+    inout  [BUS_WIDTH-1:0]      S_PRDATA,
+    output reg                  S_PREADY,
 
     output tx_wire,
     input  rx_wire

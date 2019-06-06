@@ -1,15 +1,14 @@
 //https://github.com/jamieiles/uart/blob/master/transmitter.v
 
-module transmitter(input wire [7:0] din,
-           input wire wr_en,
-           input wire clk_50m,
-           input wire clken,
-           output reg tx,
-           output wire tx_busy);
-
-initial begin
-     tx = 1'b1;
-end
+module transmitter(
+    input wire clk_50m,
+    input wire clken,
+    
+    input wire [7:0] din,
+    input wire wr_en,
+    output reg tx,
+    output wire tx_busy
+);
 
 parameter STATE_IDLE    = 2'b00;
 parameter STATE_START   = 2'b01;
@@ -23,6 +22,7 @@ reg [1:0] state = STATE_IDLE;
 always @(posedge clk_50m) begin
     case (state)
     STATE_IDLE: begin
+        tx <= 1'b1;
         if (wr_en) begin
             state <= STATE_START;
             data <= din;

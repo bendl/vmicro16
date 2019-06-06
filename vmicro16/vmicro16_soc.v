@@ -1,8 +1,9 @@
 
 (*dont_touch="true"*)
+(* keep_hierarchy = "yes" *)
 module vmicro16_soc #(
     parameter CORES     = 1,
-    parameter SLAVES    = 5,
+    parameter SLAVES    = 1,
     parameter APB_WIDTH = 16,
 
     parameter GPIO_PINS = 8,
@@ -82,7 +83,7 @@ module vmicro16_soc #(
         // apb slave to master interface
         .S_PADDR    (M_PADDR),
         .S_PWRITE   (M_PWRITE),
-        .S_PSELx    (M_PSELx[SLAVE_ADDR_GPIO0_APB]),
+        .S_PSELx    (M_PSELx[0]),
         .S_PENABLE  (M_PENABLE),
         .S_PWDATA   (M_PWDATA),
         .S_PRDATA   (M_PRDATA),
@@ -90,22 +91,22 @@ module vmicro16_soc #(
         .gpio       (gpio0)
     );
     
-    (*dont_touch="true"*)
-    (* keep_hierarchy = "yes" *)
-    apb_uart_tx apb_uart_inst (
-        .clk        (clk),
-        // apb slave to master interface
-        .S_PADDR    (M_PADDR),
-        .S_PWRITE   (M_PWRITE),
-        .S_PSELx    (M_PSELx[SLAVE_ADDR_UART0_APB]),
-        .S_PENABLE  (M_PENABLE),
-        .S_PWDATA   (M_PWDATA),
-        .S_PRDATA   (M_PRDATA),
-        .S_PREADY   (M_PREADY),
-        // uart wires
-        .tx_wire    (uart_tx),
-        .rx_wire    (uart_rx)
-    );
+    //(*dont_touch="true"*)
+    //(* keep_hierarchy = "yes" *)
+    //apb_uart_tx apb_uart_inst (
+    //    .clk        (clk),
+    //    // apb slave to master interface
+    //    .S_PADDR    (M_PADDR),
+    //    .S_PWRITE   (M_PWRITE),
+    //    .S_PSELx    (M_PSELx[SLAVE_ADDR_UART0_APB]),
+    //    .S_PENABLE  (M_PENABLE),
+    //    .S_PWDATA   (M_PWDATA),
+    //    .S_PRDATA   (M_PRDATA),
+    //    .S_PREADY   (M_PREADY),
+    //    // uart wires
+    //    .tx_wire    (uart_tx),
+    //    .rx_wire    (uart_rx)
+    //);
 
     //vmicro16_core c1 (
     //    .clk        (clk),

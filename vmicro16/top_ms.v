@@ -12,6 +12,8 @@ module top_ms # (
     // Peripherals
     output [7:0]    LEDS
 );
+    assign TXD = 0;
+    
     localparam POR_CLKS = 8;
     reg [3:0] por_timer = 0;
     reg       por_done  = 0;
@@ -50,7 +52,7 @@ module top_ms # (
         //.M_PRDATA   (M_PRDATA),
         //.M_PREADY   (M_PREADY),
         
-        .uart_tx (TXD),
+        //.uart_tx (TXD),
         .gpio0   (LEDS[7:0])
 
         //.dbug0   (LEDS[3:0]),

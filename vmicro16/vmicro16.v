@@ -84,16 +84,16 @@ module vmicro16_bram # (
         //mem[2] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x81] = 6
         // GPIO0
         mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
-        mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'h05};
+        mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'h6};
         mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
         mem[3] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
         // UART0
-        mem[4]  = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0}; // UART0
-        mem[5] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41}; // ascii A
-        mem[6] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        // UART0
-        mem[7] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
-        mem[8] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        //mem[4]  = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0}; // UART0
+        //mem[5] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41}; // ascii A
+        //mem[6] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        //// UART0
+        //mem[7] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
+        //mem[8] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
     end
 
     always @(posedge clk) begin
@@ -142,6 +142,7 @@ module vmicro16_core_mmu # (
     localparam TIM_BITS_ADDR = `clog2(MEM_DEPTH);
     localparam MMU_STATE_T1  = 0;
     localparam MMU_STATE_T2  = 1;
+    localparam MMU_STATE_T3  = 2;
     reg [1:0] mmu_state      = MMU_STATE_T1;
 
     wire [MEM_WIDTH-1:0] tim0_out;
@@ -187,13 +188,17 @@ module vmicro16_core_mmu # (
                     M_PENABLE <= 1;
                     if (M_PREADY == 1'b1) begin
                         // Slave has output a ready signal (finished)
-                        M_PENABLE <= 0;
-                        M_PADDR   <= 0;
-                        M_PWDATA  <= 0;
-                        M_PSELx   <= 0;
-                        M_PWRITE  <= 0;
-                        mmu_state <= MMU_STATE_T1;
+                        mmu_state <= MMU_STATE_T3;
                     end
+                end
+
+                MMU_STATE_T3: begin
+                    M_PENABLE <= 0;
+                    M_PADDR   <= 0;
+                    M_PWDATA  <= 0;
+                    M_PSELx   <= 0;
+                    M_PWRITE  <= 0;
+                    mmu_state <= MMU_STATE_T1;
                 end
             endcase
     end
@@ -328,12 +333,12 @@ module vmicro16_gpio_apb # (
     input                           S_PENABLE,
     input  [BUS_WIDTH-1:0]          S_PWDATA,
     
-    inout [BUS_WIDTH-1:0]           S_PRDATA,
-    inout                           S_PREADY,
+    output [BUS_WIDTH-1:0]          S_PRDATA,
+    output                          S_PREADY,
     output reg [PORTS-1:0]          gpio
 );
-    assign S_PRDATA = (S_PSELx & S_PENABLE & (!S_PWRITE)) ? gpio : 16'hZZZZ;
-    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1    : 1'bZ;
+    assign S_PRDATA = (S_PSELx & S_PENABLE) ? gpio : 16'hZZZZ;
+    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1 : 1'bZ;
     assign ports_we = (S_PSELx & S_PENABLE & S_PWRITE);
 
     always @(posedge clk)

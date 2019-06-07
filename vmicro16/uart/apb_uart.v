@@ -7,6 +7,7 @@ module apb_uart_tx # (
     parameter CELL_DEPTH = 8
 ) (
     input clk,
+    input reset,
 
     // APB Slave to master interface
     input  [1:0]                    S_PADDR,
@@ -38,7 +39,7 @@ module apb_uart_tx # (
 
     always @(*)
         if (S_PADDR == APB_ADDR_WRITE)
-            S_PREADY = (apb_sel) ? !uart_tx_busy : 1'bZ;
+            S_PREADY = (apb_sel) ? (!uart_tx_fifo_full) : 1'bZ;
         else
             S_PREADY = (apb_sel) ? uart_rx_rdy : 1'bZ;
 
@@ -60,18 +61,40 @@ module apb_uart_tx # (
             disp_once <= 0;
     
 
-    uart uart_blocking (
-        .clk_50m    (clk),
+    //uart uart_blocking (
+    //    .clk_50m    (clk),
+    //
+    //    .din        (S_PWDATA[7:0]),
+    //    .wr_en      (apb_we),
+    //    .tx         (tx_wire),
+    //    .tx_busy    (uart_tx_busy),
+    //
+    //    .rx         (rx_wire),
+    //    .rdy        (uart_rx_rdy),
+    //    .rdy_clr    (uart_rx_rdy_clear),
+    //    .dout       (uart_rx_dout)
+    //);
 
-        .din        (S_PWDATA[7:0]),
-        .wr_en      (apb_we),
-        .tx         (tx_wire),
-        .tx_busy    (uart_tx_busy),
+    wire uart_tx_fifo_full;
+    wire uart_tx_transmit_en = apb_we && (!uart_tx_fifo_full);
+    uart_fifo uart_fifo(
+        .clk             (clk),
+        .rst             (reset),
 
-        .rx         (rx_wire),
-        .rdy        (uart_rx_rdy),
-        .rdy_clr    (uart_rx_rdy_clear),
-        .dout       (uart_rx_dout)
+        // reciever
+        //.rx              (uart_rx),
+        //.rx_fifo_pop     (uart_rx_fifo_pop)
+        //.rx_fifo_empty   (uart_rx_fifo_empty),
+        //.rx_byte         (uart_rx_byte[7:0]),
+        //.irq             (uart_irq),
+        
+        // transmitter
+        .tx              (tx_wire),
+        .busy            (uart_tx_busy),
+        .tx_fifo_full    (uart_tx_fifo_full),
+        //.is_transmitting (is_transmitting),
+        .tx_byte         (S_PWDATA[7:0]),
+        .transmit        (uart_tx_transmit_en)
     );
 
 endmodule

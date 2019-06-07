@@ -95,6 +95,7 @@ module vmicro16_soc #(
     (* keep_hierarchy = "yes" *)
     apb_uart_tx apb_uart_inst (
         .clk        (clk),
+        .reset      (reset),
         // apb slave to master interface
         .S_PADDR    (M_PADDR),
         .S_PWRITE   (M_PWRITE),

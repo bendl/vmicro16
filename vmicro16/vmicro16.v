@@ -12,6 +12,50 @@
 `include "clog2.v"
 `include "formal.v"
 
+(* keep_hierarchy = "yes" *)
+(* dont_touch = "yes" *)
+module vmicro16_bram_apb # (
+    parameter MEM_WIDTH    = 16,
+    parameter MEM_DEPTH    = 256
+) (
+    input clk,
+    input reset,
+    // APB Slave to master interface
+    input  [`clog2(MEM_DEPTH)-1:0]  S_PADDR,
+    input                           S_PWRITE,
+    input                           S_PSELx,
+    input                           S_PENABLE,
+    input  [BUS_WIDTH-1:0]          S_PWDATA,
+    
+    output [BUS_WIDTH-1:0]          S_PRDATA,
+    output                          S_PREADY
+);
+    wire [MEM_WIDTH-1:0] mem_out;
+
+    assign S_PRDATA = (S_PSELx & S_PENABLE) ? mem_out : 16'hZZZZ;
+    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1    : 1'bZ;
+    assign we       = (S_PSELx & S_PENABLE & S_PWRITE);
+
+    always @(posedge clk)
+        if (we)
+            $display($time, "\t\tBRAM_APB[%h] <= %h", 
+                S_PADDR, S_PWDATA);
+
+    vmicro16_bram # (
+        .MEM_WIDTH  (MEM_WIDTH),
+        .MEM_DEPTH  (MEM_DEPTH)
+    ) bram_apb (
+        .clk        (clk),
+        .reset      (reset),
+
+        .mem_addr   (S_PADDR),
+        .mem_in     (S_PWDATA),
+        .mem_we     (we),
+        .mem_out    (mem_out)
+    );
+endmodule
+
+
 // This module aims to be a SYNCHRONOUS, WRITE_FIRST BLOCK RAM
 //   https://www.xilinx.com/support/documentation/user_guides/ug473_7Series_Memory_Resources.pdf
 //   https://www.xilinx.com/support/documentation/user_guides/ug383.pdf
@@ -19,7 +63,7 @@
 (* keep_hierarchy = "yes" *)
 module vmicro16_bram # (
     parameter MEM_WIDTH    = 16,
-    parameter MEM_DEPTH    = 256
+    parameter MEM_DEPTH    = 64
 ) (
     input clk, 
     input reset,
@@ -79,26 +123,26 @@ module vmicro16_bram # (
         //mem[2] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x81] = 6
 
         // REGS0
-        //mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h81};
-        //mem[1] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
-        //mem[2] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x81] = 6
+        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h81};
+        mem[1] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
+        mem[2] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x82] = 6
         // GPIO0
-        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
-        mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'hD};
-        mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        mem[3] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
+        mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'hA0};
+        mem[4] = {`VMICRO16_OP_MOVI,    3'h1, 8'hD};
+        mem[5] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[6] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
         // TIM0
-        mem[4] = {`VMICRO16_OP_MOVI,    3'h0, 8'h07};
-        mem[5] = {`VMICRO16_OP_LW,      3'h3, 3'h0, 5'h03};
+        mem[7] = {`VMICRO16_OP_MOVI,    3'h0, 8'h07};
+        mem[8] = {`VMICRO16_OP_LW,      3'h3, 3'h0, 5'h03};
         // UART0
-        mem[6] = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0};      // UART0
-        mem[7] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41};      // ascii A
-        mem[8] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; 
+        mem[9] = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0};      // UART0
+        mem[10] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41};      // ascii A
+        mem[11] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; 
         //// UART0
-        mem[9] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
-        mem[10] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        mem[11] = {`VMICRO16_OP_MOVI,    3'h1, 8'h43}; // ascii C
-        mem[12] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[12] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
+        mem[13] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[14] = {`VMICRO16_OP_MOVI,    3'h1, 8'h43}; // ascii C
+        mem[15] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
     end
 
     always @(posedge clk) begin
@@ -303,9 +347,13 @@ module vmicro16_regs_apb # (
 );
     wire [BUS_WIDTH-1:0] rd1;
 
-    assign S_PRDATA = (S_PSELx & S_PENABLE) ? rd1 : 16'hZZZZ;
-    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1   : 1'bZ;
+    assign S_PRDATA = (S_PSELx & S_PENABLE) ? rd1  : 16'hZZZZ;
+    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1 : 1'bZ;
     assign reg_we   = (S_PSELx & S_PENABLE & S_PWRITE);
+
+    always @(*)
+        if (reg_we)
+            $display($time, "\t\tREGS_APB[%h] <= %h", S_PADDR, S_PWDATA);
 
     always @(*) 
         `rassert(reg_we == (S_PSELx & S_PENABLE & S_PWRITE))
@@ -547,7 +595,9 @@ endmodule
 module vmicro16_core # (
     parameter MEM_INSTR_DEPTH   = 64,
     parameter MEM_SCRATCH_DEPTH = 64,
-    parameter MEM_WIDTH         = 16
+    parameter MEM_WIDTH         = 16,
+
+    parameter CORE_ID           = 0
 ) (
     input        clk,
     input        reset,
@@ -630,7 +680,7 @@ module vmicro16_core # (
             if (r_state == STATE_IF) begin
                 r_instr <= w_mem_instr_out;
 
-                if (r_pc <= (16'h000C))
+                if (r_pc < (MEM_INSTR_DEPTH-1))
                     r_pc <= r_pc + 1;
                 
                 r_state <= STATE_R1;

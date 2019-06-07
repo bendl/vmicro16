@@ -34,6 +34,14 @@ module apb_uart_tx # (
     wire        uart_rx_rdy;
     wire [7:0]  uart_rx_dout;
     reg         uart_rx_rdy_clear;
+
+    reg edge_write;
+    reg edge_write_2;
+    wire edge_write_rising = (edge_write_2 < edge_write);
+    always @(posedge clk) begin
+        edge_write <= S_PWRITE;
+        edge_write_2 <= edge_write;
+    end
     
     assign S_PRDATA = (apb_sel) ? 16'hAAAA : 16'hZZZZ;
 
@@ -76,7 +84,7 @@ module apb_uart_tx # (
     //);
 
     wire uart_tx_fifo_full;
-    wire uart_tx_transmit_en = apb_we && (!uart_tx_fifo_full);
+    wire uart_tx_transmit_en = apb_we && (!uart_tx_fifo_full) && edge_write_rising;
     uart_fifo uart_fifo(
         .clk             (clk),
         .rst             (reset),

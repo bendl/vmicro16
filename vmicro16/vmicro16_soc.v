@@ -2,11 +2,12 @@
 (*dont_touch="true"*)
 (* keep_hierarchy = "yes" *)
 module vmicro16_soc #(
-    parameter CORES     = 1,
-    parameter SLAVES    = 2,
-    parameter APB_WIDTH = 16,
+    parameter CORES                 = 1,
+    parameter SLAVES                = 3,
+    parameter APB_WIDTH             = 16,
 
-    parameter GPIO_PINS = 8,
+    parameter GPIO_PINS             = 8,
+    parameter SHARED_MEM_DEPTH      = 265,
 
     parameter SLAVE_ADDR_REGS0_APB  = 0,
     parameter SLAVE_ADDR_REGS1_APB  = 1,
@@ -109,6 +110,42 @@ module vmicro16_soc #(
         .rx_wire    (uart_rx)
     );
 
+    (*dont_touch="true"*)
+    (* keep_hierarchy = "yes" *)
+    vmicro16_regs_apb # (
+        .BUS_WIDTH  (APB_WIDTH),
+        .CELL_DEPTH (8)
+    ) regs1_apb (
+        .clk        (clk),
+        .reset      (reset),
+        // apb slave to master interface
+        .S_PADDR    (M_PADDR),
+        .S_PWRITE   (M_PWRITE),
+        .S_PSELx    (M_PSELx[2]),
+        .S_PENABLE  (M_PENABLE),
+        .S_PWDATA   (M_PWDATA),
+        .S_PRDATA   (M_PRDATA),
+        .S_PREADY   (M_PREADY)
+    );
+
+    (*dont_touch="true"*)
+    (* keep_hierarchy = "yes" *)
+    vmicro16_bram_apb # (
+        .MEM_WIDTH  (APB_WIDTH),
+        .MEM_DEPTH  (SHARED_MEM_DEPTH)
+    ) regs1_apb (
+        .clk        (clk),
+        .reset      (reset),
+        // apb slave to master interface
+        .S_PADDR    (M_PADDR),
+        .S_PWRITE   (M_PWRITE),
+        .S_PSELx    (M_PSELx[3]),
+        .S_PENABLE  (M_PENABLE),
+        .S_PWDATA   (M_PWDATA),
+        .S_PRDATA   (M_PRDATA),
+        .S_PREADY   (M_PREADY)
+    );
+
     //vmicro16_core c1 (
     //    .clk        (clk),
     //    .reset      (reset),
@@ -125,7 +162,9 @@ module vmicro16_soc #(
     genvar i;
     generate for(i = 0; i < CORES; i = i + 1) begin : cores
         (* keep_hierarchy = "yes" *)
-        vmicro16_core c1 (
+        vmicro16_core # (
+            .CORE_ID    (i)
+        ) c1 (
             .clk        (clk),
             .reset      (reset),
             .dbug_pc    (dbug1),

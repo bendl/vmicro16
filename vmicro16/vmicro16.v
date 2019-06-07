@@ -84,7 +84,7 @@ module vmicro16_bram # (
         //mem[2] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x81] = 6
         // GPIO0
         mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
-        mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'h6};
+        mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'hD};
         mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
         mem[3] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
         // TIM0
@@ -147,6 +147,7 @@ module vmicro16_core_mmu # (
     localparam TIM_BITS_ADDR = `clog2(MEM_DEPTH);
     localparam MMU_STATE_T1  = 0;
     localparam MMU_STATE_T2  = 1;
+    localparam MMU_STATE_T3  = 2;
     reg [1:0] mmu_state      = MMU_STATE_T1;
     
     reg  [MEM_WIDTH-1:0] per_out = 0;
@@ -190,20 +191,25 @@ module vmicro16_core_mmu # (
                 end
 
                 MMU_STATE_T2: begin
+                    M_PENABLE <= 1;
+                    
                     if (M_PREADY == 1'b1) begin
-                        // Slave has output a ready signal (finished)
-                        M_PENABLE <= 0;
-                        M_PADDR   <= 0;
-                        M_PWDATA  <= 0;
-                        M_PSELx   <= 0;
-                        M_PWRITE  <= 0;
-                        mmu_state <= MMU_STATE_T1;
-                        // Clock the peripheral output into a reg,
-                        //   to output on the next clock cycle
-                        per_out   <= M_PRDATA;
-                    end else begin
-                        M_PENABLE <= 1;
+                        mmu_state <= MMU_STATE_T3;
                     end
+                end
+
+                MMU_STATE_T3: begin
+                    // Slave has output a ready signal (finished)
+                    M_PENABLE <= 0;
+                    M_PADDR   <= 0;
+                    M_PWDATA  <= 0;
+                    M_PSELx   <= 0;
+                    M_PWRITE  <= 0;
+                    // Clock the peripheral output into a reg,
+                    //   to output on the next clock cycle
+                    per_out   <= M_PRDATA;
+
+                    mmu_state <= MMU_STATE_T1;
                 end
             endcase
     end
@@ -624,7 +630,7 @@ module vmicro16_core # (
             if (r_state == STATE_IF) begin
                 r_instr <= w_mem_instr_out;
 
-                if (r_pc < (MEM_INSTR_DEPTH-1))
+                if (r_pc <= (16'h000C))
                     r_pc <= r_pc + 1;
                 
                 r_state <= STATE_R1;

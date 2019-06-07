@@ -51,10 +51,10 @@ module top_ms # (
         //.M_PREADY   (M_PREADY),
         
         .uart_tx (TXD),
-        .gpio0   (LEDS[7:0])
+        .gpio0   (LEDS[3:0]),
 
         //.dbug0   (LEDS[3:0]),
-        //.dbug1   (LEDS[7:4])
+        .dbug1   (LEDS[7:4])
     );
 
 endmodule

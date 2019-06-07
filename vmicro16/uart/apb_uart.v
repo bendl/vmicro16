@@ -17,7 +17,7 @@ module apb_uart_tx # (
     input                           S_PENABLE,
     input  [BUS_WIDTH-1:0]          S_PWDATA,
     
-    inout  [BUS_WIDTH-1:0]      S_PRDATA,
+    output [BUS_WIDTH-1:0]      S_PRDATA,
     output reg                  S_PREADY,
 
     output tx_wire,
@@ -34,7 +34,7 @@ module apb_uart_tx # (
     wire [7:0]  uart_rx_dout;
     reg         uart_rx_rdy_clear;
     
-    assign S_PRDATA = (apb_sel) ? uart_rx_dout : 16'hZZZZ;
+    assign S_PRDATA = (apb_sel) ? 16'hAAAA : 16'hZZZZ;
 
     always @(*)
         if (S_PADDR == APB_ADDR_WRITE)

@@ -87,13 +87,18 @@ module vmicro16_bram # (
         mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'h6};
         mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
         mem[3] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
+        // TIM0
+        mem[4] = {`VMICRO16_OP_MOVI,    3'h0, 8'h07};
+        mem[5] = {`VMICRO16_OP_LW,      3'h3, 3'h0, 5'h03};
         // UART0
-        mem[4] = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0};      // UART0
-        mem[5] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41};      // ascii A
-        mem[6] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; 
+        mem[6] = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0};      // UART0
+        mem[7] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41};      // ascii A
+        mem[8] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; 
         //// UART0
-        mem[7] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
-        mem[8] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[9] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
+        mem[10] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[11] = {`VMICRO16_OP_MOVI,    3'h1, 8'h43}; // ascii C
+        mem[12] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
     end
 
     always @(posedge clk) begin
@@ -142,19 +147,19 @@ module vmicro16_core_mmu # (
     localparam TIM_BITS_ADDR = `clog2(MEM_DEPTH);
     localparam MMU_STATE_T1  = 0;
     localparam MMU_STATE_T2  = 1;
-    localparam MMU_STATE_T3  = 2;
     reg [1:0] mmu_state      = MMU_STATE_T1;
-
+    
+    reg  [MEM_WIDTH-1:0] per_out = 0;
     wire [MEM_WIDTH-1:0] tim0_out;
 
-    assign busy = (mmu_state == MMU_STATE_T1);
+    assign busy = req || (mmu_state == MMU_STATE_T2);
 
     // Output port
     always @(*)
         if (tim0_en)
             mmu_out = tim0_out;
         else
-            mmu_out = M_PRDATA;
+            mmu_out = per_out;
 
     // tightly integrated memory usage
     wire tim0_en = (mmu_addr >= ADDR_TIM0_S) && (mmu_addr <=  ADDR_TIM0_E);
@@ -174,7 +179,7 @@ module vmicro16_core_mmu # (
         else
             casex (mmu_state)
                 MMU_STATE_T1: begin
-                    if (req) begin
+                    if (req && (!tim0_en)) begin
                         M_PADDR   <= mmu_addr;
                         M_PWDATA  <= mmu_in;
                         M_PSELx   <= 1;
@@ -185,20 +190,20 @@ module vmicro16_core_mmu # (
                 end
 
                 MMU_STATE_T2: begin
-                    M_PENABLE <= 1;
                     if (M_PREADY == 1'b1) begin
                         // Slave has output a ready signal (finished)
-                        mmu_state <= MMU_STATE_T3;
+                        M_PENABLE <= 0;
+                        M_PADDR   <= 0;
+                        M_PWDATA  <= 0;
+                        M_PSELx   <= 0;
+                        M_PWRITE  <= 0;
+                        mmu_state <= MMU_STATE_T1;
+                        // Clock the peripheral output into a reg,
+                        //   to output on the next clock cycle
+                        per_out   <= M_PRDATA;
+                    end else begin
+                        M_PENABLE <= 1;
                     end
-                end
-
-                MMU_STATE_T3: begin
-                    M_PENABLE <= 0;
-                    M_PADDR   <= 0;
-                    M_PWDATA  <= 0;
-                    M_PSELx   <= 0;
-                    M_PWRITE  <= 0;
-                    mmu_state <= MMU_STATE_T1;
                 end
             endcase
     end

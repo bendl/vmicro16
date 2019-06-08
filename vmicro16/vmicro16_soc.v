@@ -6,7 +6,7 @@
 (*dont_touch="true"*)
 (* keep_hierarchy = "yes" *)
 module vmicro16_soc #(
-
+    // see vmicro16_soc_config.v for parameters
 ) (
     input clk,
     input reset,

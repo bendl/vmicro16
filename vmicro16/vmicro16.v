@@ -40,12 +40,13 @@ module vmicro16_bram_apb # (
 
     always @(posedge clk)
         if (we)
-            $display($time, "\t\tBRAM_APB[%h] <= %h", 
+            $display($time, "\t\tBRAM[%h] <= %h", 
                 S_PADDR, S_PWDATA);
 
     vmicro16_bram # (
         .MEM_WIDTH  (MEM_WIDTH),
-        .MEM_DEPTH  (MEM_DEPTH)
+        .MEM_DEPTH  (MEM_DEPTH),
+        .NAME       ("BRAM")
     ) bram_apb (
         .clk        (clk),
         .reset      (reset),
@@ -64,8 +65,10 @@ endmodule
 //   https://www.xilinx.com/support/documentation/sw_manuals/xilinx2016_4/ug901-vivado-synthesis.pdf
 (* keep_hierarchy = "yes" *)
 module vmicro16_bram # (
-    parameter MEM_WIDTH    = 16,
-    parameter MEM_DEPTH    = 64
+    parameter MEM_WIDTH     = 16,
+    parameter MEM_DEPTH     = 64,
+    parameter CORE_ID       = 0,
+    parameter NAME          = "BRAM"
 ) (
     input clk, 
     input reset,
@@ -122,14 +125,15 @@ module vmicro16_bram # (
         mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
         mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'hA};
         mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h5};
-        //mem[3] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
+        mem[3] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
     end
 
     always @(posedge clk) begin
         // synchronous WRITE_FIRST (page 13)
         if (mem_we) begin
             mem[mem_addr] <= mem_in;
-            $display($time, "\t\tTIM0: W TIM0[%h] <= %h", mem_addr, mem_in);
+            $display($time, "\t\t%s[%h] <= %h", 
+                    NAME, mem_addr, mem_in);
         end else
             mem_out <= mem[mem_addr];
     end
@@ -140,11 +144,13 @@ endmodule
 
 (* keep_hierarchy = "yes" *)
 module vmicro16_core_mmu # (
-    parameter MEM_WIDTH    = 16,
-    parameter MEM_DEPTH    = 64,
+    parameter MEM_WIDTH     = 16,
+    parameter MEM_DEPTH     = 64,
     // TIM0 addr
-    parameter ADDR_TIM0_S  = 16'h00,
-    parameter ADDR_TIM0_E  = 16'h3F
+    parameter ADDR_TIM0_S   = 16'h00,
+    parameter ADDR_TIM0_E   = 16'h3F,
+
+    parameter CORE_ID       = 0
 ) (
     input clk,
     input reset,
@@ -242,7 +248,8 @@ module vmicro16_core_mmu # (
     (* keep_hierarchy = "yes" *)
     vmicro16_bram # (
         .MEM_WIDTH  (MEM_WIDTH),
-        .MEM_DEPTH  (MEM_DEPTH)
+        .MEM_DEPTH  (MEM_DEPTH),
+        .NAME       ("TIM0")
     ) TIM0 (
         .clk        (clk),
         .reset      (reset),
@@ -260,7 +267,8 @@ module vmicro16_regs # (
     parameter CELL_DEPTH     = 8,
     parameter CELL_SEL_BITS  = `clog2(CELL_DEPTH),
     parameter CELL_DEFAULTS  = 0,
-    parameter DEBUG_NAME     = ""
+    parameter DEBUG_NAME     = "",
+    parameter CORE_ID        = 0
 ) (
     input clk, 
     input reset,
@@ -287,17 +295,20 @@ module vmicro16_regs # (
             for(i = 0; i < CELL_DEPTH; i = i + 1) 
                 regs[i] <= i;
 
+    always @(regs)
+        $display($time, "\tC%02h\t\t| %h %h %h %h | %h %h %h %h |", 
+            CORE_ID, 
+            regs[0], regs[1], regs[2], regs[3], 
+            regs[4], regs[5], regs[6], regs[7]);
+
     always @(posedge clk) 
         if (reset)
             for(i = 0; i < CELL_DEPTH; i = i + 1) 
                 regs[i] <= i;
         
         else if (we) begin
-            $display($time, "\tREGS #%s: Writing %h to reg[%d]", 
-                DEBUG_NAME, wd, ws1);
-            $display($time, "\t\t\t| %h %h %h %h | %h %h %h %h |", 
-                regs[0], regs[1], regs[2], regs[3], 
-                regs[4], regs[5], regs[6], regs[7]);
+            $display($time, "\tC%02h: REGS #%s: Writing %h to reg[%d]", 
+                CORE_ID, DEBUG_NAME, wd, ws1);
             
             // Perform the write
             regs[ws1] <= wd;
@@ -663,8 +674,8 @@ module vmicro16_core # (
                 if (r_pc < (MEM_INSTR_DEPTH-1))
                     r_pc <= r_pc + 1;
 
-                $display($time, "\tPC: %h", r_pc);
-                $display($time, "\tINSTR: %h", w_mem_instr_out);
+                $display($time, "\tC%02h: PC: %h",    CORE_ID, r_pc);
+                $display($time, "\tC%02h: INSTR: %h", CORE_ID, w_mem_instr_out);
                 
                 r_state <= STATE_R1;
             end
@@ -701,7 +712,9 @@ module vmicro16_core # (
     (* keep_hierarchy = "yes" *)
     vmicro16_bram # (
         .MEM_WIDTH      (16),
-        .MEM_DEPTH      (MEM_INSTR_DEPTH)
+        .MEM_DEPTH      (MEM_INSTR_DEPTH),
+        .CORE_ID        (CORE_ID),
+        .NAME           ("INSTR_MEM")
     ) mem_instr (
         .clk            (clk), 
         .reset          (reset), 
@@ -718,7 +731,8 @@ module vmicro16_core # (
         .MEM_WIDTH      (16),
         .MEM_DEPTH      (MEM_SCRATCH_DEPTH),
         .ADDR_TIM0_S    (16'h00),
-        .ADDR_TIM0_E    (16'h3F)
+        .ADDR_TIM0_E    (16'h3F),
+        .CORE_ID        (CORE_ID)
     ) mmu (
         .clk            (clk), 
         .reset          (reset), 
@@ -762,7 +776,9 @@ module vmicro16_core # (
     
     // Software registers
     (* keep_hierarchy = "yes" *)
-    vmicro16_regs regs (
+    vmicro16_regs # (
+        .CORE_ID (CORE_ID)
+    ) regs (
         .clk        (clk),
         .reset      (reset),
         // async port 0

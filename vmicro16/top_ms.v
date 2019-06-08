@@ -12,10 +12,10 @@ module top_ms # (
     // Peripherals
     output [7:0]    LEDS
 );
-    localparam POR_CLKS = 8;
-    reg [3:0] por_timer = 0;
-    reg       por_done  = 0;
-    reg       por_reset = 1;
+    localparam POR_CLKS  = 8;
+    reg [3:0]  por_timer = 0;
+    reg        por_done  = 0;
+    reg        por_reset = 1;
     always @(posedge CLK50)
         if (!por_done) begin
             por_reset <= 1;

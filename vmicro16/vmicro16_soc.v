@@ -3,7 +3,7 @@
 (* keep_hierarchy = "yes" *)
 module vmicro16_soc #(
     parameter CORES                 = 1,
-    parameter SLAVES                = 3,
+    parameter SLAVES                = 4,
     parameter APB_WIDTH             = 16,
 
     parameter GPIO_PINS             = 8,
@@ -133,7 +133,7 @@ module vmicro16_soc #(
     vmicro16_bram_apb # (
         .MEM_WIDTH  (APB_WIDTH),
         .MEM_DEPTH  (SHARED_MEM_DEPTH)
-    ) regs1_apb (
+    ) bram_apb (
         .clk        (clk),
         .reset      (reset),
         // apb slave to master interface

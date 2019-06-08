@@ -15,6 +15,7 @@
 (* keep_hierarchy = "yes" *)
 (* dont_touch = "yes" *)
 module vmicro16_bram_apb # (
+    parameter BUS_WIDTH    = 16,
     parameter MEM_WIDTH    = 16,
     parameter MEM_DEPTH    = 256
 ) (
@@ -135,14 +136,24 @@ module vmicro16_bram # (
         mem[7] = {`VMICRO16_OP_MOVI,    3'h0, 8'h07};
         mem[8] = {`VMICRO16_OP_LW,      3'h3, 3'h0, 5'h03};
         // UART0
-        mem[9] = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0};      // UART0
+        mem[9]  = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0};      // UART0
         mem[10] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41};      // ascii A
         mem[11] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; 
-        //// UART0
         mem[12] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
         mem[13] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
         mem[14] = {`VMICRO16_OP_MOVI,    3'h1, 8'h43}; // ascii C
         mem[15] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[16] = {`VMICRO16_OP_MOVI,    3'h1, 8'h44}; // ascii D
+        mem[17] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[18] = {`VMICRO16_OP_MOVI,    3'h1, 8'h45}; // ascii D
+        mem[19] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[20] = {`VMICRO16_OP_MOVI,    3'h1, 8'h46}; // ascii E
+        mem[21] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        // BRAM0
+        mem[22] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
+        mem[23] = {`VMICRO16_OP_MOVI,    3'h1, 8'hA};
+        mem[24] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h5};
+        mem[25] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
     end
 
     always @(posedge clk) begin
@@ -682,6 +693,9 @@ module vmicro16_core # (
 
                 if (r_pc < (MEM_INSTR_DEPTH-1))
                     r_pc <= r_pc + 1;
+
+                $display($time, "\tPC: %h", r_pc);
+                $display($time, "\tINSTR: %h", w_mem_instr_out);
                 
                 r_state <= STATE_R1;
             end

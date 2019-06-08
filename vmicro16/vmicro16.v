@@ -122,14 +122,14 @@ module vmicro16_bram # (
         mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
         mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'hA};
         mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h5};
-        mem[3] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
+        //mem[3] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
     end
 
     always @(posedge clk) begin
         // synchronous WRITE_FIRST (page 13)
         if (mem_we) begin
             mem[mem_addr] <= mem_in;
-            $display($time, "\tTIM0: W TIM0[%h] <= %h", mem_addr, mem_in);
+            $display($time, "\t\tTIM0: W TIM0[%h] <= %h", mem_addr, mem_in);
         end else
             mem_out <= mem[mem_addr];
     end

@@ -17,7 +17,8 @@
 module vmicro16_bram_apb # (
     parameter BUS_WIDTH    = 16,
     parameter MEM_WIDTH    = 16,
-    parameter MEM_DEPTH    = 256
+    parameter MEM_DEPTH    = 64,
+    parameter APB_PADDR    = 0
 ) (
     input clk,
     input reset,
@@ -83,77 +84,45 @@ module vmicro16_bram # (
         for (i = 0; i < MEM_DEPTH; i = i + 1) 
             mem[i] = 0;
         //$readmemh("../../test.hex", mem);
-        //mem[0]  = {`VMICRO16_OP_MOVI, 3'h0}; mem[1]  = { 8'h00 };
-        //mem[2]  = {`VMICRO16_OP_MOVI, 3'h1}; mem[3]  = { 8'h01 };
-        //mem[4]  = {`VMICRO16_OP_MOVI, 3'h2}; mem[5]  = { 8'h02 };
-        //mem[6]  = {`VMICRO16_OP_MOVI, 3'h3}; mem[7]  = { 8'h03 };
-        //mem[8]  = {`VMICRO16_OP_MOVI, 3'h4}; mem[9]  = { 8'h04 };
-        //mem[10] = {`VMICRO16_OP_MOVI, 3'h5}; mem[11] = { 8'h05 };
-        //mem[12] = {`VMICRO16_OP_MOVI, 3'h6}; mem[13] = { 8'h06 };
-        //mem[14] = {`VMICRO16_OP_MOVI, 3'h7}; mem[15] = { 8'h07 };
-        //mem[16] = {`VMICRO16_OP_HALT, 3'h0}; mem[17] = { 8'h00 };
-        //mem[0]  = {`VMICRO16_OP_MOVI, 3'h0, 8'h00 };
-        //mem[1]  = {`VMICRO16_OP_MOVI, 3'h1, 8'h01 };
-        //mem[2]  = {`VMICRO16_OP_MOVI, 3'h2, 8'h02 };
-        //mem[3]  = {`VMICRO16_OP_MOVI, 3'h3, 8'h03 };
-        //mem[4]  = {`VMICRO16_OP_MOVI, 3'h4, 8'h04 };
-        //mem[5]  = {`VMICRO16_OP_MOVI, 3'h5, 8'h05 };
-        //mem[6]  = {`VMICRO16_OP_MOVI, 3'h6, 8'h06 };
-        //mem[7]  = {`VMICRO16_OP_MOVI, 3'h7, 8'h07 };
-        //mem[8]  = {`VMICRO16_OP_HALT, 3'h0, 8'h00 };
-
-        //mem[0] = {`VMICRO16_OP_NOP, 11'h00};
-        //mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h3          };
-        //mem[1] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h0, 5'b11111};
-        //mem[2] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h0, 5'b11111};
-        //mem[3] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h0, 5'b11111};
         
-        //mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h3          };
-        //mem[1] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h0, 5'b11111}; // add 3 to 1
-        //mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h7, 5'h3};    // mem[$7+3] <= $4
-        //mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'h5};
-        //mem[4] = {`VMICRO16_OP_LW,      3'h6, 3'h7, 5'h3};    // r6 <= mem[$7+3]
-
-        //mem[0] = {`VMICRO16_OP_ARITH_U, 3'h1, 3'h2, 5'b11111};
-        //mem[1] = {`VMICRO16_OP_ARITH_U, 3'h3, 3'h4, 5'b11111};
-        //mem[2] = {`VMICRO16_OP_ARITH_U, 3'h4, 3'h5, 5'b11111};
-
-        // TIM0 SW/LW
+        //// Standard all test
+        //// REGS0
         //mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h81};
         //mem[1] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
-        //mem[2] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x81] = 6
+        //mem[2] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x82] = 6
+        //// GPIO0
+        //mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'hA0};
+        //mem[4] = {`VMICRO16_OP_MOVI,    3'h1, 8'hD};
+        //mem[5] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        //mem[6] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
+        //// TIM0
+        //mem[7] = {`VMICRO16_OP_MOVI,    3'h0, 8'h07};
+        //mem[8] = {`VMICRO16_OP_LW,      3'h3, 3'h0, 5'h03};
+        //// UART0
+        //mem[9]  = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0};      // UART0
+        //mem[10] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41};      // ascii A
+        //mem[11] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; 
+        //mem[12] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
+        //mem[13] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        //mem[14] = {`VMICRO16_OP_MOVI,    3'h1, 8'h43}; // ascii C
+        //mem[15] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        //mem[16] = {`VMICRO16_OP_MOVI,    3'h1, 8'h44}; // ascii D
+        //mem[17] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        //mem[18] = {`VMICRO16_OP_MOVI,    3'h1, 8'h45}; // ascii D
+        //mem[19] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        //mem[20] = {`VMICRO16_OP_MOVI,    3'h1, 8'h46}; // ascii E
+        //mem[21] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        //// BRAM0
+        //mem[22] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
+        //mem[23] = {`VMICRO16_OP_MOVI,    3'h1, 8'hA};
+        //mem[24] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h5};
+        //mem[25] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
 
-        // REGS0
-        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h81};
-        mem[1] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
-        mem[2] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x82] = 6
-        // GPIO0
-        mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'hA0};
-        mem[4] = {`VMICRO16_OP_MOVI,    3'h1, 8'hD};
-        mem[5] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        mem[6] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
-        // TIM0
-        mem[7] = {`VMICRO16_OP_MOVI,    3'h0, 8'h07};
-        mem[8] = {`VMICRO16_OP_LW,      3'h3, 3'h0, 5'h03};
-        // UART0
-        mem[9]  = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0};      // UART0
-        mem[10] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41};      // ascii A
-        mem[11] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; 
-        mem[12] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
-        mem[13] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        mem[14] = {`VMICRO16_OP_MOVI,    3'h1, 8'h43}; // ascii C
-        mem[15] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        mem[16] = {`VMICRO16_OP_MOVI,    3'h1, 8'h44}; // ascii D
-        mem[17] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        mem[18] = {`VMICRO16_OP_MOVI,    3'h1, 8'h45}; // ascii D
-        mem[19] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        mem[20] = {`VMICRO16_OP_MOVI,    3'h1, 8'h46}; // ascii E
-        mem[21] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        // BRAM0
-        mem[22] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
-        mem[23] = {`VMICRO16_OP_MOVI,    3'h1, 8'hA};
-        mem[24] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h5};
-        mem[25] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
+        // 2 core BRAM0 test
+        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
+        mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'hA};
+        mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h5};
+        mem[3] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
     end
 
     always @(posedge clk) begin

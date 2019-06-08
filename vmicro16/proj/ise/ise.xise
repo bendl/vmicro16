@@ -416,6 +416,7 @@
     <!-- Do not hand-edit this section, as it will be overwritten when the    -->
     <!-- project is analyzed based on files automatically identified as       -->
     <!-- include files.                                                       -->
+    <file xil_pn:name="../../vmicro16_soc_config.v" xil_pn:type="FILE_VERILOG"/>
     <file xil_pn:name="../../clog2.v" xil_pn:type="FILE_VERILOG"/>
     <file xil_pn:name="../../vmicro16_isa.v" xil_pn:type="FILE_VERILOG"/>
     <file xil_pn:name="../../formal.v" xil_pn:type="FILE_VERILOG"/>

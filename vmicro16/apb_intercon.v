@@ -2,6 +2,8 @@
 //
 //
 
+`include "vmicro16_soc_config.v"
+
 (*dont_touch="true"*)
 (* keep_hierarchy = "yes" *)
 module apb_intercon_s # (
@@ -37,9 +39,8 @@ module apb_intercon_s # (
     // TODO: Round robin scheduling
 
     // Pass through
-    (*dont_touch="true"*) assign M_PADDR = S_PADDR[BUS_WIDTH-1:0];
-    
-    (*dont_touch="true"*) assign M_PWRITE   = |S_PWRITE;
+    (*dont_touch="true"*) assign M_PADDR  = S_PADDR[BUS_WIDTH-1:0];
+    (*dont_touch="true"*) assign M_PWRITE = |S_PWRITE;
     
     //assign M_PSELx[0] = (|S_PSELx) & (S_PADDR >= 16'h80 && S_PADDR <= 16'h8F);
     //assign M_PSELx[1] = (|S_PSELx) & (S_PADDR >= 16'h90 && S_PADDR <= 16'h9F);
@@ -47,13 +48,13 @@ module apb_intercon_s # (
     //assign M_PSELx[3] = (|S_PSELx) & (S_PADDR >= 16'hB0 && S_PADDR <= 16'hB1);
 
     // GPIO0
-    assign M_PSELx[0] = (|S_PSELx) & (S_PADDR == 16'h00A0);
+    assign M_PSELx[`APB_PSELX_GPIO0] = (|S_PSELx) & (S_PADDR == 16'h00A0);
     // UART0
-    assign M_PSELx[1] = (|S_PSELx) & (S_PADDR >= 16'h00B0 && S_PADDR <= 16'h00B1);
+    assign M_PSELx[`APB_PSELX_UART0] = (|S_PSELx) & (S_PADDR >= 16'h00B0 && S_PADDR <= 16'h00B1);
     // REGS0
-    assign M_PSELx[2] = (|S_PSELx) & (S_PADDR >= 16'h80 && S_PADDR <= 16'h8F);
+    assign M_PSELx[`APB_PSELX_REGS0] = (|S_PSELx) & (S_PADDR >= 16'h80 && S_PADDR <= 16'h8F);
     // BRAM0
-    assign M_PSELx[3] = (|S_PSELx) & (S_PADDR >= 16'hC0 && S_PADDR <= 16'hFF);
+    assign M_PSELx[`APB_PSELX_BRAM0] = (|S_PSELx) & (S_PADDR >= 16'hC0 && S_PADDR <= 16'hFF);
 
     assign M_PENABLE  = |S_PENABLE;
     assign M_PWDATA   = S_PWDATA[BUS_WIDTH-1:0];

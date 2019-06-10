@@ -33,6 +33,7 @@ module apb_uart_tx # (
     wire        uart_tx_busy;
     wire        uart_rx_rdy;
     wire [7:0]  uart_rx_dout;
+    wire        uart_tx_fifo_full;
     reg         uart_rx_rdy_clear;
 
     reg edge_write;
@@ -83,7 +84,6 @@ module apb_uart_tx # (
     //    .dout       (uart_rx_dout)
     //);
 
-    wire uart_tx_fifo_full;
     wire uart_tx_transmit_en = apb_we && (!uart_tx_fifo_full) && edge_write_rising;
     uart_fifo uart_fifo(
         .clk             (clk),

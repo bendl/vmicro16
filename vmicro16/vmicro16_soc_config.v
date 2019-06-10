@@ -1,5 +1,5 @@
 
-`define CORES           2
+`define CORES           1
 `define SLAVES          4
 
 `define CORE_WIDTH      16

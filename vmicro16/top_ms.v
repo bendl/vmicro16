@@ -36,9 +36,7 @@ module top_ms # (
     //wire                M_PREADY; // input to intercon
 
     (* keep_hierarchy = "yes" *)
-    vmicro16_soc # (
-        .GPIO_PINS (GPIO_PINS)
-    ) soc (
+    vmicro16_soc soc (
         .clk     (CLK50),
         .reset   (por_reset | (~SW[0])),
 

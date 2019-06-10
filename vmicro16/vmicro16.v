@@ -84,48 +84,50 @@ module vmicro16_bram # (
     // not synthesizable
     integer i;
     initial begin
-        for (i = 0; i < MEM_DEPTH; i = i + 1) 
-            mem[i] = 0;
+        for (i = 0; i < MEM_DEPTH; i = i + 1) mem[i] = 0;
         //$readmemh("../../test.hex", mem);
         
-        //// Standard all test
-        //// REGS0
-        //mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h81};
-        //mem[1] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
-        //mem[2] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x82] = 6
-        //// GPIO0
-        //mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'hA0};
-        //mem[4] = {`VMICRO16_OP_MOVI,    3'h1, 8'hD};
-        //mem[5] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        //mem[6] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
-        //// TIM0
-        //mem[7] = {`VMICRO16_OP_MOVI,    3'h0, 8'h07};
-        //mem[8] = {`VMICRO16_OP_LW,      3'h3, 3'h0, 5'h03};
-        //// UART0
-        //mem[9]  = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0};      // UART0
-        //mem[10] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41};      // ascii A
-        //mem[11] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; 
-        //mem[12] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
-        //mem[13] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        //mem[14] = {`VMICRO16_OP_MOVI,    3'h1, 8'h43}; // ascii C
-        //mem[15] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        //mem[16] = {`VMICRO16_OP_MOVI,    3'h1, 8'h44}; // ascii D
-        //mem[17] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        //mem[18] = {`VMICRO16_OP_MOVI,    3'h1, 8'h45}; // ascii D
-        //mem[19] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        //mem[20] = {`VMICRO16_OP_MOVI,    3'h1, 8'h46}; // ascii E
-        //mem[21] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        //// BRAM0
-        //mem[22] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
-        //mem[23] = {`VMICRO16_OP_MOVI,    3'h1, 8'hA};
-        //mem[24] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h5};
-        //mem[25] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
-
+        `define ALL_TEST
+        `ifdef ALL_TEST
+        // Standard all test
+        // REGS0
+        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h81};
+        mem[1] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
+        mem[2] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x82] = 6
+        // GPIO0
+        mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'hA0};
+        mem[4] = {`VMICRO16_OP_MOVI,    3'h1, 8'hD};
+        mem[5] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[6] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
+        // TIM0
+        mem[7] = {`VMICRO16_OP_MOVI,    3'h0, 8'h07};
+        mem[8] = {`VMICRO16_OP_LW,      3'h3, 3'h0, 5'h03};
+        // UART0
+        mem[9]  = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0};      // UART0
+        mem[10] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41};      // ascii A
+        mem[11] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; 
+        mem[12] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
+        mem[13] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[14] = {`VMICRO16_OP_MOVI,    3'h1, 8'h43}; // ascii C
+        mem[15] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[16] = {`VMICRO16_OP_MOVI,    3'h1, 8'h44}; // ascii D
+        mem[17] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[18] = {`VMICRO16_OP_MOVI,    3'h1, 8'h45}; // ascii D
+        mem[19] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[20] = {`VMICRO16_OP_MOVI,    3'h1, 8'h46}; // ascii E
+        mem[21] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        // BRAM0
+        mem[22] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
+        mem[23] = {`VMICRO16_OP_MOVI,    3'h1, 8'hA};
+        mem[24] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h5};
+        mem[25] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
+        `else
         // 2 core BRAM0 test
         mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
         mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'hA};
         mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h5};
         mem[3] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
+        `endif
     end
 
     always @(posedge clk) begin
@@ -185,17 +187,17 @@ module vmicro16_core_mmu # (
 
     assign busy = req || (mmu_state == MMU_STATE_T2);
 
+    // tightly integrated memory usage
+    wire tim0_en = (mmu_addr >= ADDR_TIM0_S) && (mmu_addr <=  ADDR_TIM0_E);
+    wire [TIM_BITS_ADDR-1:0] tim0_addr = (mmu_addr - ADDR_TIM0_S);
+    wire tim0_we = (tim0_en && mmu_we);
+
     // Output port
     always @(*)
         if (tim0_en)
             mmu_out = tim0_out;
         else
             mmu_out = per_out;
-
-    // tightly integrated memory usage
-    wire tim0_en = (mmu_addr >= ADDR_TIM0_S) && (mmu_addr <=  ADDR_TIM0_E);
-    wire [TIM_BITS_ADDR-1:0] tim0_addr = (mmu_addr - ADDR_TIM0_S);
-    wire tim0_we = (tim0_en && mmu_we);
 
     // APB master to slave interface
     always @(posedge clk) begin
@@ -604,12 +606,12 @@ module vmicro16_core # (
     input   [MEM_WIDTH-1:0]     w_PRDATA,
     input                       w_PREADY
 );
-    reg  [2:0] r_state = STATE_IF;
     localparam STATE_IF = 0;
     localparam STATE_R1 = 1;
     localparam STATE_R2 = 2;
     localparam STATE_ME = 3;
     localparam STATE_WB = 4;
+    reg  [2:0] r_state = STATE_IF;
 
     reg  [15:0] r_pc    = 16'h0000;
     reg  [15:0] r_instr = 16'h0000;
@@ -633,11 +635,6 @@ module vmicro16_core # (
     wire        r_instr_halt;
 
     wire [15:0] r_alu_out;
-    reg  [2:0]  r_reg_rs1 = 0;
-    wire [15:0] r_reg_rd1;
-    //wire [15:0] r_reg_rd2;
-    wire [15:0] r_reg_wd = (r_instr_has_mem) ? r_mem_scratch_out : r_alu_out;
-    wire r_reg_we        = r_instr_has_we && (r_state == STATE_WB);
 
     wire [15:0] r_mem_scratch_addr = r_alu_out + r_instr_simm5;
     wire [15:0] r_mem_scratch_in   = r_instr_rdd;
@@ -645,6 +642,12 @@ module vmicro16_core # (
     wire        r_mem_scratch_we   = r_instr_has_mem_we && (r_state == STATE_ME);
     reg         r_mem_scratch_req  = 0;
     wire        r_mem_scratch_busy;
+
+    reg  [2:0]  r_reg_rs1 = 0;
+    wire [15:0] r_reg_rd1;
+    //wire [15:0] r_reg_rd2;
+    wire [15:0] r_reg_wd = (r_instr_has_mem) ? r_mem_scratch_out : r_alu_out;
+    wire        r_reg_we = r_instr_has_we && (r_state == STATE_WB);
 
     // 2 cycle register fetch
     always @(*) begin

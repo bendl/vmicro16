@@ -81,6 +81,9 @@ module apb_intercon_s # (
     // BRAM0
     assign M_PSELx[`APB_PSELX_BRAM0] = |S_PSELx & (a_S_PADDR >= 16'hC0 
                                                 && a_S_PADDR <= 16'hFF);
+    // BRAM0
+    assign M_PSELx[`APB_PSELX_GPIO1] = |S_PSELx & (a_S_PADDR == 16'hA1);
+    assign M_PSELx[`APB_PSELX_GPIO2] = |S_PSELx & (a_S_PADDR == 16'hA2);
 
 
     // Pass through

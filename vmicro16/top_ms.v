@@ -72,6 +72,10 @@ module top_ms # (
     //wire [15:0]         M_PRDATA; // input to intercon
     //wire                M_PREADY; // input to intercon
 
+    wire [7:0]  gpio0;
+    wire [15:0] gpio1;
+    wire [7:0]  gpio2;
+
     (* keep_hierarchy = "yes" *)
     vmicro16_soc soc (
         .clk     (CLK50),
@@ -87,15 +91,26 @@ module top_ms # (
         
         .uart_tx (TXD),
         .gpio0   (LEDS[3:0]),
+        .gpio1   (gpio1),
+        .gpio2   (gpio2),
 
         //.dbug0   (LEDS[3:0]),
         .dbug1   (LEDS[7:4])
     );
 
-    
-    // SSD displays
+    // SSD displays (split across 2 gpio ports 1 and 2)
     wire [3:0] ssd_chars [0:5];
-    seven_display ssd0_inst (.n(ssd_chars[0]), .segments (ssd0));
-    seven_display ssd1_inst (.n(ssd_chars[1]), .segments (ssd1));
+    assign ssd_chars[0] = gpio1[3:0];
+    assign ssd_chars[1] = gpio1[7:4];
+    assign ssd_chars[2] = gpio1[11:8];
+    assign ssd_chars[3] = gpio1[15:12];
+    assign ssd_chars[4] = gpio2[3:0];
+    assign ssd_chars[5] = gpio2[7:4];
+    seven_display (.n(ssd_chars[0]), .segments (ssd0));
+    seven_display (.n(ssd_chars[1]), .segments (ssd1));
+    seven_display (.n(ssd_chars[2]), .segments (ssd2));
+    seven_display (.n(ssd_chars[3]), .segments (ssd3));
+    seven_display (.n(ssd_chars[4]), .segments (ssd4));
+    seven_display (.n(ssd_chars[5]), .segments (ssd5));
 
 endmodule

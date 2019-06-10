@@ -121,6 +121,15 @@ module vmicro16_bram # (
         mem[23] = {`VMICRO16_OP_MOVI,    3'h1, 8'hA};
         mem[24] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h5};
         mem[25] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
+        // GPIO1 (SSD 24-bit port)
+        mem[26] = {`VMICRO16_OP_MOVI,    3'h0, 8'hA1};
+        mem[27] = {`VMICRO16_OP_MOVI,    3'h1, 8'h12};
+        mem[28] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[29] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
+        // GPIO2
+        mem[30] = {`VMICRO16_OP_MOVI,    3'h0, 8'hA2};
+        mem[31] = {`VMICRO16_OP_MOVI,    3'h1, 8'h56};
+        mem[32] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
         `else
         // 2 core BRAM0 test
         mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
@@ -379,13 +388,13 @@ module vmicro16_gpio_apb # (
     input clk,
     input reset,
     // APB Slave to master interface
-    input  [0:0]                    S_PADDR, // not used
+    input  [0:0]                    S_PADDR, // not used (optimised out)
     input                           S_PWRITE,
     input                           S_PSELx,
     input                           S_PENABLE,
-    input  [BUS_WIDTH-1:0]          S_PWDATA,
+    input  [PORTS-1:0]              S_PWDATA,
     
-    output [BUS_WIDTH-1:0]          S_PRDATA,
+    output [PORTS-1:0]              S_PRDATA,
     output                          S_PREADY,
     output reg [PORTS-1:0]          gpio
 );

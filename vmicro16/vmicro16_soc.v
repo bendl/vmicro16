@@ -12,6 +12,8 @@ module vmicro16_soc (
     //input  uart_rx,
     output                          uart_tx,
     output [`APB_GPIO0_PINS-1:0]    gpio0,
+    output [`APB_GPIO1_PINS-1:0]    gpio1,
+    output [`APB_GPIO2_PINS-1:0]    gpio2,
 
     output reg [7:0]                dbug0,
     output     [7:0]                dbug1
@@ -81,6 +83,46 @@ module vmicro16_soc (
         .S_PRDATA   (M_PRDATA),
         .S_PREADY   (M_PREADY),
         .gpio       (gpio0)
+    );
+
+    // GPIO1 for Seven segment displays (16 pin)
+    (*dont_touch="true"*)
+    (* keep_hierarchy = "yes" *)
+    vmicro16_gpio_apb # (
+        .BUS_WIDTH  (`APB_WIDTH),
+        .PORTS      (`APB_GPIO1_PINS)
+    ) gpio1_apb (
+        .clk        (clk),
+        .reset      (reset),
+        // apb slave to master interface
+        .S_PADDR    (M_PADDR),
+        .S_PWRITE   (M_PWRITE),
+        .S_PSELx    (M_PSELx[`APB_PSELX_GPIO1]),
+        .S_PENABLE  (M_PENABLE),
+        .S_PWDATA   (M_PWDATA),
+        .S_PRDATA   (M_PRDATA),
+        .S_PREADY   (M_PREADY),
+        .gpio       (gpio1)
+    );
+
+    // GPI02 for Seven segment displays (8 pin)
+    (*dont_touch="true"*)
+    (* keep_hierarchy = "yes" *)
+    vmicro16_gpio_apb # (
+        .BUS_WIDTH  (`APB_WIDTH),
+        .PORTS      (`APB_GPIO2_PINS)
+    ) gpio2_apb (
+        .clk        (clk),
+        .reset      (reset),
+        // apb slave to master interface
+        .S_PADDR    (M_PADDR),
+        .S_PWRITE   (M_PWRITE),
+        .S_PSELx    (M_PSELx[`APB_PSELX_GPIO2]),
+        .S_PENABLE  (M_PENABLE),
+        .S_PWDATA   (M_PWDATA),
+        .S_PRDATA   (M_PRDATA),
+        .S_PREADY   (M_PREADY),
+        .gpio       (gpio2)
     );
     
     (*dont_touch="true"*)

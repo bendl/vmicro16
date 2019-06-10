@@ -1,6 +1,35 @@
 
-// minispartan6+ XC6SLX9
+module seven_display # (
+    parameter INVERT = 1
+) (
+    input  [3:0] n,
+    output [6:0] segments
+);
+    reg [6:0] bits;
+    assign segments = (INVERT ? ~bits : bits);
 
+    always @(n)
+    case (n)
+        4'h0: bits = 7'b0111111; // 0
+        4'h1: bits = 7'b0000110; // 1
+        4'h2: bits = 7'b1011011; // 2
+        4'h3: bits = 7'b1001111; // 3
+        4'h4: bits = 7'b1100110; // 4
+        4'h5: bits = 7'b1101101; // 5
+        4'h6: bits = 7'b1111101; // 6
+        4'h7: bits = 7'b0000111; // 7
+        4'h8: bits = 7'b1111111; // 8
+        4'h9: bits = 7'b1100111; // 9
+        4'hA: bits = 7'b1110111; // A
+        4'hB: bits = 7'b1111100; // B
+        4'hC: bits = 7'b0111001; // C
+        4'hD: bits = 7'b1011110; // D
+        4'hE: bits = 7'b1111001; // E
+        4'hF: bits = 7'b1110001; // F
+    endcase
+endmodule
+
+// minispartan6+ XC6SLX9
 module top_ms # (
     parameter GPIO_PINS = 8
 ) (
@@ -10,7 +39,15 @@ module top_ms # (
     //input           RXD,
     output          TXD,
     // Peripherals
-    output [7:0]    LEDS
+    output [7:0]    LEDS,
+    
+    // SSDs
+    output [6:0] ssd0,
+    output [6:0] ssd1,
+    output [6:0] ssd2,
+    output [6:0] ssd3,
+    output [6:0] ssd4,
+    output [6:0] ssd5
 );
     localparam POR_CLKS  = 8;
     reg [3:0]  por_timer = 0;
@@ -54,5 +91,11 @@ module top_ms # (
         //.dbug0   (LEDS[3:0]),
         .dbug1   (LEDS[7:4])
     );
+
+    
+    // SSD displays
+    wire [3:0] ssd_chars [0:5];
+    seven_display ssd0_inst (.n(ssd_chars[0]), .segments (ssd0));
+    seven_display ssd1_inst (.n(ssd_chars[1]), .segments (ssd1));
 
 endmodule

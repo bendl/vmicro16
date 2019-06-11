@@ -15,18 +15,18 @@
 #define ASM_OFFSET_BYTES 1
 
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53119
-struct prco_op_struct asm_list[0xff] = {{0}};
-int asm_list_it = 0;
+static struct prco_op_struct asm_list[0xff] = {{0}};
+static int asm_list_it = 0;
 
 // Unique instruction IDs
-unsigned int g_asm_id = 0;
+static unsigned int g_asm_id = 0;
 #define NEW_ASM_ID() ++g_asm_id
 
 // Deprecated instruction tagging scheme
 // Replaced with inserting NOPs (easier, but slower)
-int asm_tag_stack = -1;
-int asm_tag_next = 0;
-int asm_tag_id = 0;
+static int asm_tag_stack = -1;
+static int asm_tag_next = 0;
+static int asm_tag_id = 0;
 
 void
 cg_target_vmicro16_init(struct target_delegate *dt)
@@ -53,7 +53,7 @@ cg_target_vmicro16_init(struct target_delegate *dt)
 }
 
 void
-asm_push(struct prco_op_struct op)
+vm16_asm_push(struct prco_op_struct op)
 {
         asm_list[asm_list_it] = op;
         asm_list[asm_list_it].asm_offset = asm_list_it * ASM_OFFSET_BYTES;
@@ -81,7 +81,7 @@ asm_push(struct prco_op_struct op)
                 (it) < asm_list_it;                                           \
                 (it)++, (asm_p) = &asm_list[(it)])
 
-void
+static void
 assembler_labels(void)
 {
         int it, find;
@@ -191,13 +191,13 @@ assembler_labels(void)
 }
 
 int
-is_entry_func(struct ast_proto *p)
+vm16_is_entry_func(struct ast_proto *p)
 {
         return strcmp(p->name, "main") == 0;
 }
 
 void
-create_verilog_memh_file(void)
+vm16_create_verilog_memh_file(void)
 {
         FILE *fcoe;
         int it;
@@ -236,23 +236,27 @@ cg_precode_vmicro16(void)
                         OP_STR[it], BIN5(it));
         }
 
-        /*
-        opcode_mov_ri(R0, 0x10);
-        opcode_mov_ri(R1, 0x10);
-        opcode_cmp_rr(R0, R1);
-        opcode_mov_ri(R3, 0x00);
-        opcode_jmp_r(R3);
+        vm16_opcode_mov_ri(R0, 0x81);
+        vm16_opcode_sw(R1, R0, 0x00);
+        vm16_opcode_sw(R2, R0, 0x01);
 
-        opcode_mov_ri(R0, 0x42);
-        opcode_write(R0, UART1);
-        opcode_mov_ri(R0, 0x45);
-        opcode_write(R0, UART1);
-        opcode_mov_ri(R0, 0x4E);
-        opcode_write(R0, UART1);
-        opcode_mov_ri(R0, 0x32);
-        opcode_write(R0, UART1);
-        opcode_mov_ri(R1, 0x00);
-        opcode_jmp_r(R1);
+        /*
+        vm16_opcode_mov_ri(R0, 0x10);
+        vm16_opcode_mov_ri(R1, 0x10);
+        vm16_opcode_cmp_rr(R0, R1);
+        vm16_opcode_mov_ri(R3, 0x00);
+        vm16_opcode_jmp_r(R3);
+
+        vm16_opcode_mov_ri(R0, 0x42);
+        vm16_opcode_write(R0, UART1);
+        vm16_opcode_mov_ri(R0, 0x45);
+        vm16_opcode_write(R0, UART1);
+        vm16_opcode_mov_ri(R0, 0x4E);
+        vm16_opcode_write(R0, UART1);
+        vm16_opcode_mov_ri(R0, 0x32);
+        vm16_opcode_write(R0, UART1);
+        vm16_opcode_mov_ri(R1, 0x00);
+        vm16_opcode_jmp_r(R1);
         */
 
         // First words in memory must jmp to main() function
@@ -260,12 +264,12 @@ cg_precode_vmicro16(void)
                 // Make sure it exists
                 assert(get_g_module()->entry);
                 // Create the jmp
-                init_jmp = opcode_mov_ri(R1, 0);
+                init_jmp = vm16_opcode_mov_ri(R1, 0);
                 init_jmp.asm_flags |= ASM_JMP_JMP;
                 init_jmp.ast = get_g_module()->entry;
                 init_jmp.comment = "ENTRY JMP MAIN";
-                asm_push(init_jmp);
-                asm_push(opcode_jmp_r(R1));
+                vm16_asm_push(init_jmp);
+                vm16_asm_push(vm16_opcode_jmp_r(R1));
         }
 
         // Now emit global variables
@@ -285,7 +289,7 @@ cg_precode_vmicro16(void)
                         // Output a 16-bit word for each ASCII value
                         // (PRCO304 processor does not support byte indexing)
                         while(*(char_it)) {
-                                asm_push(opcode_byte(*char_it));
+                                vm16_asm_push(vm16_opcode_byte(*char_it));
                                 if(first_it == 0) {
                                         // tag the first character with it's GUID
                                         asm_tag_last(string->string_id);
@@ -295,9 +299,12 @@ cg_precode_vmicro16(void)
                                 first_it++;
                         }
                         // Output null terminator
-                        asm_push(opcode_byte(0));
+                        vm16_asm_push(vm16_opcode_byte(0));
                 }
         }
+
+        // Set up stack pointer registers
+        vm16_asm_push(vm16_opcode_mov_ri(Sp, 0x3F));
 
         dbprintf(D_GEN, "\r\n\r\n");
 }
@@ -313,7 +320,7 @@ cg_postcode_vmicro16(void)
         // Print each instruction in human readable format
         for_each_asm(it, op) {
                 dbprintf(D_GEN, "0x%02X\t", op->asm_offset);
-                assert_opcode(op, 1);
+                vm16_assert_opcode(op, 1);
         }
 
         dbprintf(D_GEN, "\r\n\r\n");
@@ -335,7 +342,7 @@ cg_postcode_vmicro16(void)
         // Print each instruction in human readable format
         for_each_asm(it, op) {
                 dbprintf(D_GEN, "0x%02X\t", op->asm_offset);
-                assert_opcode(op, 1);
+                vm16_assert_opcode(op, 1);
         }
 
         // Debug
@@ -346,23 +353,23 @@ cg_postcode_vmicro16(void)
 
 
         // Write machine code to file
-        create_verilog_memh_file();
+        vm16_create_verilog_memh_file();
 }
 
 void
-cg_push_prco(enum prco_reg rd)
+vm16_cg_push_prco(enum prco_reg rd)
 {
-        asm_push(opcode_add_ri(Sp, -1));
-        asm_push(opcode_sw(rd, Sp, 0));
+        vm16_asm_push(vm16_opcode_add_ri(Sp, R5, -1));
+        vm16_asm_push(vm16_opcode_sw(rd, Sp, 0));
         asm_comment("PUSH");
 }
 
 void
-cg_pop_prco(enum prco_reg rd)
+vm16_cg_pop_prco(enum prco_reg rd)
 {
-        asm_push(opcode_lw(rd, Sp, 0));
+        vm16_asm_push(vm16_opcode_lw(rd, Sp, 0));
         asm_comment("POP");
-        asm_push(opcode_add_ri(Sp, 1));
+        vm16_asm_push(vm16_opcode_add_ri(Sp, R5, 1));
 }
 
 void
@@ -374,7 +381,7 @@ cg_expr_vmicro16(struct ast_item *e)
                         cg_number_vmicro16(e->expr);
                         break;
                 case AST_CSTRING:
-                        cg_cstring_ref(e->expr);
+                        vm16_cg_cstring_ref(e->expr);
                         break;
                 case AST_DEREF:
                         cg_deref_vmicro16(e->expr);
@@ -405,10 +412,6 @@ cg_expr_vmicro16(struct ast_item *e)
                 case AST_ASSIGNMENT:
                         cg_assignment_vmicro16(e->expr);
                         break;
-
-                case AST_UART:
-                        cg_port_uart_vmicro16(e->expr);
-                        break;
                 default:
                         dbprintf(D_ERR, "Unknown cg routine for %d\r\n",
                                 e->type);
@@ -417,36 +420,36 @@ cg_expr_vmicro16(struct ast_item *e)
         }
 }
 
-inline void
+static void
 cg_sf_start(struct ast_func *f)
 {
         struct prco_op_struct op;
 
         dbprintf(D_GEN, "SF START for %s\r\n", f->proto->name);
 
-        op = opcode_add_ri(Sp, -1);
+        op = vm16_opcode_add_ri(Sp, R5, -1);
         op.ast = f;
         op.asm_flags |= ASM_FUNC_START;
         op.comment = "Function/sf entry";
-        asm_push(op);
+        vm16_asm_push(op);
 
-        asm_push(opcode_sw(Bp, Sp, 0));
+        vm16_asm_push(vm16_opcode_sw(Bp, Sp, 0));
         // Mov Sp -> Bp
-        asm_push(opcode_mov_rr(Bp, Sp));
+        vm16_asm_push(vm16_opcode_mov_rr(Bp, Sp));
         asm_comment(f->proto->name);
 
         //("push %%bp\r\n");
         //eprintf("mov %%bp, %%sp\r\n");
 }
 
-void
+static void
 cg_sf_exit(void)
 {
         // Mov Bp -> Sp
-        asm_push(opcode_mov_rr(Sp, Bp));
+        vm16_asm_push(vm16_opcode_mov_rr(Sp, Bp));
         asm_comment("Function/sf exit");
         // Pop Bp
-        cg_pop_prco(Bp);
+        vm16_cg_pop_prco(Bp);
 }
 
 void
@@ -462,43 +465,43 @@ cg_for_vmicro16(struct ast_for *a)
 
         cg_expr_vmicro16(a->start);
 
-        cond_dest = opcode_nop();
+        cond_dest = vm16_opcode_nop();
         cond_dest.asm_flags |= ASM_JMP_DEST;
         cond_dest.comment = malloc(32);
         snprintf(cond_dest.comment, 32, "FOR COND DEST %d", cond_dest.id);
         cond_dest.id = cond_dest_id;
-        asm_push(cond_dest);
+        vm16_asm_push(cond_dest);
 
         cg_expr_vmicro16(a->cond);
         asm_comment("FOR CONDITION CG");
-        asm_push(opcode_mov_ri(R1, 0));
-        asm_push(opcode_cmp_rr(R0, R1));
+        vm16_asm_push(vm16_opcode_mov_ri(R1, 0));
+        vm16_asm_push(vm16_opcode_cmp_rr(R0, R1));
 
-        jmp_after = opcode_mov_ri(R1, 0);
+        jmp_after = vm16_opcode_mov_ri(R1, 0);
         jmp_after.asm_flags |= ASM_JMP_JMP;
         jmp_after.id = for_after_id;
         jmp_after.comment = malloc(32);
         snprintf(jmp_after.comment, 32, "JMP AFTER %d", jmp_after.id);
-        asm_push(jmp_after);
-        asm_push(opcode_jmp_rc(R1, JMP_JE));
+        vm16_asm_push(jmp_after);
+        vm16_asm_push(vm16_opcode_jmp_rc(R1, JMP_JE));
 
         cg_expr_vmicro16(a->body);
         asm_comment("BODY END");
 
         cg_expr_vmicro16(a->step);
-        jmp_cond = opcode_mov_ri(R1, 0);
+        jmp_cond = vm16_opcode_mov_ri(R1, 0);
         jmp_cond.asm_flags |= ASM_JMP_JMP;
         jmp_cond.id = cond_dest_id;
         jmp_cond.comment = malloc(32);
         snprintf(jmp_cond.comment, 32, "FOR COND BACK %d", jmp_cond.id);
-        asm_push(jmp_cond);
-        asm_push(opcode_jmp_r(R1));
+        vm16_asm_push(jmp_cond);
+        vm16_asm_push(vm16_opcode_jmp_r(R1));
 
-        for_after_dest = opcode_nop();
+        for_after_dest = vm16_opcode_nop();
         for_after_dest.asm_flags |= ASM_JMP_DEST;
         for_after_dest.id = for_after_id;
         for_after_dest.comment = "FOR LOOP AFTER";
-        asm_push(for_after_dest);
+        vm16_asm_push(for_after_dest);
 }
 
 void cg_while_vmicro16(struct ast_while *v)
@@ -511,44 +514,44 @@ void cg_while_vmicro16(struct ast_while *v)
         int guid_cond_start  = NEW_ASM_ID();
         int guid_while_after = NEW_ASM_ID();
 
-        cond_start = opcode_nop();
+        cond_start = vm16_opcode_nop();
         cond_start.id = guid_cond_start;
         cond_start.asm_flags |= ASM_JMP_DEST;
         cond_start.comment = "WHILE COND DEST";
-        asm_push(cond_start);
+        vm16_asm_push(cond_start);
 
         // cg for condition
         cg_expr_vmicro16(v->cond);
 
         // CMP the condition
-        asm_push(opcode_mov_ri(R1, 0));
-        asm_push(opcode_cmp_rr(R0, R1));
+        vm16_asm_push(vm16_opcode_mov_ri(R1, 0));
+        vm16_asm_push(vm16_opcode_cmp_rr(R0, R1));
 
         // Jmp to after if false
-        while_jmp_to_after = opcode_mov_ri(R1, 0x00);
+        while_jmp_to_after = vm16_opcode_mov_ri(R1, 0x00);
         while_jmp_to_after.id = guid_while_after;
         while_jmp_to_after.asm_flags |= ASM_JMP_JMP;
         while_jmp_to_after.comment = "WHILE AFTER JMP";
-        asm_push(while_jmp_to_after);
-        asm_push(opcode_jmp_rc(R1, JMP_JE));
+        vm16_asm_push(while_jmp_to_after);
+        vm16_asm_push(vm16_opcode_jmp_rc(R1, JMP_JE));
 
         // cg the while loop body
         cg_expr_vmicro16(v->body);
 
         // Jump back to condition check
-        while_jmp_to_cond = opcode_mov_ri(R1, 0x00);
+        while_jmp_to_cond = vm16_opcode_mov_ri(R1, 0x00);
         while_jmp_to_cond.id = guid_cond_start;
         while_jmp_to_cond.comment = "WHILE COND JMP";
         while_jmp_to_cond.asm_flags |= ASM_JMP_JMP;
-        asm_push(while_jmp_to_cond);
-        asm_push(opcode_jmp_r(R1));
+        vm16_asm_push(while_jmp_to_cond);
+        vm16_asm_push(vm16_opcode_jmp_r(R1));
 
         // Emit the jump after destination
-        while_after = opcode_nop();
+        while_after = vm16_opcode_nop();
         while_after.asm_flags |= ASM_JMP_DEST;
         while_after.id = guid_while_after;
         while_after.comment = "WHILE AFTER DEST";
-        asm_push(while_after);
+        vm16_asm_push(while_after);
 }
 
 void
@@ -562,14 +565,14 @@ cg_assignment_vmicro16(struct ast_assign *a)
 
         // Value now in R0 register,
         // store it in stack location
-        asm_push(opcode_sw(R0, Bp, a->var->bp_offset));
+        vm16_asm_push(vm16_opcode_sw(R0, Bp, a->var->bp_offset));
         asm_comment(a->var->var->name);
 }
 
 void
 cg_var_ref_vmicro16(struct ast_lvar *v)
 {
-        asm_push(opcode_lw(R0, Bp, v->bp_offset));
+        vm16_asm_push(vm16_opcode_lw(R0, Bp, v->bp_offset));
         asm_comment(v->var->name);
 }
 
@@ -598,12 +601,12 @@ cg_local_decl_vmicro16(struct ast_lvar *v)
                 offset -= 1;
         }
 
-        op_stack_alloc = opcode_sub_ri(Sp, 1);
+        op_stack_alloc = vm16_opcode_add_ri(Sp, R5, -1);
         op_stack_alloc.comment = malloc(32);
         snprintf(op_stack_alloc.comment, 32, "VAR ALLOC %s %d",
                  v->var->name,
                  v->bp_offset);
-        asm_push(op_stack_alloc);
+        vm16_asm_push(op_stack_alloc);
 }
 
 void
@@ -625,32 +628,32 @@ cg_call_vmicro16(struct ast_call *c)
         args = c->args;
         list_for_each(args) {
                 cg_expr_vmicro16(args->value);
-                cg_push_prco(R0);
+                vm16_cg_push_prco(R0);
                 asm_comment("PUSH ARG");
         }
 
         // Create return address after called function returns
-        op_next = opcode_mov_ri(R3, 0x00);
+        op_next = vm16_opcode_mov_ri(R3, 0x00);
         op_next.asm_flags = ASM_CALL_NEXT;
         op_next.comment = "CALL AFTER";
-        asm_push(op_next);
+        vm16_asm_push(op_next);
 
         // Push return address
-        cg_push_prco(R3);
+        vm16_cg_push_prco(R3);
 
         // Now, we jump to the function
-        op_call = opcode_mov_ri(R3, 0x00);
+        op_call = vm16_opcode_mov_ri(R3, 0x00);
         op_call.asm_flags = ASM_FUNC_CALL;
         op_call.ast = c;
         op_call.comment = "call";
 
-        asm_push(op_call);
-        asm_push(opcode_jmp_r(R3));
+        vm16_asm_push(op_call);
+        vm16_asm_push(vm16_opcode_jmp_r(R3));
         asm_comment("JMP TO FUNC");
 
         // ASM_CALL_NEXT points here
         // After function, pop arguments from stack
-        asm_push(opcode_add_ri(Sp, c->argc));
+        vm16_asm_push(vm16_opcode_add_ri(Sp, R5, c->argc));
 }
 
 void
@@ -668,11 +671,11 @@ cg_if_vmicro16(struct ast_if *v)
         cg_expr_vmicro16(v->cond);
 
         // Emit comparison
-        asm_push(opcode_mov_ri(R3, 0));
-        asm_push(opcode_cmp_rr(R0, R3));
+        vm16_asm_push(vm16_opcode_mov_ri(R3, 0));
+        vm16_asm_push(vm16_opcode_cmp_rr(R0, R3));
 
         // Create jmp location
-        op_movi = opcode_mov_ri(R1, 0x00);
+        op_movi = vm16_opcode_mov_ri(R1, 0x00);
         op_movi.asm_flags |= ASM_JMP_JMP;
         op_movi.comment = malloc(32);
 
@@ -685,40 +688,40 @@ cg_if_vmicro16(struct ast_if *v)
         }
 
 
-        asm_push(op_movi);
-        asm_push(opcode_jmp_rc(R1, JMP_JE));
+        vm16_asm_push(op_movi);
+        vm16_asm_push(vm16_opcode_jmp_rc(R1, JMP_JE));
 
         // If true
         cg_expr_vmicro16(v->then);
 
         if (v->els) {
-                op_true_jmp = opcode_mov_ri(R1, 0x00);
+                op_true_jmp = vm16_opcode_mov_ri(R1, 0x00);
                 op_true_jmp.asm_flags |= ASM_JMP_JMP;
                 op_true_jmp.id = jmp_after;
                 op_true_jmp.comment = malloc(32);
                 snprintf(op_true_jmp.comment, 32, "JMP AFTER %x", op_true_jmp.id);
 
-                asm_push(op_true_jmp);
-                asm_push(opcode_jmp_rc(R1, JMP_UC));
+                vm16_asm_push(op_true_jmp);
+                vm16_asm_push(vm16_opcode_jmp_rc(R1, JMP_UC));
 
-                op_else_dest = opcode_nop();
+                op_else_dest = vm16_opcode_nop();
                 op_else_dest.asm_flags |= ASM_JMP_DEST;
                 op_else_dest.id = jmp_else;
                 op_else_dest.comment = malloc(32);
                 snprintf(op_else_dest.comment, 32, "JMP ELSE DEST %x", op_else_dest.id);
 
-                asm_push(op_else_dest);
+                vm16_asm_push(op_else_dest);
 
                 // Emit else code
                 cg_expr_vmicro16(v->els);
         }
 
-        op_after = opcode_nop();
+        op_after = vm16_opcode_nop();
         op_after.asm_flags |= ASM_JMP_DEST;
         op_after.id = jmp_after;
         op_after.comment = malloc(32);
         snprintf(op_after.comment, 32, "JMP AFTER DEST %x", op_after.id);
-        asm_push(op_after);
+        vm16_asm_push(op_after);
 }
 
 void
@@ -770,12 +773,12 @@ cg_function_vmicro16(struct ast_func *f)
 
         dbprintf(D_GEN, "End function");
 
-        if (is_entry_func(f->proto)) {
-                asm_push(opcode_t1(HALT, 0, 0, 0));
+        if (vm16_is_entry_func(f->proto)) {
+                vm16_asm_push(vm16_opcode_halt());
                 asm_comment("MAIN HALT\r\n------------------------------------");
         } else {
-                cg_pop_prco(R3);
-                asm_push(opcode_jmp_r(R3));
+                vm16_cg_pop_prco(R3);
+                vm16_asm_push(vm16_opcode_jmp_r(R3));
                 asm_comment(
                         "FUNC RETURN to CALL\r\n------------------------------");
         }
@@ -790,20 +793,20 @@ cg_bin_vmicro16(struct ast_bin *b)
         cg_expr_vmicro16(b->lhs);
 
         if (b->rhs) {
-                cg_push_prco(R0);
+                vm16_cg_push_prco(R0);
                 cg_expr_vmicro16(b->rhs);
         }
 
         switch (b->op) {
         case TOK_PLUS:
-                cg_pop_prco(R3);
-                asm_push(opcode_add_rr(R0, R3));
+                vm16_cg_pop_prco(R3);
+                vm16_asm_push(vm16_opcode_add_rr(R0, R3));
                 asm_comment("BIN ADD");
                 break;
 
         case TOK_SUB:
-                cg_pop_prco(R3);
-                asm_push(opcode_sub_rr(R0, R3));
+                vm16_cg_pop_prco(R3);
+                vm16_asm_push(vm16_opcode_sub_rr(R0, R3));
                 asm_comment("BIN SUB");
                 break;
 
@@ -812,29 +815,29 @@ cg_bin_vmicro16(struct ast_bin *b)
                 break;
 
         case TOK_BOOL_L:
-                cg_pop_prco(R3);
-                asm_push(opcode_cmp_rr(R3, R0));
-                asm_push(opcode_set_ri(R0, JMP_JL));
+                vm16_cg_pop_prco(R3);
+                vm16_asm_push(vm16_opcode_cmp_rr(R3, R0));
+                vm16_asm_push(vm16_opcode_set_ri(R0, JMP_JL));
                 break;
         case TOK_BOOL_LE:
-                cg_pop_prco(R3);
-                asm_push(opcode_cmp_rr(R3, R0));
-                asm_push(opcode_set_ri(R0, JMP_JLE));
+                vm16_cg_pop_prco(R3);
+                vm16_asm_push(vm16_opcode_cmp_rr(R3, R0));
+                vm16_asm_push(vm16_opcode_set_ri(R0, JMP_JLE));
                 break;
         case TOK_BOOL_G:
-                cg_pop_prco(R3);
-                asm_push(opcode_cmp_rr(R3, R0));
-                asm_push(opcode_set_ri(R0, JMP_JG));
+                vm16_cg_pop_prco(R3);
+                vm16_asm_push(vm16_opcode_cmp_rr(R3, R0));
+                vm16_asm_push(vm16_opcode_set_ri(R0, JMP_JG));
                 break;
         case TOK_BOOL_GE:
-                cg_pop_prco(R3);
-                asm_push(opcode_cmp_rr(R3, R0));
-                asm_push(opcode_set_ri(R0, JMP_JGE));
+                vm16_cg_pop_prco(R3);
+                vm16_asm_push(vm16_opcode_cmp_rr(R3, R0));
+                vm16_asm_push(vm16_opcode_set_ri(R0, JMP_JGE));
                 break;
         case TOK_BOOL_EQ:
-                cg_pop_prco(R3);
-                asm_push(opcode_cmp_rr(R3, R0));
-                asm_push(opcode_set_ri(R0, JMP_JE));
+                vm16_cg_pop_prco(R3);
+                vm16_asm_push(vm16_opcode_cmp_rr(R3, R0));
+                vm16_asm_push(vm16_opcode_set_ri(R0, JMP_JE));
                 break;
 
         default:
@@ -854,24 +857,17 @@ cg_number_vmicro16(struct ast_num *n)
                 // Can't fit more than 8-bits into a MOVI,
                 // TODO: Build up 16 bit word using:
                 //   MOVI, LSHIFT, MOVI, OR
-                asm_push(opcode_mov_ri(R0, n->val));
+                vm16_asm_push(vm16_opcode_mov_ri(R0, n->val));
         } else {
                 // Use MOVI
-                asm_push(opcode_mov_ri(R0, n->val));
+                vm16_asm_push(vm16_opcode_mov_ri(R0, n->val));
         }
 
         asm_comment("NUMBER");
 }
 
-
-void cg_port_uart_vmicro16(struct ast_expr *v)
-{
-        cg_expr_vmicro16(v->val);
-        asm_push(opcode_write(R0, UART1));
-}
-
 void
-cg_cstring_ref(struct ast_cstring *v)
+vm16_cg_cstring_ref(struct ast_cstring *v)
 {
         struct prco_op_struct mov;
 
@@ -882,14 +878,14 @@ cg_cstring_ref(struct ast_cstring *v)
         // 2. LW address of R0
 
         // 1.
-        mov = opcode_mov_ri(R0, 0x00);
+        mov = vm16_opcode_mov_ri(R0, 0x00);
         mov.asm_flags = ASM_POINTER;
         mov.id = v->string_id;
         mov.comment = "POINTER";
-        asm_push(mov);
+        vm16_asm_push(mov);
 
         // 2. LW address of R0
-        //asm_push(opcode_lw(R0, R1, 0));
+        //vm16_asm_push(vm16_opcode_lw(R0, R1, 0));
 }
 
 
@@ -900,6 +896,6 @@ cg_deref_vmicro16(struct ast_deref *v)
         cg_expr_vmicro16(v->item);
 
         // R0 <- RAM[R0]
-        asm_push(opcode_lw(R0, R0, 0));
+        vm16_asm_push(vm16_opcode_lw(R0, R0, 0));
         asm_comment("DEREF");
 }

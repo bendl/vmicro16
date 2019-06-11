@@ -33,7 +33,7 @@ extern void cg_while_vmicro16             (struct ast_while *v);
 
 extern void cg_port_uart_vmicro16       (struct ast_expr *v);
 
-extern void cg_cstring_ref              (struct ast_cstring *v);
+extern void vm16_cg_cstring_ref              (struct ast_cstring *v);
 extern void cg_deref_vmicro16           (struct ast_deref *v);
 
 /*
@@ -41,7 +41,5 @@ extern void cg_call_vmicro16(struct ast_call *v);
 extern void cg_dir_extern_vmicro16(ast_proto_t *p);
 */
 extern int get_dt_size_vmicro16         (target_datatype dt);
-
-extern void cg_sf_start                 (struct ast_func *f);
 
 #endif //VMICRO16_CG_IMPL_H

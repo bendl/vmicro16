@@ -49,7 +49,7 @@ extern "C" {
 #define PRCO_OP_BITS_IMM8 0b11111111
 
 struct prco_op_struct {
-        unsigned char       opcode;
+        unsigned short      opcode;
         unsigned char       op;
         unsigned char       flags;  //< Depracated
 
@@ -103,7 +103,6 @@ struct prco_op_struct {
     OP(BIT) \
     OP(MOV) \
     OP(MOVI) \
-    OP(MOVI_L) \
     OP(ARITH_U) \
     OP(ARITH_S) \
     OP(BR) \
@@ -175,8 +174,8 @@ enum prco_bit {
         FOREACH_BIT(GENERATE_ENUM)
 };
 
-STATIC_ASSERT(__prco_op_MAX <= PRCO_OP_BITS_OP+1, opcode_bit_length_exceeded);
-STATIC_ASSERT(__prco_reg_MAX <= PRCO_OP_BITS_REG+1, 3_bit_opcode_exceeded);
+STATIC_ASSERT(__prco_op_MAX <= PRCO_OP_BITS_OP+1, vm16_opcode_bit_length_exceeded);
+STATIC_ASSERT(__prco_reg_MAX <= PRCO_OP_BITS_REG+1, 3_bit_vm16_opcode_exceeded);
 
 
 static const char *REG_STR[]    = { FOREACH_REG (GENERATE_STR) };
@@ -187,35 +186,36 @@ static const char *ARITH_U_STR[]    = { FOREACH_ARITH_U (GENERATE_STR) };
 static const char *ARITH_S_STR[]    = { FOREACH_ARITH_S (GENERATE_STR) };
 
 
-void assert_opcode(struct prco_op_struct *op, char print);
+void vm16_assert_opcode(struct prco_op_struct *op, char print);
 
-struct prco_op_struct opcode_t1(enum prco_op iop, enum prco_reg rd, enum prco_reg ra,
+struct prco_op_struct vm16_opcode_t1(enum prco_op iop, enum prco_reg rd, enum prco_reg ra,
                                 signed char simm5);
 
-struct prco_op_struct opcode_nop(void);
+struct prco_op_struct vm16_opcode_nop(void);
+struct prco_op_struct vm16_opcode_halt(void);
 
-struct prco_op_struct opcode_mov_rr(enum prco_reg regD, enum prco_reg regA);
-struct prco_op_struct opcode_mov_ri(enum prco_reg regD, unsigned char imm8);
+struct prco_op_struct vm16_opcode_mov_rr(enum prco_reg regD, enum prco_reg regA);
+struct prco_op_struct vm16_opcode_mov_ri(enum prco_reg regD, unsigned char imm8);
 
-struct prco_op_struct opcode_add_rr(enum prco_reg regA, enum prco_reg regD);
-struct prco_op_struct opcode_add_ri(enum prco_reg regD, signed char imm8);
-struct prco_op_struct opcode_sub_rr(enum prco_reg regA, enum prco_reg regD);
-struct prco_op_struct opcode_sub_ri(enum prco_reg regD, signed char imm8);
+struct prco_op_struct vm16_opcode_add_rr(enum prco_reg regA, enum prco_reg regD);
+struct prco_op_struct vm16_opcode_add_ri(enum prco_reg regD, enum prco_reg regA, signed char imm8);
+struct prco_op_struct vm16_opcode_sub_rr(enum prco_reg regA, enum prco_reg regD);
+struct prco_op_struct vm16_opcode_sub_ri(enum prco_reg regD, signed char imm8);
 
-struct prco_op_struct opcode_jmp_r(enum prco_reg rd);
-struct prco_op_struct opcode_jmp_rc(enum prco_reg rd, enum prco_br cond);
-struct prco_op_struct opcode_cmp_rr(enum prco_reg rd,
+struct prco_op_struct vm16_opcode_jmp_r(enum prco_reg rd);
+struct prco_op_struct vm16_opcode_jmp_rc(enum prco_reg rd, enum prco_br cond);
+struct prco_op_struct vm16_opcode_cmp_rr(enum prco_reg rd,
                                     enum prco_reg ra);
 
-struct prco_op_struct opcode_neg_r(enum prco_reg regD);
+struct prco_op_struct vm16_opcode_neg_r(enum prco_reg regD);
 
-struct prco_op_struct opcode_lw(enum prco_reg rd, enum prco_reg ra, signed char imm5);
-struct prco_op_struct opcode_sw(enum prco_reg rd, enum prco_reg ra, signed char imm5);
+struct prco_op_struct vm16_opcode_lw(enum prco_reg rd, enum prco_reg ra, signed char imm5);
+struct prco_op_struct vm16_opcode_sw(enum prco_reg rd, enum prco_reg ra, signed char imm5);
 
-struct prco_op_struct opcode_set_ri(enum prco_reg rd, unsigned char imm8);
+struct prco_op_struct vm16_opcode_set_ri(enum prco_reg rd, unsigned char imm8);
 
-struct prco_op_struct opcode_byte(unsigned char low);
-struct prco_op_struct opcode_word(unsigned char high, unsigned char low);
+struct prco_op_struct vm16_opcode_byte(unsigned char low);
+struct prco_op_struct vm16_opcode_word(unsigned char high, unsigned char low);
 
 #ifdef __cplusplus
 }

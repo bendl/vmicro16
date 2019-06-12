@@ -312,12 +312,14 @@ endmodule
 
 (* keep_hierarchy = "yes" *)
 module vmicro16_regs # (
-    parameter CELL_WIDTH     = 16,
-    parameter CELL_DEPTH     = 8,
-    parameter CELL_SEL_BITS  = `clog2(CELL_DEPTH),
-    parameter CELL_DEFAULTS  = 0,
-    parameter DEBUG_NAME     = "",
-    parameter CORE_ID        = 0
+    parameter CELL_WIDTH        = 16,
+    parameter CELL_DEPTH        = 8,
+    parameter CELL_SEL_BITS     = `clog2(CELL_DEPTH),
+    parameter CELL_DEFAULTS     = 0,
+    parameter DEBUG_NAME        = "",
+    parameter CORE_ID           = 0,
+    parameter PARAM_DEFAULTS_R0 = 0,
+    parameter PARAM_DEFAULTS_R1 = 0
 ) (
     input clk, 
     input reset,
@@ -340,10 +342,12 @@ module vmicro16_regs # (
     initial 
         if (CELL_DEFAULTS) 
             $readmemh(CELL_DEFAULTS, regs);
-        else 
+        else begin
             for(i = 0; i < CELL_DEPTH; i = i + 1) 
-                //regs[i] = i;
                 regs[i] = 0;
+            regs[0] = PARAM_DEFAULTS_R0;
+            regs[1] = PARAM_DEFAULTS_R1;
+            end
 
     always @(regs)
         $display($time, "\tC%02h\t\t| %h %h %h %h | %h %h %h %h |", 
@@ -352,10 +356,12 @@ module vmicro16_regs # (
             regs[4], regs[5], regs[6], regs[7]);
 
     always @(posedge clk) 
-        if (reset)
+        if (reset) begin
             for(i = 0; i < CELL_DEPTH; i = i + 1) 
-                //regs[i] <= i;
                 regs[i] <= 0;
+            regs[0] <= PARAM_DEFAULTS_R0;
+            regs[1] <= PARAM_DEFAULTS_R1;
+        end
         
         else if (we) begin
             $display($time, "\tC%02h: REGS #%s: Writing %h to reg[%d]", 
@@ -372,8 +378,10 @@ endmodule
 (* keep_hierarchy = "yes" *)
 (* dont_touch = "yes" *)
 module vmicro16_regs_apb # (
-    parameter BUS_WIDTH  = 16,
-    parameter CELL_DEPTH = 8
+    parameter BUS_WIDTH         = 16,
+    parameter CELL_DEPTH        = 8,
+    parameter PARAM_DEFAULTS_R0 = 0,
+    parameter PARAM_DEFAULTS_R1 = 0
 ) (
     input clk,
     input reset,
@@ -401,7 +409,9 @@ module vmicro16_regs_apb # (
         `rassert(reg_we == (S_PSELx & S_PENABLE & S_PWRITE))
 
     vmicro16_regs # (
-        .CELL_DEPTH(CELL_DEPTH)
+        .CELL_DEPTH         (CELL_DEPTH),
+        .PARAM_DEFAULTS_R0  (PARAM_DEFAULTS_R0),
+        .PARAM_DEFAULTS_R1  (PARAM_DEFAULTS_R1)
     ) regs_apb (
         .clk    (clk),
         .reset  (reset),

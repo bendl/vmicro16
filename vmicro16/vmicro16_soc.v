@@ -143,11 +143,15 @@ module vmicro16_soc (
         .rx_wire    (uart_rx)
     );
 
+    // Shared register set for system-on-chip info
+    // R0 = number of cores
     (*dont_touch="true"*)
     (* keep_hierarchy = "yes" *)
     vmicro16_regs_apb # (
-        .BUS_WIDTH  (`APB_WIDTH),
-        .CELL_DEPTH (8)
+        .BUS_WIDTH          (`APB_WIDTH),
+        .CELL_DEPTH         (8),
+        .PARAM_DEFAULTS_R0  (`CORES),
+        .PARAM_DEFAULTS_R1  (`SLAVES)
     ) regs1_apb (
         .clk        (clk),
         .reset      (reset),

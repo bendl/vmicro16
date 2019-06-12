@@ -70,3 +70,7 @@
 `define VMICRO16_ALU_BR          5'h1d
 `define VMICRO16_ALU_SPARE       5'h1e
 `define VMICRO16_ALU_BAD         5'h1f
+
+`define VMICRO16_SFLAG_U         5'h00
+`define VMICRO16_SFLAG_Z         5'h01
+`define VMICRO16_SFLAG_L         5'h02

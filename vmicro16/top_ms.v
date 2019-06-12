@@ -95,7 +95,7 @@ module top_ms # (
         .gpio2   (gpio2),
 
         //.dbug0   (LEDS[3:0]),
-        .dbug1   (LEDS[7:4])
+        //.dbug1   (LEDS[7:4])
     );
 
     // SSD displays (split across 2 gpio ports 1 and 2)

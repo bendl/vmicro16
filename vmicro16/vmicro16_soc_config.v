@@ -5,9 +5,9 @@
 `define CORES           1
 `define SLAVES          6
 
-`define CORE_WIDTH      16
+`define DATA_WIDTH      16
 
-`define APB_WIDTH       `CORE_WIDTH
+`define APB_WIDTH       `DATA_WIDTH
 
 `define APB_PSELX_GPIO0 0
 `define APB_PSELX_UART0 1

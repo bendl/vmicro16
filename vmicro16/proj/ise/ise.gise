@@ -103,44 +103,11 @@
   </files>
 
   <transforms xmlns="http://www.xilinx.com/XMLSchema">
-    <transform xil_pn:end_ts="1560013153" xil_pn:name="TRAN_copyInitialToAbstractSimulation" xil_pn:start_ts="1560013153">
+    <transform xil_pn:end_ts="1560363857" xil_pn:name="TRAN_copyInitialToAbstractSimulation" xil_pn:start_ts="1560363857">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1560359309" xil_pn:in_ck="-7457937684260380284" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1560359309">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="ReadyToRun"/>
-      <outfile xil_pn:name="../../apb_intercon.v"/>
-      <outfile xil_pn:name="../../clog2.v"/>
-      <outfile xil_pn:name="../../formal.v"/>
-      <outfile xil_pn:name="../../test/tb_vmicro16_cpu.v"/>
-      <outfile xil_pn:name="../../test/tb_vmicro16_soc.v"/>
-      <outfile xil_pn:name="../../top_ms.v"/>
-      <outfile xil_pn:name="../../uart/apb_uart.v"/>
-      <outfile xil_pn:name="../../uart/fifo.v"/>
-      <outfile xil_pn:name="../../uart/uart.v"/>
-      <outfile xil_pn:name="../../uart/uart_baud_gen.v"/>
-      <outfile xil_pn:name="../../uart/uart_fifo.v"/>
-      <outfile xil_pn:name="../../uart/uart_rx.v"/>
-      <outfile xil_pn:name="../../uart/uart_tx.v"/>
-      <outfile xil_pn:name="../../vmicro16.v"/>
-      <outfile xil_pn:name="../../vmicro16_isa.v"/>
-      <outfile xil_pn:name="../../vmicro16_soc.v"/>
-      <outfile xil_pn:name="../../vmicro16_soc_config.v"/>
-    </transform>
-    <transform xil_pn:end_ts="1560013153" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="512942154895326247" xil_pn:start_ts="1560013153">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="ReadyToRun"/>
-    </transform>
-    <transform xil_pn:end_ts="1560013153" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="8881976593908466149" xil_pn:start_ts="1560013153">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="ReadyToRun"/>
-    </transform>
-    <transform xil_pn:end_ts="1560013153" xil_pn:name="TRAN_regenerateCoresSim" xil_pn:prop_ck="3192221054163793744" xil_pn:start_ts="1560013153">
-      <status xil_pn:value="SuccessfullyRun"/>
-      <status xil_pn:value="ReadyToRun"/>
-    </transform>
-    <transform xil_pn:end_ts="1560359310" xil_pn:in_ck="-7457937684260380284" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1560359309">
+    <transform xil_pn:end_ts="1560364579" xil_pn:in_ck="-7457937684260380284" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1560364578">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="../../apb_intercon.v"/>
@@ -161,7 +128,40 @@
       <outfile xil_pn:name="../../vmicro16_soc.v"/>
       <outfile xil_pn:name="../../vmicro16_soc_config.v"/>
     </transform>
-    <transform xil_pn:end_ts="1560359321" xil_pn:in_ck="-7457937684260380284" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-9125384734343796275" xil_pn:start_ts="1560359310">
+    <transform xil_pn:end_ts="1560363857" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="512942154895326247" xil_pn:start_ts="1560363857">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1560363857" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="8881976593908466149" xil_pn:start_ts="1560363857">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1560363857" xil_pn:name="TRAN_regenerateCoresSim" xil_pn:prop_ck="3192221054163793744" xil_pn:start_ts="1560363857">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1560364579" xil_pn:in_ck="-7457937684260380284" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1560364579">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="../../apb_intercon.v"/>
+      <outfile xil_pn:name="../../clog2.v"/>
+      <outfile xil_pn:name="../../formal.v"/>
+      <outfile xil_pn:name="../../test/tb_vmicro16_cpu.v"/>
+      <outfile xil_pn:name="../../test/tb_vmicro16_soc.v"/>
+      <outfile xil_pn:name="../../top_ms.v"/>
+      <outfile xil_pn:name="../../uart/apb_uart.v"/>
+      <outfile xil_pn:name="../../uart/fifo.v"/>
+      <outfile xil_pn:name="../../uart/uart.v"/>
+      <outfile xil_pn:name="../../uart/uart_baud_gen.v"/>
+      <outfile xil_pn:name="../../uart/uart_fifo.v"/>
+      <outfile xil_pn:name="../../uart/uart_rx.v"/>
+      <outfile xil_pn:name="../../uart/uart_tx.v"/>
+      <outfile xil_pn:name="../../vmicro16.v"/>
+      <outfile xil_pn:name="../../vmicro16_isa.v"/>
+      <outfile xil_pn:name="../../vmicro16_soc.v"/>
+      <outfile xil_pn:name="../../vmicro16_soc_config.v"/>
+    </transform>
+    <transform xil_pn:end_ts="1560364591" xil_pn:in_ck="-7457937684260380284" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-9125384734343796275" xil_pn:start_ts="1560364579">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="fuse.log"/>
@@ -171,7 +171,7 @@
       <outfile xil_pn:name="tb_vmicro16_soc_isim_beh.exe"/>
       <outfile xil_pn:name="xilinxsim.ini"/>
     </transform>
-    <transform xil_pn:end_ts="1560359324" xil_pn:in_ck="-3863065034170012747" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-4595198152029455632" xil_pn:start_ts="1560359321">
+    <transform xil_pn:end_ts="1560364594" xil_pn:in_ck="-3863065034170012747" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-4595198152029455632" xil_pn:start_ts="1560364591">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="isim.cmd"/>

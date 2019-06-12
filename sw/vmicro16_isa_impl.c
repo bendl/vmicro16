@@ -243,15 +243,17 @@ vm16_opcode_add_ri(enum prco_reg regD, enum prco_reg regA, signed char simm5)
 }
 
 struct prco_op_struct
-vm16_opcode_sub_ri(enum prco_reg regD, signed char simm5)
+vm16_opcode_sub_ri(enum prco_reg regD, enum prco_reg regA, signed char simm5)
 {
         struct prco_op_struct op = {0};
         op.flags = 0;
-        op.simm5 = USUB;
-        op.regD = regD;
+        op.op    = ARITH_S;
+        op.regD  = regD;
+        op.regA  = regA;
         op.simm5 = simm5;
         op.opcode |= op.op << 11;
         op.opcode |= op.regD << 8;
+        op.opcode |= op.regA << 5;
         op.opcode |= op.imm8 << 0;
         op.opcode |= (simm5 & 0b1111);
 

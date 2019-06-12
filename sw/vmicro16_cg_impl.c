@@ -259,6 +259,9 @@ cg_precode_vmicro16(void)
         vm16_opcode_jmp_r(R1);
         */
 
+        // Initialise stack frame registers
+        vm16_asm_push(vm16_opcode_mov_ri(Sp, 0x3F));
+
         // First words in memory must jmp to main() function
         {
                 // Make sure it exists
@@ -303,9 +306,6 @@ cg_precode_vmicro16(void)
                 }
         }
 
-        // Set up stack pointer registers
-        vm16_asm_push(vm16_opcode_mov_ri(Sp, 0x3F));
-
         dbprintf(D_GEN, "\r\n\r\n");
 }
 
@@ -348,7 +348,7 @@ cg_postcode_vmicro16(void)
         // Debug
         // Inline verilog prco_lmem.v memory
         for_each_asm(it, op) {
-                dbprintf(D_GEN, "r_lmem[%d] = 16'h%04x;\n", it, op->opcode);
+                dbprintf(D_GEN, "mem[%d] = 16'h%04x;\n", it, op->opcode);
         }
 
 
@@ -359,7 +359,7 @@ cg_postcode_vmicro16(void)
 void
 vm16_cg_push_prco(enum prco_reg rd)
 {
-        vm16_asm_push(vm16_opcode_add_ri(Sp, R5, -1));
+        vm16_asm_push(vm16_opcode_sub_ri(Sp, R5, 1));
         vm16_asm_push(vm16_opcode_sw(rd, Sp, 0));
         asm_comment("PUSH");
 }
@@ -427,7 +427,7 @@ cg_sf_start(struct ast_func *f)
 
         dbprintf(D_GEN, "SF START for %s\r\n", f->proto->name);
 
-        op = vm16_opcode_add_ri(Sp, R5, -1);
+        op = vm16_opcode_sub_ri(Sp, R5, 1);
         op.ast = f;
         op.asm_flags |= ASM_FUNC_START;
         op.comment = "Function/sf entry";
@@ -601,7 +601,7 @@ cg_local_decl_vmicro16(struct ast_lvar *v)
                 offset -= 1;
         }
 
-        op_stack_alloc = vm16_opcode_add_ri(Sp, R5, -1);
+        op_stack_alloc = vm16_opcode_sub_ri(Sp, R5, 1);
         op_stack_alloc.comment = malloc(32);
         snprintf(op_stack_alloc.comment, 32, "VAR ALLOC %s %d",
                  v->var->name,

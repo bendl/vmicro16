@@ -200,7 +200,7 @@ struct prco_op_struct vm16_opcode_mov_ri(enum prco_reg regD, unsigned char imm8)
 struct prco_op_struct vm16_opcode_add_rr(enum prco_reg regA, enum prco_reg regD);
 struct prco_op_struct vm16_opcode_add_ri(enum prco_reg regD, enum prco_reg regA, signed char imm8);
 struct prco_op_struct vm16_opcode_sub_rr(enum prco_reg regA, enum prco_reg regD);
-struct prco_op_struct vm16_opcode_sub_ri(enum prco_reg regD, signed char imm8);
+struct prco_op_struct vm16_opcode_sub_ri(enum prco_reg regD, enum prco_reg regA, signed char imm8);
 
 struct prco_op_struct vm16_opcode_jmp_r(enum prco_reg rd);
 struct prco_op_struct vm16_opcode_jmp_rc(enum prco_reg rd, enum prco_br cond);

@@ -87,7 +87,34 @@ module vmicro16_bram # (
         for (i = 0; i < MEM_DEPTH; i = i + 1) mem[i] = 0;
         //$readmemh("../../test.hex", mem);
         
-        `define TEST_BR
+        `define TEST_COMPILER
+        `ifdef TEST_COMPILER
+mem[0] = 16'h2f3f;
+mem[1] = 16'h2903;
+mem[2] = 16'h4100;
+mem[3] = 16'h3fa1;
+mem[4] = 16'h16e0;
+mem[5] = 16'h26e0;
+mem[6] = 16'h2801;
+mem[7] = 16'h3fa1;
+mem[8] = 16'h10e0;
+mem[9] = 16'h2802;
+mem[10] = 16'h0be0;
+mem[11] = 16'h37a1;
+mem[12] = 16'h307f;
+mem[13] = 16'h3fa1;
+mem[14] = 16'h10e0;
+mem[15] = 16'h2803;
+mem[16] = 16'h0be0;
+mem[17] = 16'h37a1;
+mem[18] = 16'h307f;
+mem[19] = 16'h27c0;
+mem[20] = 16'h0ee0;
+mem[21] = 16'h37a1;
+mem[22] = 16'h5800;
+        `endif
+
+        //`define TEST_BR
         `ifdef TEST_BR
         mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h0};
         mem[1] = {`VMICRO16_OP_MOVI,    3'h3, 8'h3};
@@ -96,6 +123,7 @@ module vmicro16_bram # (
         mem[4] = {`VMICRO16_OP_BR,      3'h3, `VMICRO16_OP_BR_U};
         mem[5] = {`VMICRO16_OP_MOVI,    3'h0, 8'hFF};
         `endif
+        
         //`define ALL_TEST
         `ifdef ALL_TEST
         // Standard all test
@@ -314,7 +342,8 @@ module vmicro16_regs # (
             $readmemh(CELL_DEFAULTS, regs);
         else 
             for(i = 0; i < CELL_DEPTH; i = i + 1) 
-                regs[i] <= i;
+                //regs[i] = i;
+                regs[i] = 0;
 
     always @(regs)
         $display($time, "\tC%02h\t\t| %h %h %h %h | %h %h %h %h |", 
@@ -325,7 +354,8 @@ module vmicro16_regs # (
     always @(posedge clk) 
         if (reset)
             for(i = 0; i < CELL_DEPTH; i = i + 1) 
-                regs[i] <= i;
+                //regs[i] <= i;
+                regs[i] <= 0;
         
         else if (we) begin
             $display($time, "\tC%02h: REGS #%s: Writing %h to reg[%d]", 
@@ -437,6 +467,7 @@ module vmicro16_dec # (
     output [INSTR_OP_WIDTH-1:0] opcode,
     output [INSTR_RS_WIDTH-1:0] rd,
     output [INSTR_RS_WIDTH-1:0] ra,
+    output [3:0]                imm4,
     output [7:0]                imm8,
     output [11:0]               imm12,
     output [4:0]                simm5,
@@ -444,6 +475,7 @@ module vmicro16_dec # (
     // This can be freely increased without affecting the isa
     output reg [ALU_OP_WIDTH-1:0] alu_op,
 
+    output reg has_imm4,
     output reg has_imm8,
     output reg has_imm12,
     output reg has_we,
@@ -461,6 +493,7 @@ module vmicro16_dec # (
     assign opcode = instr[15:11];
     assign rd     = instr[10:8];
     assign ra     = instr[7:5];
+    assign imm4   = instr[3:0];
     assign imm8   = instr[7:0];
     assign imm12  = instr[11:0];
     assign simm5  = instr[4:0];
@@ -519,6 +552,14 @@ module vmicro16_dec # (
         `VMICRO16_OP_SETC:      has_we = 1'b1;
         default:                has_we = 1'b0;
     endcase
+
+    // Contains 4-bit immediate
+    always @(*) 
+        if( ((opcode == `VMICRO16_OP_ARITH_U) && (simm5[4] == 0)) ||
+            ((opcode == `VMICRO16_OP_ARITH_S) && (simm5[4] == 0)) )
+            has_imm4 = 1'b1;
+        else
+            has_imm4 = 1'b0;
 
     // Contains 8-bit immediate
     always @(*) case (opcode)
@@ -600,9 +641,11 @@ module vmicro16_alu # (
         `VMICRO16_ALU_ARITH_SADD:   c = $signed(a) + $signed(b);
         `VMICRO16_ALU_ARITH_SSUB:   c = $signed(a) - $signed(b);
         // TODO: ALU should have simm5 as input
-        `VMICRO16_ALU_ARITH_SSUBI:  c = $signed(a) + $signed(b);
+        `VMICRO16_ALU_ARITH_SSUBI:  c = $signed(a) - $signed(b);
 
         `VMICRO16_ALU_CMP: begin
+            // TODO: Do a-b in 17-bit register
+            //       Set zero, overflow, carry, signed bits in result
             cmp_tmp = a - b;
             c = 0;
             c[`VMICRO16_SFLAG_U] = 1;
@@ -660,8 +703,10 @@ module vmicro16_core # (
     wire [2:0]  r_instr_rsa;
     reg  [15:0] r_instr_rdd = 0;
     reg  [15:0] r_instr_rda = 0;
+    wire [3:0]  r_instr_imm4;
     wire [7:0]  r_instr_imm8;
     wire [4:0]  r_instr_simm5;
+    wire        r_instr_has_imm4;
     wire        r_instr_has_imm8;
     wire        r_instr_has_we;
     wire        r_instr_has_br;
@@ -734,6 +779,7 @@ module vmicro16_core # (
             if (r_state == STATE_IF) begin
                 r_instr <= w_mem_instr_out;
 
+                $display("");
                 $display($time, "\tC%02h: PC: %h",    CORE_ID, r_pc);
                 $display($time, "\tC%02h: INSTR: %h", CORE_ID, w_mem_instr_out);
                 
@@ -746,8 +792,9 @@ module vmicro16_core # (
             end
             else if (r_state == STATE_R2) begin
                 // Choose secondary operand (register or immediate)
-                if (r_instr_has_imm8) r_instr_rda <= r_instr_imm8;
-                else                  r_instr_rda <= r_reg_rd1;
+                if      (r_instr_has_imm8)  r_instr_rda <= r_instr_imm8;
+                else if (r_instr_has_imm4)  r_instr_rda <= r_reg_rd1 + r_instr_imm4;
+                else                        r_instr_rda <= r_reg_rd1;
 
                 if (r_instr_has_mem) begin
                     r_state           <= STATE_ME;
@@ -758,7 +805,7 @@ module vmicro16_core # (
 
                     
                 if (w_branching) begin
-                    $display($time, "branching to %h", r_instr_rdd);
+                    $display($time, "\tbranching to %h", r_instr_rdd);
                     r_pc <= r_instr_rdd;
                 end
                 else if (r_pc < (MEM_INSTR_DEPTH-1))
@@ -830,10 +877,12 @@ module vmicro16_core # (
         .opcode         (),
         .rd             (r_instr_rsd),
         .ra             (r_instr_rsa),
+        .imm4           (r_instr_imm4),
         .imm8           (r_instr_imm8),
         .imm12          (),
         .simm5          (r_instr_simm5),
         .alu_op         (r_instr_alu_op),
+        .has_imm4       (r_instr_has_imm4),
         .has_imm8       (r_instr_has_imm8),
         .has_we         (r_instr_has_we),
         .has_br         (r_instr_has_br),

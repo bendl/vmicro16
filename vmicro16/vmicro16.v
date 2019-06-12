@@ -450,6 +450,7 @@ module vmicro16_dec # (
     output reg has_br,
     output reg has_mem,
     output reg has_mem_we,
+    output reg has_cmp,
 
     output halt
     
@@ -550,6 +551,12 @@ module vmicro16_dec # (
         `VMICRO16_OP_SW:    has_mem_we = 1'b1;
         default:            has_mem_we = 1'b0;
     endcase
+
+    // Affects status registers (cmp instructions)
+    always @(*) case (opcode)
+        `VMICRO16_OP_CMP:   has_cmp = 1'b1;
+        default:            has_cmp = 1'b0;
+    endcase
 endmodule
 
 (* keep_hierarchy = "yes" *)
@@ -596,7 +603,11 @@ module vmicro16_alu # (
         `VMICRO16_ALU_ARITH_SSUBI:  c = $signed(a) + $signed(b);
 
         `VMICRO16_ALU_CMP: begin
+            cmp_tmp = a - b;
             c = 0;
+            c[`VMICRO16_SFLAG_U] = 1;
+            c[`VMICRO16_SFLAG_Z] = (cmp_tmp == 0);
+            c[`VMICRO16_SFLAG_L] = (a < b);
         end
 
         // TODO: Parameterise
@@ -641,12 +652,6 @@ module vmicro16_core # (
     reg  [15:0] r_instr       = 16'h0000;
     wire [15:0] w_mem_instr_out;
 
-    // branching
-    reg         r_branch_en   = 0;
-    reg  [4:0]  r_cmp_flags   = 5'h00;
-    reg  [4:0]  r_cmp_result  = 5'h00;
-    reg  [15:0] r_branch_addr = 16'h0000;
-
     assign dbug_pc = r_pc[7:0];
 
     wire [4:0]  r_instr_opcode;
@@ -660,6 +665,7 @@ module vmicro16_core # (
     wire        r_instr_has_imm8;
     wire        r_instr_has_we;
     wire        r_instr_has_br;
+    wire        r_instr_has_cmp;
     wire        r_instr_has_mem;
     wire        r_instr_has_mem_we;
     wire        r_instr_halt;
@@ -679,25 +685,29 @@ module vmicro16_core # (
     wire [15:0] r_reg_wd = (r_instr_has_mem) ? r_mem_scratch_out : r_alu_out;
     wire        r_reg_we = r_instr_has_we && (r_state == STATE_WB);
 
-    // cmp result
-    always @(*) begin
-        r_cmp_flags  = 0;
-        r_branch_en  = 0;
-        r_cmp_result = r_instr_rdd - r_instr_rda;
-        // doing it this way is bad
-        r_cmp_flags[`VMICRO16_SFLAG_U] = 1;
-        r_cmp_flags[`VMICRO16_SFLAG_Z] = (r_cmp_result == 0);
-        r_cmp_flags[`VMICRO16_SFLAG_L] = (r_instr_rdd < r_instr_rda);
+    // branching
+    reg         r_branch_en   = 0;
+    wire        w_branching   = r_instr_has_br && r_branch_en;
+    reg  [4:0]  r_cmp_flags   = 5'h00; // Z, O, S, L, etc.
+    reg  [15:0] r_cmp_result  = 5'h00; // a - b
+    
+    always @(posedge clk)
+        if (r_instr_has_cmp) 
+            r_cmp_flags <= r_alu_out;
+    
+    always @(posedge clk)
+        if (r_instr_has_br)
+            case (r_instr_imm8)
+                `VMICRO16_OP_BR_U: 
+                    r_branch_en <= 1;
+                `VMICRO16_OP_BR_E: 
+                    r_branch_en <= r_cmp_flags[`VMICRO16_SFLAG_Z];
+                `VMICRO16_OP_BR_L: 
+                    r_branch_en <= r_cmp_flags[`VMICRO16_SFLAG_L];
+                default:
+                    r_branch_en <= 0;
+            endcase
 
-        case (r_instr_imm8)
-            `VMICRO16_OP_BR_U: r_branch_en = r_cmp_flags[`VMICRO16_SFLAG_U];
-            `VMICRO16_OP_BR_E: r_branch_en = r_cmp_flags[`VMICRO16_SFLAG_Z];
-            `VMICRO16_OP_BR_L: r_branch_en = r_cmp_flags[`VMICRO16_SFLAG_L];
-            default:           r_branch_en = 0;
-        endcase
-
-        r_branch_en = r_branch_en && r_instr_has_br;
-    end
 
     // 2 cycle register fetch
     always @(*) begin
@@ -730,14 +740,14 @@ module vmicro16_core # (
                 r_state <= STATE_R1;
             end
             else if (r_state == STATE_R1) begin
+                // primary operand
                 r_instr_rdd <= r_reg_rd1;
                 r_state     <= STATE_R2;
             end
             else if (r_state == STATE_R2) begin
-                if (r_instr_has_imm8)
-                    r_instr_rda <= r_instr_imm8;
-                else
-                    r_instr_rda <= r_reg_rd1;
+                // Choose secondary operand (register or immediate)
+                if (r_instr_has_imm8) r_instr_rda <= r_instr_imm8;
+                else                  r_instr_rda <= r_reg_rd1;
 
                 if (r_instr_has_mem) begin
                     r_state           <= STATE_ME;
@@ -746,23 +756,22 @@ module vmicro16_core # (
                 end else
                     r_state <= STATE_WB;
 
-                if (r_branch_en && r_instr_has_br) begin
-                    $display($time, "branching to %h", r_branch_addr);
+                    
+                if (w_branching) begin
+                    $display($time, "branching to %h", r_instr_rdd);
                     r_pc <= r_instr_rdd;
                 end
                 else if (r_pc < (MEM_INSTR_DEPTH-1))
                     r_pc <= r_pc + 1;
+
             end
             else if (r_state == STATE_ME) begin
                 // Pulse req
                 r_mem_scratch_req <= 0;
                 // Wait for MMU to finish
-                if (!r_mem_scratch_busy)
-                    r_state <= STATE_WB;
+                if (!r_mem_scratch_busy) r_state <= STATE_WB;
             end
             else if (r_state == STATE_WB) begin
-                
-                
                 r_state <= STATE_IF;
             end
         end
@@ -828,6 +837,7 @@ module vmicro16_core # (
         .has_imm8       (r_instr_has_imm8),
         .has_we         (r_instr_has_we),
         .has_br         (r_instr_has_br),
+        .has_cmp        (r_instr_has_cmp),
         .has_mem        (r_instr_has_mem),
         .has_mem_we     (r_instr_has_mem_we),
         .halt           ()

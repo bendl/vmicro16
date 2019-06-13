@@ -108,6 +108,7 @@ struct prco_op_struct {
     OP(BR) \
     OP(CMP) \
     OP(SETC) \
+    OP(MULT) \
     OP(HALT) \
     OP(__prco_op_MAX) \
 
@@ -202,10 +203,11 @@ struct prco_op_struct vm16_opcode_add_ri(enum prco_reg regD, enum prco_reg regA,
 struct prco_op_struct vm16_opcode_sub_rr(enum prco_reg regA, enum prco_reg regD);
 struct prco_op_struct vm16_opcode_sub_ri(enum prco_reg regD, enum prco_reg regA, signed char imm8);
 
+struct prco_op_struct vm16_opcode_mul_rr(enum prco_reg regA, enum prco_reg regD);
+
 struct prco_op_struct vm16_opcode_jmp_r(enum prco_reg rd);
 struct prco_op_struct vm16_opcode_jmp_rc(enum prco_reg rd, enum prco_br cond);
-struct prco_op_struct vm16_opcode_cmp_rr(enum prco_reg rd,
-                                    enum prco_reg ra);
+struct prco_op_struct vm16_opcode_cmp_rr(enum prco_reg rd, enum prco_reg ra);
 
 struct prco_op_struct vm16_opcode_neg_r(enum prco_reg regD);
 

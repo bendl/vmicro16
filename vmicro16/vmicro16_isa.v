@@ -1,4 +1,5 @@
 // Vmicro16 multi-core instruction set
+`include "vmicro16_soc_config.v"
 
 // TODO: Remove NOP by making a register write/read always 0
 `define VMICRO16_OP_NOP          5'b00000
@@ -13,7 +14,6 @@
 `define VMICRO16_OP_BIT_RSHFT    5'b00101
 `define VMICRO16_OP_MOV          5'b00100
 `define VMICRO16_OP_MOVI         5'b00101
-`define VMICRO16_OP_MOVI_L       5'b10000
 `define VMICRO16_OP_ARITH_U      5'b00110
 `define VMICRO16_OP_ARITH_UADD   5'b11111
 `define VMICRO16_OP_ARITH_USUB   5'b10000
@@ -23,6 +23,11 @@
 `define VMICRO16_OP_ARITH_SSUB   5'b10000
 `define VMICRO16_OP_ARITH_SSUBI  5'b0????
 `define VMICRO16_OP_BR           5'b01000
+`define VMICRO16_OP_CMP          5'b01001
+`define VMICRO16_OP_SETC         5'b01010
+`define VMICRO16_OP_MULT         5'b01011
+`define VMICRO16_OP_HALT         5'b01100
+
 // TODO: wasted upper nibble bits in BR
 `define VMICRO16_OP_BR_U         8'h00
 `define VMICRO16_OP_BR_E         8'h01
@@ -33,9 +38,6 @@
 `define VMICRO16_OP_BR_LE        8'h06
 `define VMICRO16_OP_BR_S         8'h07
 `define VMICRO16_OP_BR_NS        8'h08
-`define VMICRO16_OP_CMP          5'b01001
-`define VMICRO16_OP_SETC         5'b01010
-`define VMICRO16_OP_HALT         5'b01011
 
 // microcode operations
 `define VMICRO16_ALU_BIT_OR      5'h00
@@ -68,7 +70,9 @@
 `define VMICRO16_ALU_ARITH_UADDI 5'h1b
 `define VMICRO16_ALU_ARITH_SSUBI 5'h1c
 `define VMICRO16_ALU_BR          5'h1d
-`define VMICRO16_ALU_SPARE       5'h1e
+`if DEF_ALU_HW_MULT == 1
+`define VMICRO16_ALU_MULT        5'h1e
+`endif
 `define VMICRO16_ALU_BAD         5'h1f
 
 `define VMICRO16_SFLAG_U         5'h00

@@ -523,6 +523,7 @@ module vmicro16_dec # (
         `VMICRO16_OP_MOVI_L:  alu_op = `VMICRO16_ALU_MOVI_L; 
 
         `VMICRO16_OP_BR:      alu_op = `VMICRO16_ALU_BR;
+        `VMICRO16_OP_MULT:    alu_op = `VMICRO16_ALU_MULT;
         
         `VMICRO16_OP_BIT:     casez (simm5)
             `VMICRO16_OP_BIT_OR:      alu_op = `VMICRO16_ALU_BIT_OR;
@@ -647,6 +648,10 @@ module vmicro16_alu # (
         `VMICRO16_ALU_ARITH_USUB:   c = a - b;
         // TODO: ALU should have simm5 as input
         `VMICRO16_ALU_ARITH_UADDI:  c = a + b;
+
+        `if DEF_ALU_HW_MULT == 1
+            `VMICRO16_ALU_MULT:  c = a * b;
+        `endif
         
         `VMICRO16_ALU_ARITH_SADD:   c = $signed(a) + $signed(b);
         `VMICRO16_ALU_ARITH_SSUB:   c = $signed(a) - $signed(b);

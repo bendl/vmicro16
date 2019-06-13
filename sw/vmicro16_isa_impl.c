@@ -121,6 +121,7 @@ vm16_assert_opcode(struct prco_op_struct *op, char print)
 
         case MOV:
         case CMP:
+        case MULT:
                 assert((op->opcode >> 11) == op->op);
                 assert(((op->opcode >> 8) & PRCO_OP_BITS_REG) == op->regD);
                 assert(((op->opcode >> 5) & PRCO_OP_BITS_REG) == op->regA);
@@ -197,6 +198,22 @@ vm16_opcode_mov_rr(enum prco_reg regD, enum prco_reg regA)
         struct prco_op_struct op = {0};
         op.flags = 0;
         op.op = MOV;
+        op.regD = regD;
+        op.regA = regA;
+        op.opcode |= op.op << 11;
+        op.opcode |= op.regD << 8;
+        op.opcode |= op.regA << 5;
+
+        vm16_assert_opcode(&op, 0);
+        return op;
+}
+
+struct prco_op_struct
+vm16_opcode_mul_rr(enum prco_reg regD, enum prco_reg regA)
+{
+        struct prco_op_struct op = {0};
+        op.flags = 0;
+        op.op = MULT;
         op.regD = regD;
         op.regA = regA;
         op.opcode |= op.op << 11;

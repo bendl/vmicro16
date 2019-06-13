@@ -239,6 +239,7 @@ cg_precode_vmicro16(void)
         vm16_opcode_mov_ri(R0, 0x81);
         vm16_opcode_sw(R1, R0, 0x00);
         vm16_opcode_sw(R2, R0, 0x01);
+        vm16_opcode_mul_rr(R1, R2);
 
         /*
         vm16_opcode_mov_ri(R0, 0x10);
@@ -811,6 +812,8 @@ cg_bin_vmicro16(struct ast_bin *b)
                 break;
 
         case TOK_STAR:
+                vm16_cg_pop_prco(R3);
+                vm16_asm_push(vm16_opcode_sub_rr(R0, R3));
                 eprintf("POP %%R3\r\n");
                 break;
 

@@ -5,8 +5,9 @@
 `define CORES           1
 `define SLAVES          6
 
-`define DATA_WIDTH      16
+`define DEF_ALU_HW_MULT 1
 
+`define DATA_WIDTH      16
 `define APB_WIDTH       `DATA_WIDTH
 
 `define APB_PSELX_GPIO0 0

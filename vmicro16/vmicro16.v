@@ -38,6 +38,10 @@ module vmicro16_bram_apb # (
     assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1    : 1'bZ;
     assign we       = (S_PSELx & S_PENABLE & S_PWRITE);
 
+    always @(*)
+        if (S_PSELx & S_PENABLE)
+            $display($time, "\t\tMEM => %h", mem_out);
+
     always @(posedge clk)
         if (we)
             $display($time, "\t\tBRAM[%h] <= %h", 
@@ -87,7 +91,7 @@ module vmicro16_bram # (
         for (i = 0; i < MEM_DEPTH; i = i + 1) mem[i] = 0;
         //$readmemh("../../test.hex", mem);
         
-        //`define TEST_COMPILER
+        `define TEST_COMPILER
         `ifdef TEST_COMPILER
 mem[0] = 16'h2f3f;
 mem[1] = 16'h2903;
@@ -95,29 +99,44 @@ mem[2] = 16'h4100;
 mem[3] = 16'h3fa1;
 mem[4] = 16'h16e0;
 mem[5] = 16'h26e0;
-mem[6] = 16'h2801;
-mem[7] = 16'h3fa1;
-mem[8] = 16'h10e0;
-mem[9] = 16'h2802;
-mem[10] = 16'h0be0;
-mem[11] = 16'h37a1;
-mem[12] = 16'h307f;
-mem[13] = 16'h3fa1;
-mem[14] = 16'h10e0;
-mem[15] = 16'h2803;
-mem[16] = 16'h3fa1;
-mem[17] = 16'h10e0;
-mem[18] = 16'h2804;
-mem[19] = 16'h0be0;
-mem[20] = 16'h37a1;
-mem[21] = 16'h307f;
-mem[22] = 16'h0be0;
-mem[23] = 16'h37a1;
-mem[24] = 16'h5860;
-mem[25] = 16'h27c0;
-mem[26] = 16'h0ee0;
-mem[27] = 16'h37a1;
-mem[28] = 16'h6000;
+mem[6] = 16'h3fa1;
+mem[7] = 16'h28a0;
+mem[8] = 16'h10df;
+mem[9] = 16'h280a;
+mem[10] = 16'h3fa1;
+mem[11] = 16'h10e0;
+mem[12] = 16'h08df;
+mem[13] = 16'h0be0;
+mem[14] = 16'h37a1;
+mem[15] = 16'h1300;
+mem[16] = 16'h280b;
+mem[17] = 16'h3fa1;
+mem[18] = 16'h10e0;
+mem[19] = 16'h08df;
+mem[20] = 16'h0be0;
+mem[21] = 16'h37a1;
+mem[22] = 16'h1300;
+mem[23] = 16'h280c;
+mem[24] = 16'h3fa1;
+mem[25] = 16'h10e0;
+mem[26] = 16'h08df;
+mem[27] = 16'h0be0;
+mem[28] = 16'h37a1;
+mem[29] = 16'h1300;
+mem[30] = 16'h280d;
+mem[31] = 16'h3fa1;
+mem[32] = 16'h10e0;
+mem[33] = 16'h08df;
+mem[34] = 16'h0be0;
+mem[35] = 16'h37a1;
+mem[36] = 16'h1300;
+mem[37] = 16'h2814;
+mem[38] = 16'h08df;
+mem[39] = 16'h0800;
+mem[40] = 16'h27c0;
+mem[41] = 16'h0ee0;
+mem[42] = 16'h37a1;
+mem[43] = 16'h6000;
         `endif
 
         //`define TEST_BR
@@ -130,7 +149,7 @@ mem[28] = 16'h6000;
         mem[5] = {`VMICRO16_OP_MOVI,    3'h0, 8'hFF};
         `endif
         
-        `define ALL_TEST
+        //`define ALL_TEST
         `ifdef ALL_TEST
         // Standard all test
         // REGS0
@@ -738,7 +757,7 @@ module vmicro16_core # (
 
     wire [15:0] r_alu_out;
 
-    wire [15:0] r_mem_scratch_addr = r_alu_out + r_instr_simm5;
+    wire [15:0] r_mem_scratch_addr = $signed(r_alu_out) + $signed(r_instr_simm5);
     wire [15:0] r_mem_scratch_in   = r_instr_rdd;
     wire [15:0] r_mem_scratch_out;
     wire        r_mem_scratch_we   = r_instr_has_mem_we && (r_state == STATE_ME);

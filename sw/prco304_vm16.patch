@@ -1,0 +1,547 @@
+ prco_compiler/cli/main.c                       | 17 ++++---
+ prco_compiler/emu/emu.c                        |  1 -
+ prco_compiler/include/libprco/adt/ast.h        | 10 ++++
+ prco_compiler/include/libprco/arch/prco_impl.h | 30 ------------
+ prco_compiler/include/libprco/arch/target.h    |  3 ++
+ prco_compiler/include/libprco/module.h         |  3 +-
+ prco_compiler/include/libprco/parser.h         |  3 +-
+ prco_compiler/libprco/CMakeLists.txt           | 10 +++-
+ prco_compiler/libprco/adt/ast.c                | 10 ++++
+ prco_compiler/libprco/arch/prco_impl.c         | 27 -----------
+ prco_compiler/libprco/arch/target.c            | 10 +++-
+ prco_compiler/libprco/arch/template_impl.c     |  4 ++
+ prco_compiler/libprco/module.c                 |  4 +-
+ prco_compiler/libprco/opt.c                    |  3 ++
+ prco_compiler/libprco/parser.c                 | 41 +++++++++++++++-
+ prco_compiler/test/tests/mmu_1.prco            | 18 +++++++
+ prco_compiler/test/verilog_memh.txt            | 66 ++++++++++++++++++++------
+ 17 files changed, 171 insertions(+), 89 deletions(-)
+
+diff --git a/prco_compiler/cli/main.c b/prco_compiler/cli/main.c
+index e90a8f9..a349935 100644
+--- a/prco_compiler/cli/main.c
++++ b/prco_compiler/cli/main.c
+@@ -35,6 +35,8 @@ SOFTWARE.
+ #include <libprco/module.h>
+ #include <include/libprco/opt.h>
+ 
++#include <libprco/arch/target.h>
++
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -49,13 +51,14 @@ main(int argc, char **argv)
+         struct text_parser      *parser      = NULL;
+         FILE                    *file_output = NULL;
+ 
+-        char *src_name = NULL;
+-        int src_size;
+-        int O = 0;
+-        char *out_name = "out.s";
++        char    *src_name = NULL;
++        int     src_size;
++        int     O = 0;
++        char    *out_name = "out.s";
++        target_archs m_arch = target_vm16;
+ 
+-        int parse_result = 0;
+-        int module_dump_output = 0;
++        int             parse_result = 0;
++        int             module_dump_output = 0;
+         struct ast_func *function_list = NULL;
+ 
+         // Parse command line
+@@ -123,7 +126,7 @@ main(int argc, char **argv)
+                         }
+                 }
+ 
+-                module_dump(module);
++                module_dump(module, m_arch);
+         }
+ 
+ main_exit:
+diff --git a/prco_compiler/emu/emu.c b/prco_compiler/emu/emu.c
+index 318369b..c7b1ee7 100644
+--- a/prco_compiler/emu/emu.c
++++ b/prco_compiler/emu/emu.c
+@@ -33,7 +33,6 @@ SOFTWARE.
+ #include <libprco/parser.h>
+ #include <libprco/module.h>
+ #include <libprco/arch/prco_isa.h>
+-#include <libprco/arch/prco_impl.h>
+ 
+ #include <stdio.h>
+ #include <stdlib.h>
+diff --git a/prco_compiler/include/libprco/adt/ast.h b/prco_compiler/include/libprco/adt/ast.h
+index abe9830..705c580 100644
+--- a/prco_compiler/include/libprco/adt/ast.h
++++ b/prco_compiler/include/libprco/adt/ast.h
+@@ -47,6 +47,8 @@ enum ast_type {
+ 
+         // Pointer and global types
+         AST_DEREF, AST_CSTRING,
++
++        AST_SW,
+ };
+ 
+ struct ast_item {
+@@ -148,6 +150,12 @@ struct ast_deref
+         int                     deref_id;
+ };
+ 
++struct ast_sw
++{
++        struct ast_item         *addr;
++        struct ast_item         *val;
++};
++
+ struct ast_expr {
+         struct ast_item         *val;
+ };
+@@ -189,6 +197,8 @@ extern struct ast_for   *ast_for_create(struct ast_item *start,
+                                         struct ast_item *step,
+                                         struct ast_item *body);
+ 
++extern struct ast_sw  *ast_sw_create(struct ast_item *addr, struct ast_item *val);
++
+ void ast_free(_inout_ struct ast_item *node);
+ void ast_func_free(_inout_ struct ast_func *func);
+ 
+diff --git a/prco_compiler/include/libprco/arch/prco_impl.h b/prco_compiler/include/libprco/arch/prco_impl.h
+deleted file mode 100644
+index f9afe7f..0000000
+--- a/prco_compiler/include/libprco/arch/prco_impl.h
++++ /dev/null
+@@ -1,30 +0,0 @@
+-/*
+-MIT License
+-
+-Copyright (c) 2018 Ben Lancaster
+-
+-Permission is hereby granted, free of charge, to any person obtaining a copy
+-of this software and associated documentation files (the "Software"), to deal
+-in the Software without restriction, including without limitation the rights
+-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-copies of the Software, and to permit persons to whom the Software is
+-furnished to do so, subject to the following conditions:
+-
+-The above copyright notice and this permission notice shall be included in all
+-copies or substantial portions of the Software.
+-
+-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+-SOFTWARE.
+-*/
+-
+-#ifndef PRCO_IMPL_H
+-#define PRCO_IMPL_H
+-
+-
+-
+-#endif
+diff --git a/prco_compiler/include/libprco/arch/target.h b/prco_compiler/include/libprco/arch/target.h
+index 90dc9a7..646acc8 100644
+--- a/prco_compiler/include/libprco/arch/target.h
++++ b/prco_compiler/include/libprco/arch/target.h
+@@ -32,6 +32,7 @@ SOFTWARE.
+ typedef enum target_arch {
+     target_generic,  ///< A generic assembly target
+     target_template, ///< A template assembly target, for starting with
++    target_vm16,
+     target_8086,     ///< 8086 intel syntax target
+     target_x86,      ///< x86 at&t syntax target
+     target_prco100,   ///< https://github.com/bendl/prco target
+@@ -56,6 +57,7 @@ typedef void (*cg_number_d)     (struct ast_num *n);    ///< Cg number expressio
+ typedef void (*cg_var_d)        (struct ast_var *v);    ///< Cg variable/ident reference
+ typedef void (*cg_call_d)       (struct ast_call *c);   ///< Cg function call
+ typedef void (*cg_if_d)         (struct ast_if *v);     ///< Cg if expression
++typedef void (*cg_sw_d)         (struct ast_sw *sw);     ///< Cg if expression
+ 
+ typedef void (*cg_local_decl_d) (struct ast_lvar *v);   ///< Cg variable declaration
+ typedef void (*cg_var_ref_d)    (struct ast_lvar *v);   ///< Cg local variable reference
+@@ -92,6 +94,7 @@ struct target_delegate {
+         cg_func_ret     cg_func_ret;
+         get_dt_size_d   get_dt_size;
+         */
++        cg_sw_d         cg_sw;
+ };
+ 
+ extern struct target_delegate   cg_target_delegate;
+diff --git a/prco_compiler/include/libprco/module.h b/prco_compiler/include/libprco/module.h
+index 114337b..70be4f3 100644
+--- a/prco_compiler/include/libprco/module.h
++++ b/prco_compiler/include/libprco/module.h
+@@ -5,6 +5,7 @@
+ #ifndef LIBPRCO_TOP_MODULE_H
+ #define LIBPRCO_TOP_MODULE_H
+ 
++#include "arch/target.h"
+ #include "parser.h"
+ 
+ struct module {
+@@ -24,7 +25,7 @@ extern struct module *get_g_module(void);
+ 
+ extern struct module *new_module(void);
+ 
+-extern void module_dump(struct module *m);
++extern void module_dump(struct module *m, target_archs arch);
+ 
+ extern void module_free(struct module *m);
+ 
+diff --git a/prco_compiler/include/libprco/parser.h b/prco_compiler/include/libprco/parser.h
+index d122048..9c964ed 100644
+--- a/prco_compiler/include/libprco/parser.h
++++ b/prco_compiler/include/libprco/parser.h
+@@ -66,7 +66,8 @@ extern "C" {
+     TOK(TOK_CC_FASTCALL) \
+     TOK(TOK_PORT_PORT1) \
+     TOK(TOK_PORT_UART1) \
+-    TOK(TOK_DEREF)
++    TOK(TOK_DEREF) \
++    TOK(TOK_SW)
+ 
+ /// lexer token types
+ typedef enum token_type {
+diff --git a/prco_compiler/libprco/CMakeLists.txt b/prco_compiler/libprco/CMakeLists.txt
+index 7382a44..9977955 100644
+--- a/prco_compiler/libprco/CMakeLists.txt
++++ b/prco_compiler/libprco/CMakeLists.txt
+@@ -11,16 +11,22 @@ if(CMAKE_COMPILER_IS_GNUCXX)
+ endif(CMAKE_COMPILER_IS_GNUCXX)
+ 
+ include_directories(../include/${PROJECT_NAME})
++include_directories("Z:/uni/vmicro16/sw/")
+ 
+ file(GLOB PRCO_SOURCES
+         *.c
+         adt/*.c
+-        arch/*.c)
++        arch/*.c
++        Z:/uni/vmicro16/sw/*.c)
+ 
+ file(GLOB PRCO_HEADERS
+     ../include/libprco/*.h
+     ../include/libprco/adt/*.h
+-    ../include/libprco/arch/*.h)
++    ../include/libprco/arch/*.h
++    Z:/uni/vmicro16/sw/*.h)
++
++message(${PRCO_SOURCES})
++message(${PRCO_HEADERS})
+ 
+ add_library(${PROJECT_NAME} STATIC ${PRCO_SOURCES} ${PRCO_HEADERS})
+ 
+diff --git a/prco_compiler/libprco/adt/ast.c b/prco_compiler/libprco/adt/ast.c
+index a982744..3fcd4a1 100644
+--- a/prco_compiler/libprco/adt/ast.c
++++ b/prco_compiler/libprco/adt/ast.c
+@@ -194,3 +194,13 @@ ast_for_create(struct ast_item *start,
+         ret->body = body;
+         return ret;
+ }
++
++struct ast_sw  *
++ast_sw_create(struct ast_item *addr,
++              struct ast_item *val)
++{
++        struct ast_sw *ret = zalloc(ret);
++        ret->addr = addr;
++        ret->val  = val;
++        return ret;
++}
+\ No newline at end of file
+diff --git a/prco_compiler/libprco/arch/prco_impl.c b/prco_compiler/libprco/arch/prco_impl.c
+deleted file mode 100644
+index 23344bb..0000000
+--- a/prco_compiler/libprco/arch/prco_impl.c
++++ /dev/null
+@@ -1,27 +0,0 @@
+-/*
+-MIT License
+-
+-Copyright (c) 2018 Ben Lancaster
+-
+-Permission is hereby granted, free of charge, to any person obtaining a copy
+-of this software and associated documentation files (the "Software"), to deal
+-in the Software without restriction, including without limitation the rights
+-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-copies of the Software, and to permit persons to whom the Software is
+-furnished to do so, subject to the following conditions:
+-
+-The above copyright notice and this permission notice shall be included in all
+-copies or substantial portions of the Software.
+-
+-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+-SOFTWARE.
+-*/
+-
+-#include "arch/prco_impl.h"
+-
+-
+diff --git a/prco_compiler/libprco/arch/target.c b/prco_compiler/libprco/arch/target.c
+index 982111c..a6a9d54 100644
+--- a/prco_compiler/libprco/arch/target.c
++++ b/prco_compiler/libprco/arch/target.c
+@@ -2,8 +2,10 @@
+ // Created by BDL on 19/02/2018.
+ //
+ 
++#include <assert.h>
+ #include "arch/target.h"
+ #include "arch/template_impl.h"
++#include "vmicro16_cg_impl.h"
+ 
+ struct target_delegate  cg_target_delegate;
+ struct ast_func         *cg_cur_function;
+@@ -14,10 +16,16 @@ void init_target(enum target_arch arch)
+         //cg_target_delegate = {0};
+ 
+         switch(arch) {
+-        default:
+         case target_generic:
+         case target_template:
+                 cg_target_template_init(&cg_target_delegate);
+                 break;
++        case target_vm16:
++                cg_target_vm16_init(&cg_target_delegate);
++                break;
++        default:
++                assert(0 && "init_target does not support specified arch.");
++                break;
+         }
++
+ }
+\ No newline at end of file
+diff --git a/prco_compiler/libprco/arch/template_impl.c b/prco_compiler/libprco/arch/template_impl.c
+index 0bc082e..92f1e3b 100644
+--- a/prco_compiler/libprco/arch/template_impl.c
++++ b/prco_compiler/libprco/arch/template_impl.c
+@@ -399,6 +399,10 @@ cg_expr_template(struct ast_item *e)
+                         cg_while_template(e->expr);
+                         break;
+ 
++                case AST_SW:
++                        cg_sw_vm16(e->expr);
++                        break;
++
+                 case AST_LOCAL_VAR:
+                         cg_local_decl_template(e->expr);
+                         break;
+diff --git a/prco_compiler/libprco/module.c b/prco_compiler/libprco/module.c
+index e4f5026..ab7ebc4 100644
+--- a/prco_compiler/libprco/module.c
++++ b/prco_compiler/libprco/module.c
+@@ -33,9 +33,9 @@ struct module *get_g_module(void)
+         return g_module;
+ }
+ 
+-void module_dump(struct module *m)
++void module_dump(struct module *m, target_archs arch)
+ {
+-        cg_dump(m, target_template);
++        cg_dump(m, arch);
+ }
+ 
+ void
+diff --git a/prco_compiler/libprco/opt.c b/prco_compiler/libprco/opt.c
+index 2c0e025..072d773 100644
+--- a/prco_compiler/libprco/opt.c
++++ b/prco_compiler/libprco/opt.c
+@@ -102,6 +102,9 @@ opt_cf(struct ast_item *node)
+                         case TOK_SUB:
+                                 new_num->val = tmp_bin_lhs->val - tmp_bin_rhs->val;
+                                 break;
++                        case TOK_STAR:
++                                new_num->val = tmp_bin_lhs->val * tmp_bin_rhs->val;
++                                break;
+                         case TOK_BOOL_L:
+                                 new_num->val = tmp_bin_lhs->val < tmp_bin_rhs->val;
+                                 break;
+diff --git a/prco_compiler/libprco/parser.c b/prco_compiler/libprco/parser.c
+index e4f9d64..f8c9d09 100644
+--- a/prco_compiler/libprco/parser.c
++++ b/prco_compiler/libprco/parser.c
+@@ -388,10 +388,18 @@ int
+ lexer_check_single(int c, token_type* tok)
+ {
+         switch(c) {
++        case '$':
++                lexer_fgetc();
++                *tok =  TOK_SW;
++                return 1;
+         case '+':
+                 lexer_fgetc();
+                 *tok =  TOK_PLUS;
+                 return 1;
++        case '*':
++                lexer_fgetc();
++                *tok =  TOK_STAR;
++                return 1;
+         case '-':
+                 lexer_fgetc();
+                 *tok = TOK_SUB;
+@@ -452,15 +460,20 @@ int
+ lexer_digit(char *buf)
+ {
+         int buf_i = 0;
++        int base  = 10;
++
++        if ((char)LEXER_GET_CHAR() == '0')
++                base = 16;
++
+         do {
+                 buf[buf_i++] = (char)LEXER_GET_CHAR();
+                 lexer_fgetc();
+-        } while (isdigit(LEXER_GET_CHAR()));
++        } while (isalnum(LEXER_GET_CHAR()));
+ 
+         // Null terminate the string number buffer
+         buf[buf_i] = 0;
+ 
+-        return atoi(buf);
++        return strtol(buf, NULL, base);
+ }
+ 
+ void
+@@ -1136,6 +1149,27 @@ parse_port_uart1(void)
+         return ast_expr_create(uart_ast, AST_UART);
+ }
+ 
++
++struct ast_item *
++parse_sw(void)
++{
++        // $ '(' <expr> ')' = <expr>
++        struct ast_item *addr;
++        struct ast_item *val;
++
++        // Parse it
++        lexer_match_next(TOK_SW);
++        lexer_match_next(TOK_LBRACE);
++        addr = parse_expr();
++        lexer_match_next(TOK_RBRACE);
++
++        lexer_match_next(TOK_ASSIGNMENT);
++        val = parse_expr();
++        if (!val) return NULL;
++
++        return ast_expr_create(ast_sw_create(addr, val), AST_SW);
++}
++
+ struct ast_item *
+ parse_while_expr(void)
+ {
+@@ -1178,6 +1212,9 @@ parse_expr(void)
+         if(lexer_match(TOK_PORT_UART1))
+                 return parse_port_uart1();
+ 
++        if(lexer_match(TOK_SW))
++                return parse_sw();
++
+ 
+         lhs = parse_primary();
+         if (!lhs) return NULL;
+diff --git a/prco_compiler/test/tests/mmu_1.prco b/prco_compiler/test/tests/mmu_1.prco
+new file mode 100644
+index 0000000..3ca1eab
+--- /dev/null
++++ b/prco_compiler/test/tests/mmu_1.prco
+@@ -0,0 +1,18 @@
++
++__stdcall fnc main()
++{
++    int GPIO0  = 0x90;
++    int GPIO1  = 0x91;
++    int GPIO2  = 0x92;
++    int IDX    = 0x80;
++    int CORES  = 0xB0;
++    int SLAVES = 0xB1;
++
++    int UART0  = 0xA0;
++
++    @IDX;
++    @CORES;
++    @SLAVES;
++
++    $(UART0) = (@SLAVES) + 48;
++}
+diff --git a/prco_compiler/test/verilog_memh.txt b/prco_compiler/test/verilog_memh.txt
+index e5ee7fb..33ed12a 100644
+--- a/prco_compiler/test/verilog_memh.txt
++++ b/prco_compiler/test/verilog_memh.txt
+@@ -1,15 +1,51 @@
+-2102
+-6100
+-4fff
+-16e0
+-1ee0
+-2000
+-0800
+-2001
+-0800
+-20ff
+-0800
+-1fc0
+-0ee0
+-4f01
+-9000
++2f3f
++2903
++4100
++3fa1
++16e0
++26e0
++3fa1
++2890
++10d9
++3fa1
++2891
++10da
++3fa1
++2892
++10db
++3fa1
++2880
++10dc
++3fa1
++28b0
++10dd
++3fa1
++28b1
++10de
++3fa1
++28a0
++10df
++08dc
++0800
++08dd
++0800
++08de
++0800
++08de
++0800
++3fa1
++10e0
++2830
++0be0
++37a1
++307f
++3fa1
++10e0
++08df
++0be0
++37a1
++1300
++27c0
++0ee0
++37a1
++6000

@@ -161,7 +161,7 @@
       <outfile xil_pn:name="../../vmicro16_soc.v"/>
       <outfile xil_pn:name="../../vmicro16_soc_config.v"/>
     </transform>
-    <transform xil_pn:end_ts="1560428447" xil_pn:in_ck="-7457937684260380284" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-9125384734343796275" xil_pn:start_ts="1560428436">
+    <transform xil_pn:end_ts="1560435072" xil_pn:in_ck="-7457937684260380284" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-9125384734343796275" xil_pn:start_ts="1560435058">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="fuse.log"/>
@@ -171,7 +171,7 @@
       <outfile xil_pn:name="tb_vmicro16_soc_isim_beh.exe"/>
       <outfile xil_pn:name="xilinxsim.ini"/>
     </transform>
-    <transform xil_pn:end_ts="1560428449" xil_pn:in_ck="-3863065034170012747" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-4595198152029455632" xil_pn:start_ts="1560428447">
+    <transform xil_pn:end_ts="1560435075" xil_pn:in_ck="-3863065034170012747" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-4595198152029455632" xil_pn:start_ts="1560435072">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="isim.cmd"/>
@@ -202,14 +202,11 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1560421475" xil_pn:in_ck="-4602676287062498961" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="2398032887687908319" xil_pn:start_ts="1560421257">
+    <transform xil_pn:end_ts="1560429259" xil_pn:in_ck="-4602676287062498961" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="2398032887687908319" xil_pn:start_ts="1560429032">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
       <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="InputChanged"/>
-      <status xil_pn:value="OutputChanged"/>
       <outfile xil_pn:name="_xmsgs/xst.xmsgs"/>
       <outfile xil_pn:name="top_ms.lso"/>
       <outfile xil_pn:name="top_ms.ngc"/>
@@ -230,7 +227,9 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForInputs"/>
       <status xil_pn:value="OutOfDateForPredecessor"/>
+      <status xil_pn:value="InputChanged"/>
       <outfile xil_pn:name="_ngo"/>
       <outfile xil_pn:name="_xmsgs/ngdbuild.xmsgs"/>
       <outfile xil_pn:name="top_ms.bld"/>
@@ -275,6 +274,8 @@
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
       <status xil_pn:value="OutOfDateForPredecessor"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="OutputChanged"/>
       <outfile xil_pn:name="_xmsgs/bitgen.xmsgs"/>
       <outfile xil_pn:name="top_ms.bgn"/>
       <outfile xil_pn:name="top_ms.bit"/>

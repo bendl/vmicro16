@@ -39,7 +39,7 @@ module vmicro16_bram_apb # (
     assign we       = (S_PSELx & S_PENABLE & S_PWRITE);
 
     always @(*)
-        if (S_PSELx & S_PENABLE)
+        if (S_PSELx && S_PENABLE)
             $display($time, "\t\tMEM => %h", mem_out);
 
     always @(posedge clk)
@@ -78,9 +78,9 @@ module vmicro16_bram # (
     input reset,
     
     input      [`clog2(MEM_DEPTH)-1:0] mem_addr,
-    input      [MEM_WIDTH-1:0] mem_in,
-    input                      mem_we,
-    output reg [MEM_WIDTH-1:0] mem_out
+    input      [MEM_WIDTH-1:0]         mem_in,
+    input                              mem_we,
+    output reg [MEM_WIDTH-1:0]         mem_out
 );
     // memory vector
     reg [MEM_WIDTH-1:0] mem [0:MEM_DEPTH-1];
@@ -101,42 +101,38 @@ mem[4] = 16'h16e0;
 mem[5] = 16'h26e0;
 mem[6] = 16'h3fa1;
 mem[7] = 16'h28a0;
-mem[8] = 16'h10df;
-mem[9] = 16'h280a;
-mem[10] = 16'h3fa1;
-mem[11] = 16'h10e0;
-mem[12] = 16'h08df;
-mem[13] = 16'h0be0;
-mem[14] = 16'h37a1;
-mem[15] = 16'h1300;
-mem[16] = 16'h280b;
-mem[17] = 16'h3fa1;
-mem[18] = 16'h10e0;
-mem[19] = 16'h08df;
-mem[20] = 16'h0be0;
-mem[21] = 16'h37a1;
-mem[22] = 16'h1300;
-mem[23] = 16'h280c;
-mem[24] = 16'h3fa1;
-mem[25] = 16'h10e0;
-mem[26] = 16'h08df;
-mem[27] = 16'h0be0;
-mem[28] = 16'h37a1;
-mem[29] = 16'h1300;
-mem[30] = 16'h280d;
-mem[31] = 16'h3fa1;
-mem[32] = 16'h10e0;
-mem[33] = 16'h08df;
-mem[34] = 16'h0be0;
-mem[35] = 16'h37a1;
-mem[36] = 16'h1300;
-mem[37] = 16'h2814;
-mem[38] = 16'h08df;
-mem[39] = 16'h0800;
-mem[40] = 16'h27c0;
-mem[41] = 16'h0ee0;
-mem[42] = 16'h37a1;
-mem[43] = 16'h6000;
+mem[8] = 16'h10dd;
+mem[9] = 16'h3fa1;
+mem[10] = 16'h28a1;
+mem[11] = 16'h10de;
+mem[12] = 16'h3fa1;
+mem[13] = 16'h28a2;
+mem[14] = 16'h10df;
+mem[15] = 16'h2805;
+mem[16] = 16'h3fa1;
+mem[17] = 16'h10e0;
+mem[18] = 16'h08dd;
+mem[19] = 16'h0be0;
+mem[20] = 16'h37a1;
+mem[21] = 16'h1300;
+mem[22] = 16'h2889;
+mem[23] = 16'h3fa1;
+mem[24] = 16'h10e0;
+mem[25] = 16'h08de;
+mem[26] = 16'h0be0;
+mem[27] = 16'h37a1;
+mem[28] = 16'h1300;
+mem[29] = 16'h2867;
+mem[30] = 16'h3fa1;
+mem[31] = 16'h10e0;
+mem[32] = 16'h08df;
+mem[33] = 16'h0be0;
+mem[34] = 16'h37a1;
+mem[35] = 16'h1300;
+mem[36] = 16'h27c0;
+mem[37] = 16'h0ee0;
+mem[38] = 16'h37a1;
+mem[39] = 16'h6000;
         `endif
 
         //`define TEST_BR
@@ -387,7 +383,6 @@ module vmicro16_regs # (
             regs[0] <= PARAM_DEFAULTS_R0;
             regs[1] <= PARAM_DEFAULTS_R1;
         end
-        
         else if (we) begin
             $display($time, "\tC%02h: REGS #%s: Writing %h to reg[%d]", 
                 CORE_ID, DEBUG_NAME, wd, ws1);

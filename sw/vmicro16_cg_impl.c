@@ -29,29 +29,29 @@ static int asm_tag_next = 0;
 static int asm_tag_id = 0;
 
 void
-cg_target_vmicro16_init(struct target_delegate *dt)
+cg_target_vm16_init(struct target_delegate *dt)
 {
         dbprintf(D_INFO, "cg: %s\r\n", __FUNCTION__);
 
         // Initialise function pointers to codegen routines
-        dt->cg_postcode         = cg_postcode_vmicro16;
-        dt->cg_precode          = cg_precode_vmicro16;
+        dt->cg_postcode         = cg_postcode_vm16;
+        dt->cg_precode          = cg_precode_vm16;
 
         // Logic statements
-        dt->cg_function         = cg_function_vmicro16;
-        dt->cg_bin              = cg_bin_vmicro16;
-        dt->cg_expr             = cg_expr_vmicro16;
-        dt->cg_number           = cg_number_vmicro16;
+        dt->cg_function         = cg_function_vm16;
+        dt->cg_bin              = cg_bin_vm16;
+        dt->cg_expr             = cg_expr_vm16;
+        dt->cg_number           = cg_number_vm16;
 
         // Control statements
-        dt->cg_if               = cg_if_vmicro16;
+        dt->cg_if               = cg_if_vm16;
 
         // Variable referencing
-        dt->cg_local_decl       = cg_local_decl_vmicro16;
-        dt->cg_var_ref          = cg_var_ref_vmicro16;
-        dt->cg_assignment       = cg_assignment_vmicro16;
+        dt->cg_local_decl       = cg_local_decl_vm16;
+        dt->cg_var_ref          = cg_var_ref_vm16;
+        dt->cg_assignment       = cg_assignment_vm16;
 
-        dt->cg_sw               = cg_sw_vmicro16;
+        dt->cg_sw               = cg_sw_vm16;
 }
 
 void
@@ -225,7 +225,7 @@ vm16_create_verilog_memh_file(void)
 }
 
 void
-cg_precode_vmicro16(void)
+cg_precode_vm16(void)
 {
         int it;
         struct prco_op_struct init_jmp;
@@ -313,7 +313,7 @@ cg_precode_vmicro16(void)
 }
 
 void
-cg_postcode_vmicro16(void)
+cg_postcode_vm16(void)
 {
         int it;
         struct prco_op_struct *op;
@@ -376,48 +376,48 @@ vm16_cg_pop_prco(enum prco_reg rd)
 }
 
 void
-cg_expr_vmicro16(struct ast_item *e)
+cg_expr_vm16(struct ast_item *e)
 {
         list_for_each(e) {
                 switch (e->type) {
                 case AST_NUM:
-                        cg_number_vmicro16(e->expr);
+                        cg_number_vm16(e->expr);
                         break;
                 case AST_CSTRING:
                         vm16_cg_cstring_ref(e->expr);
                         break;
                 case AST_DEREF:
-                        cg_deref_vmicro16(e->expr);
+                        cg_deref_vm16(e->expr);
                         break;
                 case AST_BIN:
-                        cg_bin_vmicro16(e->expr);
+                        cg_bin_vm16(e->expr);
                         break;
                 case AST_CALL:
-                        cg_call_vmicro16(e->expr);
+                        cg_call_vm16(e->expr);
                         break;
 
                 case AST_IF:
-                        cg_if_vmicro16(e->expr);
+                        cg_if_vm16(e->expr);
                         break;
                 case AST_FOR:
-                        cg_for_vmicro16(e->expr);
+                        cg_for_vm16(e->expr);
                         break;
                 case AST_WHILE:
-                        cg_while_vmicro16(e->expr);
+                        cg_while_vm16(e->expr);
                         break;
 
                 case AST_LOCAL_VAR:
-                        cg_local_decl_vmicro16(e->expr);
+                        cg_local_decl_vm16(e->expr);
                         break;
                 case AST_VAR_REF:
-                        cg_var_ref_vmicro16(e->expr);
+                        cg_var_ref_vm16(e->expr);
                         break;
                 case AST_ASSIGNMENT:
-                        cg_assignment_vmicro16(e->expr);
+                        cg_assignment_vm16(e->expr);
                         break;
 
                 case AST_SW:
-                        cg_sw_vmicro16(e->expr);
+                        cg_sw_vm16(e->expr);
                         break;
 
                 default:
@@ -461,7 +461,7 @@ cg_sf_exit(void)
 }
 
 void
-cg_for_vmicro16(struct ast_for *a)
+cg_for_vm16(struct ast_for *a)
 {
         struct prco_op_struct jmp_cond;
         struct prco_op_struct cond_dest;
@@ -471,7 +471,7 @@ cg_for_vmicro16(struct ast_for *a)
         int cond_dest_id = NEW_ASM_ID();
         int for_after_id = NEW_ASM_ID();
 
-        cg_expr_vmicro16(a->start);
+        cg_expr_vm16(a->start);
 
         cond_dest = vm16_opcode_nop();
         cond_dest.asm_flags |= ASM_JMP_DEST;
@@ -480,7 +480,7 @@ cg_for_vmicro16(struct ast_for *a)
         cond_dest.id = cond_dest_id;
         vm16_asm_push(cond_dest);
 
-        cg_expr_vmicro16(a->cond);
+        cg_expr_vm16(a->cond);
         asm_comment("FOR CONDITION CG");
         vm16_asm_push(vm16_opcode_mov_ri(R1, 0));
         vm16_asm_push(vm16_opcode_cmp_rr(R0, R1));
@@ -493,10 +493,10 @@ cg_for_vmicro16(struct ast_for *a)
         vm16_asm_push(jmp_after);
         vm16_asm_push(vm16_opcode_jmp_rc(R1, JMP_JE));
 
-        cg_expr_vmicro16(a->body);
+        cg_expr_vm16(a->body);
         asm_comment("BODY END");
 
-        cg_expr_vmicro16(a->step);
+        cg_expr_vm16(a->step);
         jmp_cond = vm16_opcode_mov_ri(R1, 0);
         jmp_cond.asm_flags |= ASM_JMP_JMP;
         jmp_cond.id = cond_dest_id;
@@ -512,7 +512,7 @@ cg_for_vmicro16(struct ast_for *a)
         vm16_asm_push(for_after_dest);
 }
 
-void cg_while_vmicro16(struct ast_while *v)
+void cg_while_vm16(struct ast_while *v)
 {
         struct prco_op_struct cond_start;
         struct prco_op_struct while_jmp_to_cond;
@@ -529,7 +529,7 @@ void cg_while_vmicro16(struct ast_while *v)
         vm16_asm_push(cond_start);
 
         // cg for condition
-        cg_expr_vmicro16(v->cond);
+        cg_expr_vm16(v->cond);
 
         // CMP the condition
         vm16_asm_push(vm16_opcode_mov_ri(R1, 0));
@@ -544,7 +544,7 @@ void cg_while_vmicro16(struct ast_while *v)
         vm16_asm_push(vm16_opcode_jmp_rc(R1, JMP_JE));
 
         // cg the while loop body
-        cg_expr_vmicro16(v->body);
+        cg_expr_vm16(v->body);
 
         // Jump back to condition check
         while_jmp_to_cond = vm16_opcode_mov_ri(R1, 0x00);
@@ -563,13 +563,13 @@ void cg_while_vmicro16(struct ast_while *v)
 }
 
 void
-cg_assignment_vmicro16(struct ast_assign *a)
+cg_assignment_vm16(struct ast_assign *a)
 {
-        dbprintf(D_GEN, "cg_assignment_vmicro16 %s\r\n",
+        dbprintf(D_GEN, "cg_assignment_vm16 %s\r\n",
                 a->var->var->name);
 
         // codegen the value
-        cg_expr_vmicro16(a->val);
+        cg_expr_vm16(a->val);
 
         // Value now in R0 register,
         // store it in stack location
@@ -578,21 +578,21 @@ cg_assignment_vmicro16(struct ast_assign *a)
 }
 
 void
-cg_var_ref_vmicro16(struct ast_lvar *v)
+cg_var_ref_vm16(struct ast_lvar *v)
 {
         vm16_asm_push(vm16_opcode_lw(R0, Bp, v->bp_offset));
         asm_comment(v->var->name);
 }
 
 void
-cg_local_decl_vmicro16(struct ast_lvar *v)
+cg_local_decl_vm16(struct ast_lvar *v)
 {
         struct list_item *item_it;
         struct ast_lvar *sv;
         struct prco_op_struct op_stack_alloc;
         int offset = -1;
 
-        dbprintf(D_INFO, "cg_local_decl_vmicro16\r\n");
+        dbprintf(D_INFO, "cg_local_decl_vm16\r\n");
 
         item_it = cg_cur_function->locals;
         list_for_each(item_it) {
@@ -618,7 +618,7 @@ cg_local_decl_vmicro16(struct ast_lvar *v)
 }
 
 void
-cg_call_vmicro16(struct ast_call *c)
+cg_call_vm16(struct ast_call *c)
 {
         struct prco_op_struct   op_next,
                                 op_call;
@@ -635,7 +635,7 @@ cg_call_vmicro16(struct ast_call *c)
         // TODO: Push in reverse order to support stdcall and cdecl standards
         args = c->args;
         list_for_each(args) {
-                cg_expr_vmicro16(args->value);
+                cg_expr_vm16(args->value);
                 vm16_cg_push_prco(R0);
                 asm_comment("PUSH ARG");
         }
@@ -665,7 +665,7 @@ cg_call_vmicro16(struct ast_call *c)
 }
 
 void
-cg_if_vmicro16(struct ast_if *v)
+cg_if_vm16(struct ast_if *v)
 {
         struct prco_op_struct op_movi;
         struct prco_op_struct op_else_dest;
@@ -676,7 +676,7 @@ cg_if_vmicro16(struct ast_if *v)
         unsigned int jmp_after = NEW_ASM_ID();
 
         // Emit condition
-        cg_expr_vmicro16(v->cond);
+        cg_expr_vm16(v->cond);
 
         // Emit comparison
         vm16_asm_push(vm16_opcode_mov_ri(R3, 0));
@@ -700,7 +700,7 @@ cg_if_vmicro16(struct ast_if *v)
         vm16_asm_push(vm16_opcode_jmp_rc(R1, JMP_JE));
 
         // If true
-        cg_expr_vmicro16(v->then);
+        cg_expr_vm16(v->then);
 
         if (v->els) {
                 op_true_jmp = vm16_opcode_mov_ri(R1, 0x00);
@@ -721,7 +721,7 @@ cg_if_vmicro16(struct ast_if *v)
                 vm16_asm_push(op_else_dest);
 
                 // Emit else code
-                cg_expr_vmicro16(v->els);
+                cg_expr_vm16(v->els);
         }
 
         op_after = vm16_opcode_nop();
@@ -733,7 +733,7 @@ cg_if_vmicro16(struct ast_if *v)
 }
 
 void
-cg_function_vmicro16(struct ast_func *f)
+cg_function_vm16(struct ast_func *f)
 {
         dbprintf(D_GEN, "Starting cg for function: %s %d\r\n",
                 f->proto->name, f->num_local_vars);
@@ -766,7 +766,7 @@ cg_function_vmicro16(struct ast_func *f)
         cg_sf_start(f);
 
         // cg the function body
-        cg_expr_vmicro16(f->body);
+        cg_expr_vm16(f->body);
 
         // Create the stack exit
         // if required
@@ -794,15 +794,15 @@ cg_function_vmicro16(struct ast_func *f)
 }
 
 void
-cg_bin_vmicro16(struct ast_bin *b)
+cg_bin_vm16(struct ast_bin *b)
 {
         dbprintf(D_GEN, "Starting cg for bin\r\n");
 
-        cg_expr_vmicro16(b->lhs);
+        cg_expr_vm16(b->lhs);
 
         if (b->rhs) {
                 vm16_cg_push_prco(R0);
-                cg_expr_vmicro16(b->rhs);
+                cg_expr_vm16(b->rhs);
         }
 
         switch (b->op) {
@@ -853,15 +853,15 @@ cg_bin_vmicro16(struct ast_bin *b)
                 break;
 
         default:
-                dbprintf(D_ERR, "Unimplemented cg_bin_vmicro16 b->op %d\r\n",
+                dbprintf(D_ERR, "Unimplemented cg_bin_vm16 b->op %d\r\n",
                         b->op);
-                assert("Unimplemented cg_bin_vmicro16 b->op!" && 0);
+                assert("Unimplemented cg_bin_vm16 b->op!" && 0);
                 break;
         }
 }
 
 void
-cg_number_vmicro16(struct ast_num *n)
+cg_number_vm16(struct ast_num *n)
 {
         assert(n);
 
@@ -902,10 +902,10 @@ vm16_cg_cstring_ref(struct ast_cstring *v)
 
 
 void
-cg_deref_vmicro16(struct ast_deref *v)
+cg_deref_vm16(struct ast_deref *v)
 {
         // A dereference is just LW of R0 register
-        cg_expr_vmicro16(v->item);
+        cg_expr_vm16(v->item);
 
         // R0 <- RAM[R0]
         vm16_asm_push(vm16_opcode_lw(R0, R0, 0));
@@ -914,16 +914,16 @@ cg_deref_vmicro16(struct ast_deref *v)
 
 
 void
-cg_sw_vmicro16 (struct ast_sw *sw)
+cg_sw_vm16 (struct ast_sw *sw)
 {
         dbprintf(D_GEN, "CG for SW addr val\r\n");
 
         // A dereference is just LW of R0 register
-        cg_expr_vmicro16(sw->val);
+        cg_expr_vm16(sw->val);
         asm_comment("MMU VAL");
         vm16_cg_push_prco(R0);
 
-        cg_expr_vmicro16(sw->addr);
+        cg_expr_vm16(sw->addr);
         asm_comment("MMU ADDR");
         vm16_cg_pop_prco(R3);
 

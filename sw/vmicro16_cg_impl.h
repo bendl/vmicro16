@@ -30,6 +30,7 @@ extern void cg_local_decl_vmicro16      (struct ast_lvar *v);
 extern void cg_if_vmicro16              (struct ast_if *i);
 extern void cg_for_vmicro16             (struct ast_for *f);
 extern void cg_while_vmicro16             (struct ast_while *v);
+extern void cg_sw_vmicro16              (struct ast_sw *sw);
 
 extern void cg_port_uart_vmicro16       (struct ast_expr *v);
 

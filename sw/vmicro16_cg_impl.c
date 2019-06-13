@@ -50,6 +50,8 @@ cg_target_vmicro16_init(struct target_delegate *dt)
         dt->cg_local_decl       = cg_local_decl_vmicro16;
         dt->cg_var_ref          = cg_var_ref_vmicro16;
         dt->cg_assignment       = cg_assignment_vmicro16;
+
+        dt->cg_sw               = cg_sw_vmicro16;
 }
 
 void
@@ -413,6 +415,11 @@ cg_expr_vmicro16(struct ast_item *e)
                 case AST_ASSIGNMENT:
                         cg_assignment_vmicro16(e->expr);
                         break;
+
+                case AST_SW:
+                        cg_sw_vmicro16(e->expr);
+                        break;
+
                 default:
                         dbprintf(D_ERR, "Unknown cg routine for %d\r\n",
                                 e->type);
@@ -903,4 +910,24 @@ cg_deref_vmicro16(struct ast_deref *v)
         // R0 <- RAM[R0]
         vm16_asm_push(vm16_opcode_lw(R0, R0, 0));
         asm_comment("DEREF");
+}
+
+
+void
+cg_sw_vmicro16 (struct ast_sw *sw)
+{
+        dbprintf(D_GEN, "CG for SW addr val\r\n");
+
+        // A dereference is just LW of R0 register
+        cg_expr_vmicro16(sw->val);
+        asm_comment("MMU VAL");
+        vm16_cg_push_prco(R0);
+
+        cg_expr_vmicro16(sw->addr);
+        asm_comment("MMU ADDR");
+        vm16_cg_pop_prco(R3);
+
+        // R0 <- RAM[R0]
+        vm16_asm_push(vm16_opcode_sw(R0, R3, 0));
+        asm_comment("MMU SW");
 }

@@ -928,6 +928,8 @@ cg_sw_vmicro16 (struct ast_sw *sw)
         vm16_cg_pop_prco(R3);
 
         // R0 <- RAM[R0]
-        vm16_asm_push(vm16_opcode_sw(R0, R3, 0));
+        // SW value (addr+simm5)
+        // Sw Rd     Ra + simm5
+        vm16_asm_push(vm16_opcode_sw(R3, R0, 0));
         asm_comment("MMU SW");
 }

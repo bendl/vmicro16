@@ -70,7 +70,7 @@
 `define VMICRO16_ALU_ARITH_UADDI 5'h1b
 `define VMICRO16_ALU_ARITH_SSUBI 5'h1c
 `define VMICRO16_ALU_BR          5'h1d
-`if DEF_ALU_HW_MULT == 1
+`ifdef DEF_ALU_HW_MULT
 `define VMICRO16_ALU_MULT        5'h1e
 `endif
 `define VMICRO16_ALU_BAD         5'h1f

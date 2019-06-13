@@ -812,9 +812,11 @@ cg_bin_vmicro16(struct ast_bin *b)
                 break;
 
         case TOK_STAR:
+#if VM16_HALT_MULT == 1
                 vm16_cg_pop_prco(R3);
-                vm16_asm_push(vm16_opcode_sub_rr(R0, R3));
-                eprintf("POP %%R3\r\n");
+                vm16_asm_push(vm16_opcode_mul_rr(R0, R3));
+                asm_comment("BIN MULT");
+#endif
                 break;
 
         case TOK_BOOL_L:

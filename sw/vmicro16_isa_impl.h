@@ -15,7 +15,6 @@
 extern "C" {
 #endif
 
-
 #define BINP "%c%c%c%c%c%c%c%c %c%c%c%c%c%c%c%c"
 #define BIN(byte)  \
   (byte & 0x8000 ? '1' : '0'), \
@@ -47,6 +46,8 @@ extern "C" {
 #define PRCO_OP_BITS_OP   0b11111
 #define PRCO_OP_BITS_REG  0b111
 #define PRCO_OP_BITS_IMM8 0b11111111
+
+#define VM16_HALT_MULT 1
 
 struct prco_op_struct {
         unsigned short      opcode;

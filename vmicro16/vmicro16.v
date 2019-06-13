@@ -87,7 +87,7 @@ module vmicro16_bram # (
         for (i = 0; i < MEM_DEPTH; i = i + 1) mem[i] = 0;
         //$readmemh("../../test.hex", mem);
         
-        `define TEST_COMPILER
+        //`define TEST_COMPILER
         `ifdef TEST_COMPILER
 mem[0] = 16'h2f3f;
 mem[1] = 16'h2903;
@@ -105,13 +105,19 @@ mem[12] = 16'h307f;
 mem[13] = 16'h3fa1;
 mem[14] = 16'h10e0;
 mem[15] = 16'h2803;
-mem[16] = 16'h0be0;
-mem[17] = 16'h37a1;
-mem[18] = 16'h307f;
-mem[19] = 16'h27c0;
-mem[20] = 16'h0ee0;
-mem[21] = 16'h37a1;
-mem[22] = 16'h5800;
+mem[16] = 16'h3fa1;
+mem[17] = 16'h10e0;
+mem[18] = 16'h2804;
+mem[19] = 16'h0be0;
+mem[20] = 16'h37a1;
+mem[21] = 16'h307f;
+mem[22] = 16'h0be0;
+mem[23] = 16'h37a1;
+mem[24] = 16'h5860;
+mem[25] = 16'h27c0;
+mem[26] = 16'h0ee0;
+mem[27] = 16'h37a1;
+mem[28] = 16'h6000;
         `endif
 
         //`define TEST_BR
@@ -124,7 +130,7 @@ mem[22] = 16'h5800;
         mem[5] = {`VMICRO16_OP_MOVI,    3'h0, 8'hFF};
         `endif
         
-        //`define ALL_TEST
+        `define ALL_TEST
         `ifdef ALL_TEST
         // Standard all test
         // REGS0
@@ -442,9 +448,9 @@ module vmicro16_gpio_apb # (
     input                           S_PWRITE,
     input                           S_PSELx,
     input                           S_PENABLE,
-    input  [PORTS-1:0]              S_PWDATA,
+    input  [BUS_WIDTH-1:0]          S_PWDATA,
     
-    output [PORTS-1:0]              S_PRDATA,
+    output [BUS_WIDTH-1:0]          S_PRDATA,
     output                          S_PREADY,
     output reg [PORTS-1:0]          gpio
 );
@@ -513,17 +519,16 @@ module vmicro16_dec # (
     // exme_op
     always @(*) case (opcode)
         `VMICRO16_OP_HALT,    // TODO: stop ifid
-        `VMICRO16_OP_NOP:     alu_op = `VMICRO16_ALU_NOP;
+        `VMICRO16_OP_NOP:             alu_op = `VMICRO16_ALU_NOP;
         
-        `VMICRO16_OP_LW:      alu_op = `VMICRO16_ALU_LW;
-        `VMICRO16_OP_SW:      alu_op = `VMICRO16_ALU_SW;
+        `VMICRO16_OP_LW:              alu_op = `VMICRO16_ALU_LW;
+        `VMICRO16_OP_SW:              alu_op = `VMICRO16_ALU_SW;
 
-        `VMICRO16_OP_MOV:     alu_op = `VMICRO16_ALU_MOV;
-        `VMICRO16_OP_MOVI:    alu_op = `VMICRO16_ALU_MOVI;
-        `VMICRO16_OP_MOVI_L:  alu_op = `VMICRO16_ALU_MOVI_L; 
+        `VMICRO16_OP_MOV:             alu_op = `VMICRO16_ALU_MOV;
+        `VMICRO16_OP_MOVI:            alu_op = `VMICRO16_ALU_MOVI;
 
-        `VMICRO16_OP_BR:      alu_op = `VMICRO16_ALU_BR;
-        `VMICRO16_OP_MULT:    alu_op = `VMICRO16_ALU_MULT;
+        `VMICRO16_OP_BR:              alu_op = `VMICRO16_ALU_BR;
+        `VMICRO16_OP_MULT:            alu_op = `VMICRO16_ALU_MULT;
         
         `VMICRO16_OP_BIT:     casez (simm5)
             `VMICRO16_OP_BIT_OR:      alu_op = `VMICRO16_ALU_BIT_OR;
@@ -547,7 +552,7 @@ module vmicro16_dec # (
             default:                  alu_op = `VMICRO16_ALU_BAD; endcase
         
         default: begin
-            alu_op = `VMICRO16_ALU_NOP;
+                                      alu_op = `VMICRO16_ALU_NOP;
             $display($time, "\tDEC: unknown opcode: %h ... NOPPING", opcode);
         end
     endcase
@@ -557,10 +562,11 @@ module vmicro16_dec # (
         `VMICRO16_OP_LW,
         `VMICRO16_OP_MOV,
         `VMICRO16_OP_MOVI,
-        `VMICRO16_OP_MOVI_L,
+        //`VMICRO16_OP_MOVI_L,
         `VMICRO16_OP_ARITH_U,
         `VMICRO16_OP_ARITH_S,
-        `VMICRO16_OP_SETC:      has_we = 1'b1;
+        `VMICRO16_OP_SETC,
+        `VMICRO16_OP_MULT:      has_we = 1'b1;
         default:                has_we = 1'b0;
     endcase
 
@@ -579,11 +585,11 @@ module vmicro16_dec # (
         default:                has_imm8 = 1'b0;
     endcase
 
-    // Contains 12-bit immediate
-    always @(*) case (opcode)
-        `VMICRO16_OP_MOVI_L:    has_imm12 = 1'b1;
-        default:                has_imm12 = 1'b0;
-    endcase
+    //// Contains 12-bit immediate
+    //always @(*) case (opcode)
+    //    `VMICRO16_OP_MOVI_L:    has_imm12 = 1'b1;
+    //    default:                has_imm12 = 1'b0;
+    //endcase
     
     // Will branch the pc
     always @(*) case (opcode)
@@ -649,7 +655,7 @@ module vmicro16_alu # (
         // TODO: ALU should have simm5 as input
         `VMICRO16_ALU_ARITH_UADDI:  c = a + b;
 
-        `if DEF_ALU_HW_MULT == 1
+        `ifdef DEF_ALU_HW_MULT
             `VMICRO16_ALU_MULT:  c = a * b;
         `endif
         

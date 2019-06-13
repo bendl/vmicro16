@@ -95,7 +95,7 @@ module top_ms # (
         .gpio2   (gpio2),
 
         //.dbug0   (LEDS[3:0]),
-        //.dbug1   (LEDS[7:4])
+        .dbug1   (LEDS[7:4])
     );
 
     // SSD displays (split across 2 gpio ports 1 and 2)
@@ -106,11 +106,11 @@ module top_ms # (
     assign ssd_chars[3] = gpio1[15:12];
     assign ssd_chars[4] = gpio2[3:0];
     assign ssd_chars[5] = gpio2[7:4];
-    seven_display (.n(ssd_chars[0]), .segments (ssd0));
-    seven_display (.n(ssd_chars[1]), .segments (ssd1));
-    seven_display (.n(ssd_chars[2]), .segments (ssd2));
-    seven_display (.n(ssd_chars[3]), .segments (ssd3));
-    seven_display (.n(ssd_chars[4]), .segments (ssd4));
-    seven_display (.n(ssd_chars[5]), .segments (ssd5));
+    seven_display ssd_0 (.n(ssd_chars[0]), .segments (ssd0));
+    seven_display ssd_1 (.n(ssd_chars[1]), .segments (ssd1));
+    seven_display ssd_2 (.n(ssd_chars[2]), .segments (ssd2));
+    seven_display ssd_3 (.n(ssd_chars[3]), .segments (ssd3));
+    seven_display ssd_4 (.n(ssd_chars[4]), .segments (ssd4));
+    seven_display ssd_5 (.n(ssd_chars[5]), .segments (ssd5));
 
 endmodule

@@ -869,7 +869,8 @@ cg_number_vm16(struct ast_num *n)
                 // Can't fit more than 8-bits into a MOVI,
                 // TODO: Build up 16 bit word using:
                 //   MOVI, LSHIFT, MOVI, OR
-                vm16_asm_push(vm16_opcode_mov_ri(R0, n->val));
+                //vm16_asm_push(vm16_opcode_mov_ri(R0, n->val));
+                assert(0 && "Cannot codegen numbers > 0xff!");
         } else {
                 // Use MOVI
                 vm16_asm_push(vm16_opcode_mov_ri(R0, n->val));

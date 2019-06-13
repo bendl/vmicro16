@@ -100,39 +100,50 @@ mem[3] = 16'h3fa1;
 mem[4] = 16'h16e0;
 mem[5] = 16'h26e0;
 mem[6] = 16'h3fa1;
-mem[7] = 16'h28a0;
-mem[8] = 16'h10dd;
+mem[7] = 16'h2890;
+mem[8] = 16'h10d9;
 mem[9] = 16'h3fa1;
-mem[10] = 16'h28a1;
-mem[11] = 16'h10de;
+mem[10] = 16'h2891;
+mem[11] = 16'h10da;
 mem[12] = 16'h3fa1;
-mem[13] = 16'h28a2;
-mem[14] = 16'h10df;
-mem[15] = 16'h2805;
-mem[16] = 16'h3fa1;
-mem[17] = 16'h10e0;
-mem[18] = 16'h08dd;
-mem[19] = 16'h0be0;
-mem[20] = 16'h37a1;
-mem[21] = 16'h1300;
-mem[22] = 16'h2889;
-mem[23] = 16'h3fa1;
-mem[24] = 16'h10e0;
-mem[25] = 16'h08de;
-mem[26] = 16'h0be0;
-mem[27] = 16'h37a1;
-mem[28] = 16'h1300;
-mem[29] = 16'h2867;
-mem[30] = 16'h3fa1;
-mem[31] = 16'h10e0;
-mem[32] = 16'h08df;
-mem[33] = 16'h0be0;
-mem[34] = 16'h37a1;
-mem[35] = 16'h1300;
-mem[36] = 16'h27c0;
-mem[37] = 16'h0ee0;
-mem[38] = 16'h37a1;
-mem[39] = 16'h6000;
+mem[13] = 16'h2892;
+mem[14] = 16'h10db;
+mem[15] = 16'h3fa1;
+mem[16] = 16'h2880;
+mem[17] = 16'h10dc;
+mem[18] = 16'h3fa1;
+mem[19] = 16'h28b0;
+mem[20] = 16'h10dd;
+mem[21] = 16'h3fa1;
+mem[22] = 16'h28b1;
+mem[23] = 16'h10de;
+mem[24] = 16'h3fa1;
+mem[25] = 16'h28a0;
+mem[26] = 16'h10df;
+mem[27] = 16'h08dc;
+mem[28] = 16'h0800;
+mem[29] = 16'h08dd;
+mem[30] = 16'h0800;
+mem[31] = 16'h08de;
+mem[32] = 16'h0800;
+mem[33] = 16'h08de;
+mem[34] = 16'h0800;
+mem[35] = 16'h3fa1;
+mem[36] = 16'h10e0;
+mem[37] = 16'h2830;
+mem[38] = 16'h0be0;
+mem[39] = 16'h37a1;
+mem[40] = 16'h307f;
+mem[41] = 16'h3fa1;
+mem[42] = 16'h10e0;
+mem[43] = 16'h08df;
+mem[44] = 16'h0be0;
+mem[45] = 16'h37a1;
+mem[46] = 16'h1300;
+mem[47] = 16'h27c0;
+mem[48] = 16'h0ee0;
+mem[49] = 16'h37a1;
+mem[50] = 16'h6000;
         `endif
 
         //`define TEST_BR
@@ -216,9 +227,6 @@ endmodule
 module vmicro16_core_mmu # (
     parameter MEM_WIDTH     = 16,
     parameter MEM_DEPTH     = 64,
-    // TIM0 addr
-    parameter ADDR_TIM0_S   = 16'h00,
-    parameter ADDR_TIM0_E   = 16'h3F,
 
     parameter CORE_ID       = 0
 ) (
@@ -256,16 +264,21 @@ module vmicro16_core_mmu # (
     assign busy = req || (mmu_state == MMU_STATE_T2);
 
     // tightly integrated memory usage
-    wire tim0_en = (mmu_addr >= ADDR_TIM0_S) && (mmu_addr <=  ADDR_TIM0_E);
-    wire [TIM_BITS_ADDR-1:0] tim0_addr = (mmu_addr - ADDR_TIM0_S);
+    wire tim0_en = (mmu_addr >= `DEF_MMU_TIM0_S) 
+                && (mmu_addr <= `DEF_MMU_TIM0_E);
+    wire sreg_en = (mmu_addr >= `DEF_MMU_SREG_S) 
+                && (mmu_addr <= `DEF_MMU_SREG_E);
+
+    
+    wire [TIM_BITS_ADDR-1:0] tim0_addr = (mmu_addr - `DEF_MMU_TIM0_S);
     wire tim0_we = (tim0_en && mmu_we);
+    wire apb_en  = (!tim0_en) && (!sreg_en);
 
     // Output port
     always @(*)
-        if (tim0_en)
-            mmu_out = tim0_out;
-        else
-            mmu_out = per_out;
+        if      (tim0_en) mmu_out = tim0_out;
+        else if (sreg_en) mmu_out = sr_val;
+        else              mmu_out = per_out;
 
     // APB master to slave interface
     always @(posedge clk) begin
@@ -280,7 +293,7 @@ module vmicro16_core_mmu # (
         else
             casex (mmu_state)
                 MMU_STATE_T1: begin
-                    if (req && (!tim0_en)) begin
+                    if (req && apb_en) begin
                         M_PADDR   <= mmu_addr;
                         M_PWDATA  <= mmu_in;
                         M_PSELx   <= 1;
@@ -313,6 +326,28 @@ module vmicro16_core_mmu # (
                 end
             endcase
     end
+
+    localparam SPECIAL_REGS = 8;
+    wire [`clog2(SPECIAL_REGS)-1:0] sr_sel = (mmu_addr - `DEF_MMU_SREG_S);
+    wire [MEM_WIDTH-1:0]            sr_val;
+
+    vmicro16_regs # (
+        .CELL_DEPTH         (SPECIAL_REGS),
+        .CELL_WIDTH         (MEM_WIDTH),
+        // per core special values
+        .PARAM_DEFAULTS_R0  (CORE_ID),
+        .PARAM_DEFAULTS_R1  (0)
+    ) regs_apb (
+        .clk    (clk),
+        .reset  (reset),
+        .rs1    (sr_sel),
+        .rd1    (sr_val),
+        //.rs2    (),
+        //.rd2    (),
+        .we     (),
+        .ws1    (),
+        .wd     ()
+    );
 
     // Each M core has a TIM0 scratch memory
     (* keep_hierarchy = "yes" *)
@@ -778,16 +813,11 @@ module vmicro16_core # (
     always @(posedge clk)
         if (r_instr_has_br)
             case (r_instr_imm8)
-                `VMICRO16_OP_BR_U: 
-                    r_branch_en <= 1;
-                `VMICRO16_OP_BR_E: 
-                    r_branch_en <= r_cmp_flags[`VMICRO16_SFLAG_Z];
-                `VMICRO16_OP_BR_L: 
-                    r_branch_en <= r_cmp_flags[`VMICRO16_SFLAG_L];
-                default:
-                    r_branch_en <= 0;
+                `VMICRO16_OP_BR_U:  r_branch_en <= 1;
+                `VMICRO16_OP_BR_E:  r_branch_en <= r_cmp_flags[`VMICRO16_SFLAG_Z];
+                `VMICRO16_OP_BR_L:  r_branch_en <= r_cmp_flags[`VMICRO16_SFLAG_L];
+                default:            r_branch_en <= 0;
             endcase
-
 
     // 2 cycle register fetch
     always @(*) begin
@@ -878,10 +908,8 @@ module vmicro16_core # (
     // MMU
     (* keep_hierarchy = "yes" *)
     vmicro16_core_mmu # (
-        .MEM_WIDTH      (16),
-        .MEM_DEPTH      (MEM_SCRATCH_DEPTH),
-        .ADDR_TIM0_S    (16'h00),
-        .ADDR_TIM0_E    (16'h3F),
+        .MEM_WIDTH      (`DATA_WIDTH),
+        .MEM_DEPTH      (`DEF_MMU_TIM0_CELLS),
         .CORE_ID        (CORE_ID)
     ) mmu (
         .clk            (clk), 

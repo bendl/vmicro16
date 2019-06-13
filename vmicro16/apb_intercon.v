@@ -71,19 +71,23 @@ module apb_intercon_s # (
     //assign M_PSELx[3] = (|S_PSELx) & (S_PADDR >= 16'hB0 && S_PADDR <= 16'hB1);
 
     // GPIO0
-    assign M_PSELx[`APB_PSELX_GPIO0] = |S_PSELx & (a_S_PADDR == 16'h00A0);
+    assign M_PSELx[`APB_PSELX_GPIO0] = |S_PSELx & ((a_S_PADDR == `DEF_MMU_GPIO0_S) 
+                                                && (a_S_PADDR <= `DEF_MMU_GPIO0_E));
+    // GPIO1
+    assign M_PSELx[`APB_PSELX_GPIO1] = |S_PSELx & ((a_S_PADDR == `DEF_MMU_GPIO1_S) 
+                                                && (a_S_PADDR <= `DEF_MMU_GPIO1_E));
+    // GPIO2
+    assign M_PSELx[`APB_PSELX_GPIO2] = |S_PSELx & ((a_S_PADDR == `DEF_MMU_GPIO2_S) 
+                                                && (a_S_PADDR <= `DEF_MMU_GPIO2_E));
     // UART0
-    assign M_PSELx[`APB_PSELX_UART0] = |S_PSELx & (a_S_PADDR >= 16'h00B0 
-                                                && a_S_PADDR <= 16'h00B1);
+    assign M_PSELx[`APB_PSELX_UART0] = |S_PSELx & ((a_S_PADDR >= `DEF_MMU_UART0_S) 
+                                                && (a_S_PADDR <= `DEF_MMU_UART0_E));
     // REGS0
-    assign M_PSELx[`APB_PSELX_REGS0] = |S_PSELx & (a_S_PADDR >= 16'h80 
-                                                && a_S_PADDR <= 16'h8F);
+    assign M_PSELx[`APB_PSELX_REGS0] = |S_PSELx & ((a_S_PADDR >= `DEF_MMU_REGS0_S)
+                                                && (a_S_PADDR <= `DEF_MMU_REGS0_E));
     // BRAM0
-    assign M_PSELx[`APB_PSELX_BRAM0] = |S_PSELx & (a_S_PADDR >= 16'hC0 
-                                                && a_S_PADDR <= 16'hFF);
-    // BRAM0
-    assign M_PSELx[`APB_PSELX_GPIO1] = |S_PSELx & (a_S_PADDR == 16'hA1);
-    assign M_PSELx[`APB_PSELX_GPIO2] = |S_PSELx & (a_S_PADDR == 16'hA2);
+    assign M_PSELx[`APB_PSELX_BRAM0] = |S_PSELx & ((a_S_PADDR >= `DEF_MMU_BRAM0_S) 
+                                                && (a_S_PADDR <= `DEF_MMU_BRAM0_E));
 
 
     // Pass through

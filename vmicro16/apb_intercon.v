@@ -3,6 +3,7 @@
 //
 
 `include "vmicro16_soc_config.v"
+`include "clog2.v"
 
 (*dont_touch="true"*)
 (* keep_hierarchy = "yes" *)
@@ -11,8 +12,8 @@ module apb_intercon_s # (
     parameter MASTER_PORTS = 1,
     parameter SLAVE_PORTS  = 4
 ) (
-    //input clk,
-    //input reset,
+    input clk,
+    input reset,
 
     // APB master interface (from cores)
     input  [MASTER_PORTS*BUS_WIDTH-1:0]     S_PADDR,
@@ -36,26 +37,13 @@ module apb_intercon_s # (
     //shared inout
     input                     M_PREADY
 );
-    // Arbiter
-    // http://citeseerx.ist.psu.edu/viewdoc/
-    //   download?doi=10.1.1.86.550&rep=rep1&type=pdf
-    reg [SLAVE_PORTS-1:0] active = 0;
-    always @(*)
-        casez (S_PENABLE)
-            //4'b???1 : active <= 4'b0001;
-            //4'b??10 : active <= 4'b0010;
-            //4'b?100 : active <= 4'b0100;
-            //4'b1000 : active <= 4'b1000;
-            //4'b0000 : active <= 4'b0000;
-            4'b???1 : active = 0;
-            4'b??10 : active = 1;
-            4'b?100 : active = 2;
-            4'b1000 : active = 3;
-        endcase
+    reg [`clog2(MASTER_PORTS)-1:0]  last_active = 0;
+    reg [`clog2(MASTER_PORTS)-1:0]  active      = 0;
 
     always @(active)
         $display("active core: %h", active);
     
+    // wires for current active master
     wire  [BUS_WIDTH-1:0]   a_S_PADDR   = S_PADDR  [active*BUS_WIDTH +: BUS_WIDTH];
     wire                    a_S_PWRITE  = S_PWRITE [active];
     wire                    a_S_PSELx   = S_PSELx  [active];
@@ -63,6 +51,21 @@ module apb_intercon_s # (
     wire  [BUS_WIDTH-1:0]   a_S_PWDATA  = S_PWDATA [active*BUS_WIDTH +: BUS_WIDTH];
     wire  [BUS_WIDTH-1:0]   a_S_PRDATA  = S_PRDATA [active*BUS_WIDTH +: BUS_WIDTH];
     wire                    a_S_PREADY  = S_PREADY [active];
+
+    wire active_ended = !a_S_PSELx;
+    integer bit_find = 0;
+    always @(posedge clk) begin
+        // if other requests are waiting
+        if ((|S_PSELx) && active_ended)
+            if (active >= MASTER_PORTS-1)
+                active <= 0;
+            else
+                // move to next active master
+                for (bit_find = (MASTER_PORTS-1); bit_find >= 0; bit_find = bit_find - 1)
+                    if (S_PSELx[bit_find]) begin
+                        active <= bit_find;
+                    end
+    end
 
     
     //assign M_PSELx[0] = (|S_PSELx) & (S_PADDR >= 16'h80 && S_PADDR <= 16'h8F);

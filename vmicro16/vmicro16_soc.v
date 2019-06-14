@@ -46,8 +46,8 @@ module vmicro16_soc (
         .MASTER_PORTS(`CORES),
         .SLAVE_PORTS (`SLAVES)
     ) apb (
-        //.clk        (clk),
-        //.reset      (reset),
+        .clk        (clk),
+        .reset      (reset),
         // APB master to slave
         .S_PADDR    (w_PADDR),
         .S_PWRITE   (w_PWRITE),

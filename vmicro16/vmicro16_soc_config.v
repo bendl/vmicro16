@@ -2,7 +2,7 @@
 `ifndef VMICRO16_SOC_CONFIG_H
 `define VMICRO16_SOC_CONFIG_H
 
-`define CORES           1
+`define CORES           3
 `define SLAVES          6
 
 `define DEF_ALU_HW_MULT 1

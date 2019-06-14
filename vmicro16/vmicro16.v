@@ -91,7 +91,7 @@ module vmicro16_bram # (
         for (i = 0; i < MEM_DEPTH; i = i + 1) mem[i] = 0;
         //$readmemh("../../test.hex", mem);
         
-        `define TEST_COMPILER
+        //`define TEST_COMPILER
         `ifdef TEST_COMPILER
 mem[0] = 16'h2f3f;
 mem[1] = 16'h2903;
@@ -144,6 +144,20 @@ mem[47] = 16'h27c0;
 mem[48] = 16'h0ee0;
 mem[49] = 16'h37a1;
 mem[50] = 16'h6000;
+        `endif
+
+        `define TEST_MULTICORE
+        `ifdef TEST_MULTICORE
+        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h90};
+        mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
+        mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+        mem[3] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
+        mem[4] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
+        mem[5] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
+        mem[6] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
+        mem[7] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
+        mem[8] = {`VMICRO16_OP_MOVI,    3'h1, 8'h22};
+        mem[9] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
         `endif
 
         //`define TEST_BR
@@ -200,6 +214,8 @@ mem[50] = 16'h6000;
         mem[31] = {`VMICRO16_OP_MOVI,    3'h1, 8'h56};
         mem[32] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
         `endif
+
+        //`define TEST_BRAM
         `ifdef TEST_BRAM
         // 2 core BRAM0 test
         mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};

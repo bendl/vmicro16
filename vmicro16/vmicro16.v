@@ -156,7 +156,7 @@ mem[50] = 16'h6000;
         mem[5] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
         mem[6] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
         mem[7] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
-        mem[8] = {`VMICRO16_OP_MOVI,    3'h0, 8'h90};
+        mem[8] = {`VMICRO16_OP_MOVI,    3'h0, 8'h91};
         mem[9] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h0};
         `endif
 
@@ -390,8 +390,8 @@ module vmicro16_regs # (
     parameter CELL_DEFAULTS     = 0,
     parameter DEBUG_NAME        = "",
     parameter CORE_ID           = 0,
-    parameter PARAM_DEFAULTS_R0 = 0,
-    parameter PARAM_DEFAULTS_R1 = 0
+    parameter PARAM_DEFAULTS_R0 = 16'h0000,
+    parameter PARAM_DEFAULTS_R1 = 16'h0000
 ) (
     input clk, 
     input reset,

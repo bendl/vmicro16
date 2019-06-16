@@ -5,6 +5,45 @@
 `include "vmicro16_soc_config.v"
 `include "clog2.v"
 
+module slave_mux # (
+    parameter BUS_WIDTH    = 16,
+    parameter SLAVE_PORTS  = 4
+) (
+    input  [`clog2(SLAVE_PORTS)-1:0]  sel,
+
+    input  [SLAVE_PORTS*BUS_WIDTH-1:0] ins,
+    output [BUS_WIDTH-1:0]             out
+);
+    assign out = ins[sel*BUS_WIDTH +: BUS_WIDTH];
+endmodule
+
+module addr_dec # (
+    parameter BUS_WIDTH   = 16,
+    parameter SLAVE_PORTS = 4
+) (
+    input  [BUS_WIDTH-1:0]   addr,
+    output [SLAVE_PORTS-1:0] sel
+);
+    // GPIO0
+    assign sel[`APB_PSELX_GPIO0] = ((addr >= `DEF_MMU_GPIO0_S) 
+                                 && (addr <= `DEF_MMU_GPIO0_E));
+    // GPIO1
+    assign sel[`APB_PSELX_GPIO1] = ((addr >= `DEF_MMU_GPIO1_S) 
+                                 && (addr <= `DEF_MMU_GPIO1_E));
+    // GPIO2
+    assign sel[`APB_PSELX_GPIO2] = ((addr >= `DEF_MMU_GPIO2_S) 
+                                 && (addr <= `DEF_MMU_GPIO2_E));
+    // UART0
+    assign sel[`APB_PSELX_UART0] = ((addr >= `DEF_MMU_UART0_S) 
+                                 && (addr <= `DEF_MMU_UART0_E));
+    // REGS0
+    assign sel[`APB_PSELX_REGS0] = ((addr >= `DEF_MMU_REGS0_S)
+                                 && (addr <= `DEF_MMU_REGS0_E));
+    // BRAM0
+    assign sel[`APB_PSELX_BRAM0] = ((addr >= `DEF_MMU_BRAM0_S) 
+                                 && (addr <= `DEF_MMU_BRAM0_E));
+endmodule
+
 (*dont_touch="true"*)
 (* keep_hierarchy = "yes" *)
 module apb_intercon_s # (
@@ -16,26 +55,23 @@ module apb_intercon_s # (
     input reset,
 
     // APB master interface (from cores)
-    input  [MASTER_PORTS*BUS_WIDTH-1:0]     S_PADDR,
-    input  [MASTER_PORTS-1:0]               S_PWRITE,
-    input  [MASTER_PORTS-1:0]               S_PSELx,
-    input  [MASTER_PORTS-1:0]               S_PENABLE,
-    input  [MASTER_PORTS*BUS_WIDTH-1:0]     S_PWDATA,
+    input      [MASTER_PORTS*BUS_WIDTH-1:0] S_PADDR,
+    input      [MASTER_PORTS-1:0]           S_PWRITE,
+    input      [MASTER_PORTS-1:0]           S_PSELx,
+    input      [MASTER_PORTS-1:0]           S_PENABLE,
+    input      [MASTER_PORTS*BUS_WIDTH-1:0] S_PWDATA,
     output reg [MASTER_PORTS*BUS_WIDTH-1:0] S_PRDATA,
     output reg [MASTER_PORTS-1:0]           S_PREADY,
 
     // MASTER interface to a slave
-    output  [BUS_WIDTH-1:0]   M_PADDR,
-    //shared
-    output                    M_PWRITE,
-    output  [SLAVE_PORTS-1:0] M_PSELx,
-    //shared
-    output                    M_PENABLE,
-    output  [BUS_WIDTH-1:0]   M_PWDATA,
-    //shared inout
-    input   [BUS_WIDTH-1:0]   M_PRDATA,
-    //shared inout
-    input                     M_PREADY
+    output  [BUS_WIDTH-1:0]                 M_PADDR,
+    output                                  M_PWRITE,
+    output  [SLAVE_PORTS-1:0]               M_PSELx,
+    output                                  M_PENABLE,
+    output  [BUS_WIDTH-1:0]                 M_PWDATA,
+    // inputs from each slave
+    input   [SLAVE_PORTS*BUS_WIDTH-1:0]     M_PRDATA,
+    input   [SLAVE_PORTS-1:0]               M_PREADY
 );
     reg [`clog2(MASTER_PORTS)-1:0]  last_active = 0;
     reg [`clog2(MASTER_PORTS)-1:0]  active      = 0;
@@ -43,6 +79,10 @@ module apb_intercon_s # (
     always @(active)
         $display("active core: %h", active);
     
+    // Demuxed transfer response back from slave to active master
+    wire [BUS_WIDTH-1:0]    a_M_PRDATA;
+    wire [SLAVE_PORTS-1:0]  a_M_PREADY;
+
     // wires for current active master
     wire  [BUS_WIDTH-1:0]   a_S_PADDR   = S_PADDR  [active*BUS_WIDTH +: BUS_WIDTH];
     wire                    a_S_PWRITE  = S_PWRITE [active];
@@ -54,7 +94,7 @@ module apb_intercon_s # (
 
     wire active_ended = !a_S_PSELx;
     integer bit_find = 0;
-    always @(posedge clk) begin
+    always @(posedge clk)
         // if other requests are waiting
         if ((|S_PSELx) && active_ended)
             if (active >= MASTER_PORTS-1)
@@ -65,33 +105,30 @@ module apb_intercon_s # (
                     if (S_PSELx[bit_find]) begin
                         active <= bit_find;
                     end
-    end
 
-    
-    //assign M_PSELx[0] = (|S_PSELx) & (S_PADDR >= 16'h80 && S_PADDR <= 16'h8F);
-    //assign M_PSELx[1] = (|S_PSELx) & (S_PADDR >= 16'h90 && S_PADDR <= 16'h9F);
-    //assign M_PSELx[2] = (|S_PSELx) & (S_PADDR >= 16'hA0 && S_PADDR <= 16'hAF);
-    //assign M_PSELx[3] = (|S_PSELx) & (S_PADDR >= 16'hB0 && S_PADDR <= 16'hB1);
+    wire [SLAVE_PORTS-1:0] M_PSELx_mask;
+    assign M_PSELx       = M_PSELx_mask && (|S_PSELx);
+    addr_dec # (
+        .SLAVE_PORTS    (SLAVE_PORTS)
+    ) paddr_dec (
+        .addr           (a_S_PADDR),
+        .sel            (M_PSELx_mask));
 
-    // GPIO0
-    assign M_PSELx[`APB_PSELX_GPIO0] = |S_PSELx & ((a_S_PADDR == `DEF_MMU_GPIO0_S) 
-                                                && (a_S_PADDR <= `DEF_MMU_GPIO0_E));
-    // GPIO1
-    assign M_PSELx[`APB_PSELX_GPIO1] = |S_PSELx & ((a_S_PADDR == `DEF_MMU_GPIO1_S) 
-                                                && (a_S_PADDR <= `DEF_MMU_GPIO1_E));
-    // GPIO2
-    assign M_PSELx[`APB_PSELX_GPIO2] = |S_PSELx & ((a_S_PADDR == `DEF_MMU_GPIO2_S) 
-                                                && (a_S_PADDR <= `DEF_MMU_GPIO2_E));
-    // UART0
-    assign M_PSELx[`APB_PSELX_UART0] = |S_PSELx & ((a_S_PADDR >= `DEF_MMU_UART0_S) 
-                                                && (a_S_PADDR <= `DEF_MMU_UART0_E));
-    // REGS0
-    assign M_PSELx[`APB_PSELX_REGS0] = |S_PSELx & ((a_S_PADDR >= `DEF_MMU_REGS0_S)
-                                                && (a_S_PADDR <= `DEF_MMU_REGS0_E));
-    // BRAM0
-    assign M_PSELx[`APB_PSELX_BRAM0] = |S_PSELx & ((a_S_PADDR >= `DEF_MMU_BRAM0_S) 
-                                                && (a_S_PADDR <= `DEF_MMU_BRAM0_E));
+    slave_mux # (
+        .BUS_WIDTH      (BUS_WIDTH),
+        .SLAVE_PORTS    (SLAVE_PORTS)
+    ) prdata_mux (
+        .sel            (active), 
+        .ins            (M_PRDATA), 
+        .out            (a_M_PRDATA));
 
+    slave_mux # (
+        .BUS_WIDTH      (1),
+        .SLAVE_PORTS    (SLAVE_PORTS)
+    ) pready_mux (
+        .sel            (active),
+        .ins            (M_PREADY),
+        .out            (a_M_PREADY));
 
     // Pass through
     assign M_PADDR   = a_S_PADDR;
@@ -103,8 +140,8 @@ module apb_intercon_s # (
     always @(*) begin
         S_PREADY = 0;
         S_PRDATA = 0;
-        S_PREADY[active] = M_PREADY;
-        S_PRDATA[active*BUS_WIDTH +: BUS_WIDTH] = M_PRDATA;
+        S_PREADY[active]                        = a_M_PREADY;
+        S_PRDATA[active*BUS_WIDTH +: BUS_WIDTH] = a_M_PRDATA;
     end
 
 

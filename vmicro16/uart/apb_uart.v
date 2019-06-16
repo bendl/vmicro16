@@ -36,6 +36,8 @@ module apb_uart_tx # (
     wire        uart_tx_fifo_full;
     reg         uart_rx_rdy_clear;
 
+    // Detect rising edge
+    // TODO: find out why (APB is 2 clocks)
     reg edge_write;
     reg edge_write_2;
     wire edge_write_rising = (edge_write_2 < edge_write);
@@ -44,13 +46,13 @@ module apb_uart_tx # (
         edge_write_2 <= edge_write;
     end
     
-    assign S_PRDATA = (apb_sel) ? 16'hAAAA : 16'hZZZZ;
+    assign S_PRDATA = (apb_sel) ? 16'hAAAA : 16'h0000;
 
     always @(*)
         if (S_PADDR == APB_ADDR_WRITE)
-            S_PREADY = (apb_sel) ? (!uart_tx_fifo_full) : 1'bZ;
+            S_PREADY = (apb_sel) ? (!uart_tx_fifo_full) : 1'b0;
         else
-            S_PREADY = (apb_sel) ? uart_rx_rdy : 1'bZ;
+            S_PREADY = (apb_sel) ? uart_rx_rdy : 1'b0;
 
     always @(posedge clk)
         if (S_PADDR == APB_ADDR_READ)

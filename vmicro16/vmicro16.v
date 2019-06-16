@@ -34,8 +34,8 @@ module vmicro16_bram_apb # (
 );
     wire [MEM_WIDTH-1:0] mem_out;
 
-    assign S_PRDATA = (S_PSELx & S_PENABLE) ? mem_out : 16'hZZZZ;
-    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1    : 1'bZ;
+    assign S_PRDATA = (S_PSELx & S_PENABLE) ? mem_out : 16'h0000;
+    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1    : 1'b0;
     assign we       = (S_PSELx & S_PENABLE & S_PWRITE);
 
     always @(*)
@@ -287,8 +287,8 @@ module vmicro16_core_mmu # (
 
     
     wire [TIM_BITS_ADDR-1:0] tim0_addr = (mmu_addr - `DEF_MMU_TIM0_S);
-    wire tim0_we = (tim0_en && mmu_we);
-    wire apb_en  = (!tim0_en) && (!sreg_en);
+    wire                     tim0_we   = (tim0_en && mmu_we);
+    wire                     apb_en    = (!tim0_en) && (!sreg_en);
 
     // Output port
     always @(*)
@@ -297,7 +297,7 @@ module vmicro16_core_mmu # (
         else              mmu_out = per_out;
 
     // APB master to slave interface
-    always @(posedge clk) begin
+    always @(posedge clk)
         if (reset) begin
             mmu_state <= MMU_STATE_T1;
             M_PENABLE <= 0;
@@ -341,7 +341,6 @@ module vmicro16_core_mmu # (
                     mmu_state <= MMU_STATE_T1;
                 end
             endcase
-    end
 
     localparam SPECIAL_REGS = 8;
     wire [`clog2(SPECIAL_REGS)-1:0] sr_sel = (mmu_addr - `DEF_MMU_SREG_S);
@@ -468,8 +467,8 @@ module vmicro16_regs_apb # (
 );
     wire [BUS_WIDTH-1:0] rd1;
 
-    assign S_PRDATA = (S_PSELx & S_PENABLE) ? rd1  : 16'hZZZZ;
-    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1 : 1'bZ;
+    assign S_PRDATA = (S_PSELx & S_PENABLE) ? rd1  : 16'h0000;
+    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1 : 1'b0;
     assign reg_we   = (S_PSELx & S_PENABLE & S_PWRITE);
 
     always @(*)
@@ -519,8 +518,8 @@ module vmicro16_gpio_apb # (
     output                          S_PREADY,
     output reg [PORTS-1:0]          gpio
 );
-    assign S_PRDATA = (S_PSELx & S_PENABLE) ? gpio : 16'hZZZZ;
-    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1 : 1'bZ;
+    assign S_PRDATA = (S_PSELx & S_PENABLE) ? gpio : 16'h0000;
+    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1 : 1'b0;
     assign ports_we = (S_PSELx & S_PENABLE & S_PWRITE);
 
     always @(posedge clk)

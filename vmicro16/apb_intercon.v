@@ -5,24 +5,13 @@
 `include "vmicro16_soc_config.v"
 `include "clog2.v"
 
-module slave_mux # (
-    parameter BUS_WIDTH    = 16,
-    parameter SLAVE_PORTS  = 4
-) (
-    input  [`clog2(SLAVE_PORTS)-1:0]  sel,
-
-    input  [SLAVE_PORTS*BUS_WIDTH-1:0] ins,
-    output [BUS_WIDTH-1:0]             out
-);
-    assign out = ins[sel*BUS_WIDTH +: BUS_WIDTH];
-endmodule
 
 module addr_dec # (
     parameter BUS_WIDTH   = 16,
     parameter SLAVE_PORTS = 4
 ) (
-    input  [BUS_WIDTH-1:0]   addr,
-    output [SLAVE_PORTS-1:0] sel
+    input  [BUS_WIDTH-1:0]           addr,
+    output [SLAVE_PORTS-1:0]         sel
 );
     // GPIO0
     assign sel[`APB_PSELX_GPIO0] = ((addr >= `DEF_MMU_GPIO0_S) 
@@ -78,10 +67,6 @@ module apb_intercon_s # (
 
     always @(active)
         $display("active core: %h", active);
-    
-    // Demuxed transfer response back from slave to active master
-    wire [BUS_WIDTH-1:0]    a_M_PRDATA;
-    wire [SLAVE_PORTS-1:0]  a_M_PREADY;
 
     // wires for current active master
     wire  [BUS_WIDTH-1:0]   a_S_PADDR   = S_PADDR  [active*BUS_WIDTH +: BUS_WIDTH];
@@ -106,29 +91,11 @@ module apb_intercon_s # (
                         active <= bit_find;
                     end
 
-    wire [SLAVE_PORTS-1:0] M_PSELx_mask;
-    assign M_PSELx       = M_PSELx_mask && (|S_PSELx);
     addr_dec # (
         .SLAVE_PORTS    (SLAVE_PORTS)
     ) paddr_dec (
         .addr           (a_S_PADDR),
-        .sel            (M_PSELx_mask));
-
-    slave_mux # (
-        .BUS_WIDTH      (BUS_WIDTH),
-        .SLAVE_PORTS    (SLAVE_PORTS)
-    ) prdata_mux (
-        .sel            (active), 
-        .ins            (M_PRDATA), 
-        .out            (a_M_PRDATA));
-
-    slave_mux # (
-        .BUS_WIDTH      (1),
-        .SLAVE_PORTS    (SLAVE_PORTS)
-    ) pready_mux (
-        .sel            (active),
-        .ins            (M_PREADY),
-        .out            (a_M_PREADY));
+        .sel            (M_PSELx));
 
     // Pass through
     assign M_PADDR   = a_S_PADDR;
@@ -136,7 +103,12 @@ module apb_intercon_s # (
     assign M_PENABLE = a_S_PENABLE;
     assign M_PWDATA  = a_S_PWDATA;
     assign M_PWDATA  = a_S_PWDATA;
-    // interconnect is ready while it's slaves are ready
+    
+    // Demuxed transfer response back from slave to active master
+    wire [BUS_WIDTH-1:0]    a_M_PRDATA = M_PRDATA[active*BUS_WIDTH +: BUS_WIDTH];
+    wire [SLAVE_PORTS-1:0]  a_M_PREADY = |(M_PSELx & M_PREADY);
+
+    // transfer back to the active master
     always @(*) begin
         S_PREADY = 0;
         S_PRDATA = 0;

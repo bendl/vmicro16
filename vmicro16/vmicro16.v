@@ -146,7 +146,7 @@ mem[49] = 16'h37a1;
 mem[50] = 16'h6000;
         `endif
 
-        `define TEST_MULTICORE
+        //`define TEST_MULTICORE
         `ifdef TEST_MULTICORE
         mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h90};
         mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
@@ -170,7 +170,7 @@ mem[50] = 16'h6000;
         mem[5] = {`VMICRO16_OP_MOVI,    3'h0, 8'hFF};
         `endif
         
-        //`define ALL_TEST
+        `define ALL_TEST
         `ifdef ALL_TEST
         // Standard all test
         // REGS0
@@ -178,7 +178,7 @@ mem[50] = 16'h6000;
         mem[1] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
         mem[2] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x82] = 6
         // GPIO0
-        mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'hA0};
+        mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'h90};
         mem[4] = {`VMICRO16_OP_MOVI,    3'h1, 8'hD};
         mem[5] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
         mem[6] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
@@ -186,7 +186,7 @@ mem[50] = 16'h6000;
         mem[7] = {`VMICRO16_OP_MOVI,    3'h0, 8'h07};
         mem[8] = {`VMICRO16_OP_LW,      3'h3, 3'h0, 5'h03};
         // UART0
-        mem[9]  = {`VMICRO16_OP_MOVI,    3'h0, 8'hB0};      // UART0
+        mem[9]  = {`VMICRO16_OP_MOVI,    3'h0, 8'hA0};      // UART0
         mem[10] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41};      // ascii A
         mem[11] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; 
         mem[12] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
@@ -205,12 +205,12 @@ mem[50] = 16'h6000;
         mem[24] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h5};
         mem[25] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
         // GPIO1 (SSD 24-bit port)
-        mem[26] = {`VMICRO16_OP_MOVI,    3'h0, 8'hA1};
+        mem[26] = {`VMICRO16_OP_MOVI,    3'h0, 8'h91};
         mem[27] = {`VMICRO16_OP_MOVI,    3'h1, 8'h12};
         mem[28] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
         mem[29] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
         // GPIO2
-        mem[30] = {`VMICRO16_OP_MOVI,    3'h0, 8'hA2};
+        mem[30] = {`VMICRO16_OP_MOVI,    3'h0, 8'h92};
         mem[31] = {`VMICRO16_OP_MOVI,    3'h1, 8'h56};
         mem[32] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
         `endif

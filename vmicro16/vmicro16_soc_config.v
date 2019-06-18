@@ -59,6 +59,11 @@
 `define DEF_MMU_BRAM0_S     16'h00C0
 `define DEF_MMU_BRAM0_E     16'h00FF
 
+///////////////////////////////////////////////////////////
+// Core parameters
+//////////////////////////////////////////////////////////
+// Set this to use a workaround for the MMU's APB T2 clock
+//`define FIX_T3
 
 
 

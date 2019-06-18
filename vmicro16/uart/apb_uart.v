@@ -1,5 +1,7 @@
 // AUTHOR: BDL
 
+`include "../vmicro16_soc_config.v"
+
 (*dont_touch="true"*)
 (* keep_hierarchy = "yes" *)
 module apb_uart_tx # (
@@ -38,6 +40,7 @@ module apb_uart_tx # (
 
     // Detect rising edge
     // TODO: find out why (APB is 2 clocks)
+`ifdef FIX_T3
     reg edge_write;
     reg edge_write_2;
     wire edge_write_rising = (edge_write_2 < edge_write);
@@ -45,6 +48,9 @@ module apb_uart_tx # (
         edge_write <= S_PWRITE;
         edge_write_2 <= edge_write;
     end
+`else
+    wire edge_write_rising = 1;
+`endif
     
     assign S_PRDATA = (apb_sel) ? 16'hAAAA : 16'h0000;
 

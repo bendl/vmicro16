@@ -290,6 +290,10 @@ module vmicro16_core_mmu # (
     wire                     tim0_we   = (tim0_en && mmu_we);
     wire                     apb_en    = (!tim0_en) && (!sreg_en);
 
+    localparam SPECIAL_REGS = 8;
+    wire [`clog2(SPECIAL_REGS)-1:0] sr_sel = (mmu_addr - `DEF_MMU_SREG_S);
+    wire [MEM_WIDTH-1:0]            sr_val;
+
     // Output port
     always @(*)
         if      (tim0_en) mmu_out = tim0_out;
@@ -319,32 +323,48 @@ module vmicro16_core_mmu # (
                     end
                 end
 
-                MMU_STATE_T2: begin
-                    M_PENABLE <= 1;
-                    
-                    if (M_PREADY == 1'b1) begin
-                        mmu_state <= MMU_STATE_T3;
+                `ifdef FIX_T3
+                    MMU_STATE_T2: begin
+                        M_PENABLE <= 1;
+                        
+                        if (M_PREADY == 1'b1) begin
+                            mmu_state <= MMU_STATE_T3;
+                        end
                     end
-                end
 
-                MMU_STATE_T3: begin
-                    // Slave has output a ready signal (finished)
-                    M_PENABLE <= 0;
-                    M_PADDR   <= 0;
-                    M_PWDATA  <= 0;
-                    M_PSELx   <= 0;
-                    M_PWRITE  <= 0;
-                    // Clock the peripheral output into a reg,
-                    //   to output on the next clock cycle
-                    per_out   <= M_PRDATA;
+                    MMU_STATE_T3: begin
+                        // Slave has output a ready signal (finished)
+                        M_PENABLE <= 0;
+                        M_PADDR   <= 0;
+                        M_PWDATA  <= 0;
+                        M_PSELx   <= 0;
+                        M_PWRITE  <= 0;
+                        // Clock the peripheral output into a reg,
+                        //   to output on the next clock cycle
+                        per_out   <= M_PRDATA;
 
-                    mmu_state <= MMU_STATE_T1;
-                end
+                        mmu_state <= MMU_STATE_T1;
+                    end
+                `else
+                    // No FIX_T3
+                    MMU_STATE_T2: begin
+                        if (M_PREADY == 1'b1) begin
+                            M_PENABLE <= 0;
+                            M_PADDR   <= 0;
+                            M_PWDATA  <= 0;
+                            M_PSELx   <= 0;
+                            M_PWRITE  <= 0;
+                            // Clock the peripheral output into a reg,
+                            //   to output on the next clock cycle
+                            per_out   <= M_PRDATA;
+
+                            mmu_state <= MMU_STATE_T1;
+                        end else begin
+                            M_PENABLE <= 1;
+                        end
+                    end
+                `endif
             endcase
-
-    localparam SPECIAL_REGS = 8;
-    wire [`clog2(SPECIAL_REGS)-1:0] sr_sel = (mmu_addr - `DEF_MMU_SREG_S);
-    wire [MEM_WIDTH-1:0]            sr_val;
 
     vmicro16_regs # (
         .CELL_DEPTH         (SPECIAL_REGS),

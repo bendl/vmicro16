@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="6970000001fs"></ZoomEndTime>
-      <Cursor1Time time="1200000000fs"></Cursor1Time>
+      <ZoomStartTime time="182666667fs"></ZoomStartTime>
+      <ZoomEndTime time="2986666668fs"></ZoomEndTime>
+      <Cursor1Time time="650000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="183"></NameColumnWidth>
-      <ValueColumnWidth column_width="94"></ValueColumnWidth>
+      <ValueColumnWidth column_width="86"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="73" />
+   <WVObjectSize size="75" />
    <wvobject fp_name="/tb_vmicro16_soc/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -220,9 +220,17 @@
       <obj_property name="label">GPIO0</obj_property>
       <obj_property name="DisplayName">label</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb_vmicro16_soc/uut/gpio0_apb/S_PADDR" type="array">
+      <obj_property name="ElementShortName">S_PADDR[0:0]</obj_property>
+      <obj_property name="ObjectShortName">S_PADDR[0:0]</obj_property>
+   </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/gpio0_apb/S_PSELx" type="logic">
       <obj_property name="ElementShortName">S_PSELx</obj_property>
       <obj_property name="ObjectShortName">S_PSELx</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_soc/uut/gpio0_apb/S_PENABLE" type="logic">
+      <obj_property name="ElementShortName">S_PENABLE</obj_property>
+      <obj_property name="ObjectShortName">S_PENABLE</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/gpio0_apb/ports_we" type="logic">
       <obj_property name="ElementShortName">ports_we</obj_property>

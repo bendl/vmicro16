@@ -1,0 +1,18 @@
+
+__stdcall fnc main()
+{
+    int GPIO0  = 0x90;
+    int GPIO1  = 0x91;
+    int GPIO2  = 0x92;
+    int IDX    = 0x80;
+    int CORES  = 0xB0;
+    int SLAVES = 0xB1;
+
+    int UART0  = 0xA0;
+
+    @IDX;
+    @CORES;
+    @SLAVES;
+
+    $(UART0) = (@SLAVES) + 48;
+}

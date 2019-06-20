@@ -91,7 +91,7 @@ module vmicro16_bram # (
         for (i = 0; i < MEM_DEPTH; i = i + 1) mem[i] = 0;
         //$readmemh("../../test.hex", mem);
         
-        //`define TEST_COMPILER
+        `define TEST_COMPILER
         `ifdef TEST_COMPILER
 mem[0] = 16'h2f3f;
 mem[1] = 16'h2903;
@@ -170,7 +170,7 @@ mem[50] = 16'h6000;
         mem[5] = {`VMICRO16_OP_MOVI,    3'h0, 8'hFF};
         `endif
         
-        `define ALL_TEST
+        //`define ALL_TEST
         `ifdef ALL_TEST
         // Standard all test
         // REGS0

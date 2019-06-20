@@ -10,8 +10,9 @@ module addr_dec # (
     parameter BUS_WIDTH   = 16,
     parameter SLAVE_PORTS = 4
 ) (
-    input  [BUS_WIDTH-1:0]           addr,
-    output [SLAVE_PORTS-1:0]         sel
+    input      [BUS_WIDTH-1:0]           addr,
+    output     [SLAVE_PORTS-1:0]         sel,
+    output reg [`clog2(SLAVE_PORTS)-1:0] seli
 );
     // GPIO0
     assign sel[`APB_PSELX_GPIO0] = ((addr >= `DEF_MMU_GPIO0_S) 
@@ -31,6 +32,23 @@ module addr_dec # (
     // BRAM0
     assign sel[`APB_PSELX_BRAM0] = ((addr >= `DEF_MMU_BRAM0_S) 
                                  && (addr <= `DEF_MMU_BRAM0_E));
+
+    always @(*)
+        if ((addr >= `DEF_MMU_GPIO0_S) && (addr <= `DEF_MMU_GPIO0_E))
+            seli = `APB_PSELX_GPIO0;
+        else if ((addr >= `DEF_MMU_GPIO1_S) && (addr <= `DEF_MMU_GPIO1_E))
+            seli = `APB_PSELX_GPIO1;
+        else if ((addr >= `DEF_MMU_GPIO2_S) && (addr <= `DEF_MMU_GPIO2_E))
+            seli = `APB_PSELX_GPIO2;
+        else if ((addr >= `DEF_MMU_UART0_S) && (addr <= `DEF_MMU_UART0_E))
+            seli = `APB_PSELX_UART0;
+        else if ((addr >= `DEF_MMU_REGS0_S) && (addr <= `DEF_MMU_REGS0_E))
+            seli = `APB_PSELX_REGS0;
+        else if ((addr >= `DEF_MMU_BRAM0_S) && (addr <= `DEF_MMU_BRAM0_E))
+            seli = `APB_PSELX_BRAM0;
+        else
+            seli = 0;
+    
 endmodule
 
 (*dont_touch="true"*)
@@ -91,11 +109,13 @@ module apb_intercon_s # (
                         active <= bit_find;
                     end
 
+    wire [`clog2(SLAVE_PORTS)-1:0] M_PSELx_int;
     addr_dec # (
         .SLAVE_PORTS    (SLAVE_PORTS)
     ) paddr_dec (
         .addr           (a_S_PADDR),
-        .sel            (M_PSELx));
+        .sel            (M_PSELx),
+        .seli           (M_PSELx_int));
 
     // Pass through
     assign M_PADDR   = a_S_PADDR;
@@ -105,7 +125,7 @@ module apb_intercon_s # (
     assign M_PWDATA  = a_S_PWDATA;
     
     // Demuxed transfer response back from slave to active master
-    wire [BUS_WIDTH-1:0]    a_M_PRDATA = M_PRDATA[active*BUS_WIDTH +: BUS_WIDTH];
+    wire [BUS_WIDTH-1:0]    a_M_PRDATA = M_PRDATA[M_PSELx_int*BUS_WIDTH +: BUS_WIDTH];
     wire [SLAVE_PORTS-1:0]  a_M_PREADY = |(M_PSELx & M_PREADY);
 
     // transfer back to the active master
@@ -115,6 +135,4 @@ module apb_intercon_s # (
         S_PREADY[active]                        = a_M_PREADY;
         S_PRDATA[active*BUS_WIDTH +: BUS_WIDTH] = a_M_PRDATA;
     end
-
-
 endmodule

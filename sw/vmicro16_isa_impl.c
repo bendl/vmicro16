@@ -413,3 +413,15 @@ vm16_opcode_byte(unsigned char low)
         return op;
 }
 
+struct prco_op_struct
+vm16_opcode_word(unsigned short word)
+{
+        struct prco_op_struct op = {0};
+        op.asm_flags |= ASM_ASCII;
+        op.opcode    |= word;
+        op.imm8       = word & 0xff;
+
+        vm16_assert_opcode(&op, 0);
+        return op;
+}
+

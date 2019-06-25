@@ -218,7 +218,7 @@ struct prco_op_struct vm16_opcode_sw(enum prco_reg rd, enum prco_reg ra, signed 
 struct prco_op_struct vm16_opcode_set_ri(enum prco_reg rd, unsigned char imm8);
 
 struct prco_op_struct vm16_opcode_byte(unsigned char low);
-struct prco_op_struct vm16_opcode_word(unsigned char high, unsigned char low);
+struct prco_op_struct vm16_opcode_word(unsigned short word);
 
 #ifdef __cplusplus
 }

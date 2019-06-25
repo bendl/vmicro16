@@ -420,6 +420,10 @@ cg_expr_vm16(struct ast_item *e)
                         cg_sw_vm16(e->expr);
                         break;
 
+                case AST_ASM:
+                        cg_asm_vm16(e->expr);
+                        break;
+
                 default:
                         dbprintf(D_ERR, "Unknown cg routine for %d\r\n",
                                 e->type);
@@ -933,4 +937,11 @@ cg_sw_vm16 (struct ast_sw *sw)
         // Sw Rd     Ra + simm5
         vm16_asm_push(vm16_opcode_sw(R3, R0, 0));
         asm_comment("MMU SW");
+}
+
+void
+cg_asm_vm16(struct ast_asm *a)
+{
+        dbprintf(D_GEN, "CG for cg_asm\r\n");
+        vm16_asm_push(vm16_opcode_word(a->instr));
 }

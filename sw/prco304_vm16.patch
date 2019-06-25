@@ -1,21 +1,20 @@
- prco_compiler/cli/main.c                       | 17 ++++---
+ prco_compiler/cli/main.c                       | 17 +++---
  prco_compiler/emu/emu.c                        |  1 -
- prco_compiler/include/libprco/adt/ast.h        | 10 ++++
- prco_compiler/include/libprco/arch/prco_impl.h | 30 ------------
+ prco_compiler/include/libprco/adt/ast.h        | 15 ++++++
+ prco_compiler/include/libprco/arch/prco_impl.h | 30 -----------
  prco_compiler/include/libprco/arch/target.h    |  3 ++
  prco_compiler/include/libprco/module.h         |  3 +-
- prco_compiler/include/libprco/parser.h         |  3 +-
+ prco_compiler/include/libprco/parser.h         |  4 +-
  prco_compiler/libprco/CMakeLists.txt           | 10 +++-
- prco_compiler/libprco/adt/ast.c                | 10 ++++
- prco_compiler/libprco/arch/prco_impl.c         | 27 -----------
+ prco_compiler/libprco/adt/ast.c                | 18 +++++++
+ prco_compiler/libprco/arch/prco_impl.c         | 27 ----------
  prco_compiler/libprco/arch/target.c            | 10 +++-
  prco_compiler/libprco/arch/template_impl.c     |  4 ++
  prco_compiler/libprco/module.c                 |  4 +-
  prco_compiler/libprco/opt.c                    |  3 ++
- prco_compiler/libprco/parser.c                 | 41 +++++++++++++++-
- prco_compiler/test/tests/mmu_1.prco            | 18 +++++++
- prco_compiler/test/verilog_memh.txt            | 66 ++++++++++++++++++++------
- 17 files changed, 171 insertions(+), 89 deletions(-)
+ prco_compiler/libprco/parser.c                 | 71 +++++++++++++++++++++++++-
+ prco_compiler/test/verilog_memh.txt            | 56 ++++++++++++++++----
+ 16 files changed, 192 insertions(+), 84 deletions(-)
 
 diff --git a/prco_compiler/cli/main.c b/prco_compiler/cli/main.c
 index e90a8f9..a349935 100644
@@ -73,7 +72,7 @@ index 318369b..c7b1ee7 100644
  #include <stdio.h>
  #include <stdlib.h>
 diff --git a/prco_compiler/include/libprco/adt/ast.h b/prco_compiler/include/libprco/adt/ast.h
-index abe9830..705c580 100644
+index abe9830..077758d 100644
 --- a/prco_compiler/include/libprco/adt/ast.h
 +++ b/prco_compiler/include/libprco/adt/ast.h
 @@ -47,6 +47,8 @@ enum ast_type {
@@ -81,11 +80,11 @@ index abe9830..705c580 100644
          // Pointer and global types
          AST_DEREF, AST_CSTRING,
 +
-+        AST_SW,
++        AST_SW, AST_ASM
  };
  
  struct ast_item {
-@@ -148,6 +150,12 @@ struct ast_deref
+@@ -148,6 +150,16 @@ struct ast_deref
          int                     deref_id;
  };
  
@@ -95,14 +94,19 @@ index abe9830..705c580 100644
 +        struct ast_item         *val;
 +};
 +
++struct ast_asm {
++        unsigned short instr;
++};
++
  struct ast_expr {
          struct ast_item         *val;
  };
-@@ -189,6 +197,8 @@ extern struct ast_for   *ast_for_create(struct ast_item *start,
+@@ -189,6 +201,9 @@ extern struct ast_for   *ast_for_create(struct ast_item *start,
                                          struct ast_item *step,
                                          struct ast_item *body);
  
 +extern struct ast_sw  *ast_sw_create(struct ast_item *addr, struct ast_item *val);
++extern struct ast_asm *ast_asm_create(unsigned short instr);
 +
  void ast_free(_inout_ struct ast_item *node);
  void ast_func_free(_inout_ struct ast_func *func);
@@ -193,42 +197,43 @@ index 114337b..70be4f3 100644
  extern void module_free(struct module *m);
  
 diff --git a/prco_compiler/include/libprco/parser.h b/prco_compiler/include/libprco/parser.h
-index d122048..9c964ed 100644
+index d122048..e4a6181 100644
 --- a/prco_compiler/include/libprco/parser.h
 +++ b/prco_compiler/include/libprco/parser.h
-@@ -66,7 +66,8 @@ extern "C" {
+@@ -66,7 +66,9 @@ extern "C" {
      TOK(TOK_CC_FASTCALL) \
      TOK(TOK_PORT_PORT1) \
      TOK(TOK_PORT_UART1) \
 -    TOK(TOK_DEREF)
 +    TOK(TOK_DEREF) \
-+    TOK(TOK_SW)
++    TOK(TOK_SW)     \
++    TOK(TOK_ASM)
  
  /// lexer token types
  typedef enum token_type {
 diff --git a/prco_compiler/libprco/CMakeLists.txt b/prco_compiler/libprco/CMakeLists.txt
-index 7382a44..9977955 100644
+index 7382a44..113d7ea 100644
 --- a/prco_compiler/libprco/CMakeLists.txt
 +++ b/prco_compiler/libprco/CMakeLists.txt
 @@ -11,16 +11,22 @@ if(CMAKE_COMPILER_IS_GNUCXX)
  endif(CMAKE_COMPILER_IS_GNUCXX)
  
  include_directories(../include/${PROJECT_NAME})
-+include_directories("Z:/uni/vmicro16/sw/")
++include_directories("E:/Projects/uni/vmicro16/sw")
  
  file(GLOB PRCO_SOURCES
          *.c
          adt/*.c
 -        arch/*.c)
 +        arch/*.c
-+        Z:/uni/vmicro16/sw/*.c)
++        E:/Projects/uni/vmicro16/sw/*.c)
  
  file(GLOB PRCO_HEADERS
      ../include/libprco/*.h
      ../include/libprco/adt/*.h
 -    ../include/libprco/arch/*.h)
 +    ../include/libprco/arch/*.h
-+    Z:/uni/vmicro16/sw/*.h)
++    E:/Projects/uni/vmicro16/sw/*.h)
 +
 +message(${PRCO_SOURCES})
 +message(${PRCO_HEADERS})
@@ -236,10 +241,10 @@ index 7382a44..9977955 100644
  add_library(${PROJECT_NAME} STATIC ${PRCO_SOURCES} ${PRCO_HEADERS})
  
 diff --git a/prco_compiler/libprco/adt/ast.c b/prco_compiler/libprco/adt/ast.c
-index a982744..3fcd4a1 100644
+index a982744..8a254d1 100644
 --- a/prco_compiler/libprco/adt/ast.c
 +++ b/prco_compiler/libprco/adt/ast.c
-@@ -194,3 +194,13 @@ ast_for_create(struct ast_item *start,
+@@ -194,3 +194,21 @@ ast_for_create(struct ast_item *start,
          ret->body = body;
          return ret;
  }
@@ -251,6 +256,14 @@ index a982744..3fcd4a1 100644
 +        struct ast_sw *ret = zalloc(ret);
 +        ret->addr = addr;
 +        ret->val  = val;
++        return ret;
++}
++
++struct ast_asm *
++ast_asm_create (unsigned short instr)
++{
++        struct ast_asm *ret = zalloc(ret);
++        ret->instr = instr;
 +        return ret;
 +}
 \ No newline at end of file
@@ -367,10 +380,19 @@ index 2c0e025..072d773 100644
                                  new_num->val = tmp_bin_lhs->val < tmp_bin_rhs->val;
                                  break;
 diff --git a/prco_compiler/libprco/parser.c b/prco_compiler/libprco/parser.c
-index e4f9d64..f8c9d09 100644
+index e4f9d64..5da7427 100644
 --- a/prco_compiler/libprco/parser.c
 +++ b/prco_compiler/libprco/parser.c
-@@ -388,10 +388,18 @@ int
+@@ -363,6 +363,8 @@ parser_run(_in_ struct text_parser *parser)
+         parser_add_resv("LE", 0, TOK_BOOL_LE);
+         parser_add_resv("GE", 0, TOK_BOOL_GE);
+ 
++        parser_add_resv("asm", 0, TOK_ASM);
++
+ 
+         // Push new parser to stack
+         parse_result = parser_pushp(parser);
+@@ -388,10 +390,18 @@ int
  lexer_check_single(int c, token_type* tok)
  {
          switch(c) {
@@ -389,7 +411,7 @@ index e4f9d64..f8c9d09 100644
          case '-':
                  lexer_fgetc();
                  *tok = TOK_SUB;
-@@ -452,15 +460,20 @@ int
+@@ -452,15 +462,20 @@ int
  lexer_digit(char *buf)
  {
          int buf_i = 0;
@@ -412,7 +434,7 @@ index e4f9d64..f8c9d09 100644
  }
  
  void
-@@ -1136,6 +1149,27 @@ parse_port_uart1(void)
+@@ -1136,6 +1151,52 @@ parse_port_uart1(void)
          return ast_expr_create(uart_ast, AST_UART);
  }
  
@@ -437,68 +459,62 @@ index e4f9d64..f8c9d09 100644
 +        return ast_expr_create(ast_sw_create(addr, val), AST_SW);
 +}
 +
++struct ast_item *
++parse_asm(void)
++{
++        char *asciz = NULL;
++        unsigned short instr;
++
++        // asm(
++        lexer_match_next(TOK_ASM);
++        lexer_match_next(TOK_LBRACE);
++
++        // "<ascii>
++        lexer_match_req(TOK_DQUOTE);
++        asciz = parse_ascii();
++        if(!asciz) return NULL;
++
++        // convert string to unsigned short instruction
++        instr = strtoul(asciz, NULL, 16);
++
++        // ")
++        lexer_match_next(TOK_DQUOTE);
++        lexer_match_next(TOK_RBRACE);
++
++        return ast_expr_create(ast_asm_create(instr), AST_ASM);
++}
++
  struct ast_item *
  parse_while_expr(void)
  {
-@@ -1178,6 +1212,9 @@ parse_expr(void)
+@@ -1178,6 +1239,12 @@ parse_expr(void)
          if(lexer_match(TOK_PORT_UART1))
                  return parse_port_uart1();
  
 +        if(lexer_match(TOK_SW))
 +                return parse_sw();
 +
++        if(lexer_match(TOK_ASM))
++                return parse_asm();
++
  
          lhs = parse_primary();
          if (!lhs) return NULL;
-diff --git a/prco_compiler/test/tests/mmu_1.prco b/prco_compiler/test/tests/mmu_1.prco
-new file mode 100644
-index 0000000..3ca1eab
---- /dev/null
-+++ b/prco_compiler/test/tests/mmu_1.prco
-@@ -0,0 +1,18 @@
-+
-+__stdcall fnc main()
-+{
-+    int GPIO0  = 0x90;
-+    int GPIO1  = 0x91;
-+    int GPIO2  = 0x92;
-+    int IDX    = 0x80;
-+    int CORES  = 0xB0;
-+    int SLAVES = 0xB1;
-+
-+    int UART0  = 0xA0;
-+
-+    @IDX;
-+    @CORES;
-+    @SLAVES;
-+
-+    $(UART0) = (@SLAVES) + 48;
-+}
 diff --git a/prco_compiler/test/verilog_memh.txt b/prco_compiler/test/verilog_memh.txt
-index e5ee7fb..33ed12a 100644
+index e5ee7fb..67c081f 100644
 --- a/prco_compiler/test/verilog_memh.txt
 +++ b/prco_compiler/test/verilog_memh.txt
 @@ -1,15 +1,51 @@
 -2102
 -6100
 -4fff
--16e0
--1ee0
--2000
--0800
--2001
--0800
--20ff
--0800
--1fc0
--0ee0
--4f01
--9000
 +2f3f
 +2903
 +4100
 +3fa1
-+16e0
+ 16e0
+-1ee0
+-2000
 +26e0
 +3fa1
 +2890
@@ -522,11 +538,14 @@ index e5ee7fb..33ed12a 100644
 +28a0
 +10df
 +08dc
-+0800
+ 0800
+-2001
 +08dd
-+0800
+ 0800
+-20ff
 +08de
-+0800
+ 0800
+-1fc0
 +08de
 +0800
 +3fa1
@@ -542,6 +561,8 @@ index e5ee7fb..33ed12a 100644
 +37a1
 +1300
 +27c0
-+0ee0
+ 0ee0
+-4f01
+-9000
 +37a1
 +6000

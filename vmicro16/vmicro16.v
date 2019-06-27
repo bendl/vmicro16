@@ -86,13 +86,32 @@ module vmicro16_bram_ex_apb # (
         else
             S_PRDATA = mem_out;
 
+    //core_id + 1
+    reg [CORE_ID_BITS:0] reg_wd;
+    wire                 reg_we = en && ((lwex && !is_locked) 
+                                      || (swex && swex_success));
+    always @(*) begin
+        reg_wd = {{CORE_ID_BITS}{1'b0}};
+
+        if (en)
+            // if wanting to lock the addr
+            if (lwex)
+                // and not already locked
+                if (!is_locked) begin
+                    reg_wd = (core_id + 1);
+                end
+            else if (swex)
+                if (is_locked && is_locked_self)
+                    reg_wd = {{CORE_ID_BITS}{1'b0}};
+    end
+
 
     // Exclusive flag for each memory cell
     (* keep_hierarchy = "yes" *)
     vmicro16_regs # (
         // Each cell is for storing the CORE_ID of the core 
         // that has exclusive access
-        .CELL_WIDTH (CORE_ID_BITS),
+        .CELL_WIDTH (CORE_ID_BITS + 1),
         // Same number of cells as the memory
         .CELL_DEPTH (MEM_DEPTH),
         // register exclusive
@@ -107,9 +126,9 @@ module vmicro16_bram_ex_apb # (
         //.rs2        (),
         //.rd2        (),
         // write port
-        .we         (lwex && en && !is_locked),
+        .we         (reg_we),
         .ws1        (mem_addr),
-        .wd         (core_id + 1)
+        .wd         (reg_wd)
     );
 
     always @(*)

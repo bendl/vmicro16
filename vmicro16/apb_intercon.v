@@ -34,7 +34,7 @@ module addr_dec # (
                                  && (addr <= `DEF_MMU_BRAM0_E));
 
     always @(*)
-        if ((addr >= `DEF_MMU_GPIO0_S) && (addr <= `DEF_MMU_GPIO0_E))
+        if      ((addr >= `DEF_MMU_GPIO0_S) && (addr <= `DEF_MMU_GPIO0_E))
             seli = `APB_PSELX_GPIO0;
         else if ((addr >= `DEF_MMU_GPIO1_S) && (addr <= `DEF_MMU_GPIO1_E))
             seli = `APB_PSELX_GPIO1;
@@ -48,7 +48,6 @@ module addr_dec # (
             seli = `APB_PSELX_BRAM0;
         else
             seli = 0;
-    
 endmodule
 
 (*dont_touch="true"*)

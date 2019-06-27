@@ -12,6 +12,112 @@
 `include "clog2.v"
 `include "formal.v"
 
+
+(* keep_hierarchy = "yes" *)
+(* dont_touch = "yes" *)
+module vmicro16_bram_ex_apb # (
+    parameter BUS_WIDTH    = 16,
+    parameter MEM_WIDTH    = 16,
+    parameter MEM_DEPTH    = 64,
+    parameter CORE_ID_BITS = 3
+) (
+    input clk,
+    input reset,
+
+    //  19     18           16 15           0
+    // | LWEX | 3 bit CORE_ID |     S_PADDR |
+    input  [(1 + CORE_ID_BITS + (BUS_WIDTH-1):0] S_PADDR,
+
+    input                           S_PWRITE,
+    input                           S_PSELx,
+    input                           S_PENABLE,
+    input  [BUS_WIDTH-1:0]          S_PWDATA,
+    
+    output [BUS_WIDTH-1:0]          S_PRDATA,
+    output                          S_PREADY
+);
+    // exclusive flag checks
+    wire [MEM_WIDTH-1:0] mem_out;
+    wire [MEM_WIDTH-1:0] mem_out_ex;
+
+    always (*)
+        if (we && lwex)
+            // SWEX
+            // return 0 or 1 
+
+    assign S_PRDATA = (S_PSELx & S_PENABLE) ? mem_out_ex : 16'h0000;
+    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1       : 1'b0;
+    assign we       = (S_PSELx & S_PENABLE & S_PWRITE);
+
+    // Similar to:
+    //   http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0204f/Cihbghef.html
+
+    // mem_wd is the CORE_ID sent in bits [18:16] 
+    localparam TOP_BIT_INDEX         = (1 + CORE_ID_BITS + (BUS_WIDTH-1);
+    localparam PADDR_CORE_ID_MSB     = TOP_BIT_INDEX - 1;
+    localparam PADDR_CORE_ID_LSB     = PADDR_CORE_ID_MSB - (CORE_ID_BITS-1);
+
+    // [LWEX, CORE_ID, mem_addr] from S_PADDR
+    wire                    lwex       = S_PADDR[TOP_BIT_INDEX];
+    wire [CORE_ID_BITS-1:0] addr_is_ex;
+    wire [CORE_ID_BITS-1:0] mem_wd     = S_PADDR[PADDR_CORE_ID_MSB:PADDR_CORE_ID_LSB];
+    wire [BUS_WIDTH-1:0]    mem_addr   = S_PADDR[BUS_WIDTH-1:0];
+
+    // Exclusive flag for each memory cell
+    (* keep_hierarchy = "yes" *)
+    vmicro16_regs # (
+        // Each cell is for storing the CORE_ID of the core 
+        // that has exclusive access
+        .CELL_WIDTH (CORE_ID_BITS),
+        // Same number of cells as the memory
+        .CELL_DEPTH (MEM_DEPTH),
+        // register exclusive
+        .DEBUG_NAME ("REX")
+    ) ex_flags (
+        .clk        (clk),
+        .reset      (reset),
+        // async port 0
+        .rs1        (mem_addr),
+        .rd1        (addr_is_ex),
+        // async port 1
+        //.rs2        (),
+        //.rd2        (),
+        // write port
+        .we         (lwex && we),
+        .ws1        (mem_addr),
+        .wd         (r_reg_wd)
+    );
+
+    // Check exclusive access flags
+    always @(posedge clk)
+        if (we && ex_en)
+            // SWEX
+            // 
+
+    always @(*)
+        if (S_PSELx && S_PENABLE)
+            $display($time, "\t\tMEM => %h", mem_out);
+
+    always @(posedge clk)
+        if (we)
+            $display($time, "\t\tBRAM[%h] <= %h", S_PADDR, S_PWDATA);
+
+    vmicro16_bram # (
+        .MEM_WIDTH  (MEM_WIDTH),
+        .MEM_DEPTH  (MEM_DEPTH),
+        .NAME       ("BRAM")
+    ) bram_apb (
+        .clk        (clk),
+        .reset      (reset),
+
+        .mem_addr   (S_PADDR),
+        .mem_in     (S_PWDATA),
+        .mem_we     (we),
+        .mem_out    (mem_out)
+    );
+endmodule
+
+
 (* keep_hierarchy = "yes" *)
 (* dont_touch = "yes" *)
 module vmicro16_bram_apb # (
@@ -44,8 +150,7 @@ module vmicro16_bram_apb # (
 
     always @(posedge clk)
         if (we)
-            $display($time, "\t\tBRAM[%h] <= %h", 
-                S_PADDR, S_PWDATA);
+            $display($time, "\t\tBRAM[%h] <= %h", S_PADDR, S_PWDATA);
 
     vmicro16_bram # (
         .MEM_WIDTH  (MEM_WIDTH),
@@ -244,7 +349,7 @@ module vmicro16_core_mmu # (
     parameter MEM_WIDTH     = 16,
     parameter MEM_DEPTH     = 64,
 
-    parameter CORE_ID       = 0
+    parameter CORE_ID       = 3'h0
 ) (
     input clk,
     input reset,
@@ -259,7 +364,7 @@ module vmicro16_core_mmu # (
     output reg [MEM_WIDTH-1:0]  mmu_out,
 
     // TO APB interconnect
-    output reg [MEM_WIDTH-1:0]   M_PADDR,
+    output reg [`APB_WIDTH-1:0]  M_PADDR,
     output reg                   M_PWRITE,
     output reg                   M_PSELx,
     output reg                   M_PENABLE,
@@ -314,7 +419,7 @@ module vmicro16_core_mmu # (
             casex (mmu_state)
                 MMU_STATE_T1: begin
                     if (req && apb_en) begin
-                        M_PADDR   <= mmu_addr;
+                        M_PADDR   <= {1'b0, CORE_ID, mmu_addr};
                         M_PWDATA  <= mmu_in;
                         M_PSELx   <= 1;
                         M_PWRITE  <= mmu_we;
@@ -371,7 +476,7 @@ module vmicro16_core_mmu # (
         .CELL_WIDTH         (MEM_WIDTH),
         // per core special values
         .PARAM_DEFAULTS_R0  (CORE_ID),
-        .PARAM_DEFAULTS_R1  (0)
+        .PARAM_DEFAULTS_R1  ({16{1'b0}})
     ) regs_apb (
         .clk    (clk),
         .reset  (reset),
@@ -584,7 +689,9 @@ module vmicro16_dec # (
     output reg has_mem_we,
     output reg has_cmp,
 
-    output halt
+    output halt,
+
+    output reg has_ex
     
     // TODO: Use to identify bad instruction and
     //       raise exceptions
@@ -607,6 +714,8 @@ module vmicro16_dec # (
         
         `VMICRO16_OP_LW:              alu_op = `VMICRO16_ALU_LW;
         `VMICRO16_OP_SW:              alu_op = `VMICRO16_ALU_SW;
+        `VMICRO16_OP_LWEX:            alu_op = `VMICRO16_ALU_LW;
+        `VMICRO16_OP_SWEX:            alu_op = `VMICRO16_ALU_SW;
 
         `VMICRO16_OP_MOV:             alu_op = `VMICRO16_ALU_MOV;
         `VMICRO16_OP_MOVI:            alu_op = `VMICRO16_ALU_MOVI;
@@ -684,13 +793,16 @@ module vmicro16_dec # (
     // Requires external memory
     always @(*) case (opcode)
         `VMICRO16_OP_LW,
-        `VMICRO16_OP_SW:    has_mem = 1'b1;
+        `VMICRO16_OP_SW,
+        `VMICRO16_OP_LWEX,
+        `VMICRO16_OP_SWEX:  has_mem = 1'b1;
         default:            has_mem = 1'b0;
     endcase
     
     // Requires external memory write
     always @(*) case (opcode)
-        `VMICRO16_OP_SW:    has_mem_we = 1'b1;
+        `VMICRO16_OP_SW,
+        `VMICRO16_OP_SWEX:  has_mem_we = 1'b1;
         default:            has_mem_we = 1'b0;
     endcase
 
@@ -698,6 +810,13 @@ module vmicro16_dec # (
     always @(*) case (opcode)
         `VMICRO16_OP_CMP:   has_cmp = 1'b1;
         default:            has_cmp = 1'b0;
+    endcase
+
+    // Performs exclusive checks
+    always @(*) case (opcode)
+        `VMICRO16_OP_LWEX,
+        `VMICRO16_OP_SWEX:   has_ex = 1'b1;
+        default:             has_ex = 1'b0;
     endcase
 endmodule
 
@@ -773,7 +892,7 @@ module vmicro16_core # (
     parameter MEM_SCRATCH_DEPTH = 64,
     parameter MEM_WIDTH         = 16,
 
-    parameter CORE_ID           = 0
+    parameter CORE_ID           = 3'h0
 ) (
     input        clk,
     input        reset,

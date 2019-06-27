@@ -27,6 +27,8 @@
 `define VMICRO16_OP_SETC         5'b01010
 `define VMICRO16_OP_MULT         5'b01011
 `define VMICRO16_OP_HALT         5'b01100
+`define VMICRO16_OP_LWEX         5'b01101
+`define VMICRO16_OP_SWEX         5'b01110
 
 // TODO: wasted upper nibble bits in BR
 `define VMICRO16_OP_BR_U         8'h00

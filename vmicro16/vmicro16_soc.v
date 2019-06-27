@@ -2,6 +2,7 @@
 //
 
 `include "vmicro16_soc_config.v"
+`include "clog2.v"
 
 (*dont_touch="true"*)
 (* keep_hierarchy = "yes" *)
@@ -44,7 +45,8 @@ module vmicro16_soc (
     (* keep_hierarchy = "yes" *)
     apb_intercon_s # (
         .MASTER_PORTS(`CORES),
-        .SLAVE_PORTS (`SLAVES)
+        .SLAVE_PORTS (`SLAVES),
+        .BUS_WIDTH   (`APB_WIDTH)
     ) apb (
         .clk        (clk),
         .reset      (reset),
@@ -167,9 +169,10 @@ module vmicro16_soc (
 
     (*dont_touch="true"*)
     (* keep_hierarchy = "yes" *)
-    vmicro16_bram_apb # (
-        .MEM_WIDTH  (`APB_WIDTH),
-        .MEM_DEPTH  (`APB_BRAM0_CELLS)
+    vmicro16_bram_ex_apb # (
+        .MEM_WIDTH    (`APB_WIDTH),
+        .MEM_DEPTH    (`APB_BRAM0_CELLS),
+        .CORE_ID_BITS (`clog2(`CORES))
     ) bram_apb (
         .clk        (clk),
         .reset      (reset),

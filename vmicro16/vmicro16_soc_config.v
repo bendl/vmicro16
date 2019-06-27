@@ -2,13 +2,15 @@
 `ifndef VMICRO16_SOC_CONFIG_H
 `define VMICRO16_SOC_CONFIG_H
 
+`include "clog2.v"
+
 `define CORES           3
 `define SLAVES          6
 
 `define DEF_ALU_HW_MULT 1
 
 `define DATA_WIDTH      16
-`define APB_WIDTH       `DATA_WIDTH
+`define APB_WIDTH       (1 + `clog2(`CORES) + `DATA_WIDTH)
 
 `define APB_PSELX_GPIO0 0
 `define APB_PSELX_UART0 1

@@ -54,6 +54,7 @@ endmodule
 (* keep_hierarchy = "yes" *)
 module apb_intercon_s # (
     parameter BUS_WIDTH    = 16,
+    parameter DATA_WIDTH   = 16,
     parameter MASTER_PORTS = 1,
     parameter SLAVE_PORTS  = 4
 ) (
@@ -61,22 +62,22 @@ module apb_intercon_s # (
     input reset,
 
     // APB master interface (from cores)
-    input      [MASTER_PORTS*BUS_WIDTH-1:0] S_PADDR,
-    input      [MASTER_PORTS-1:0]           S_PWRITE,
-    input      [MASTER_PORTS-1:0]           S_PSELx,
-    input      [MASTER_PORTS-1:0]           S_PENABLE,
-    input      [MASTER_PORTS*BUS_WIDTH-1:0] S_PWDATA,
-    output reg [MASTER_PORTS*BUS_WIDTH-1:0] S_PRDATA,
-    output reg [MASTER_PORTS-1:0]           S_PREADY,
+    input      [MASTER_PORTS*BUS_WIDTH-1:0]  S_PADDR,
+    input      [MASTER_PORTS-1:0]            S_PWRITE,
+    input      [MASTER_PORTS-1:0]            S_PSELx,
+    input      [MASTER_PORTS-1:0]            S_PENABLE,
+    input      [MASTER_PORTS*DATA_WIDTH-1:0] S_PWDATA,
+    output reg [MASTER_PORTS*DATA_WIDTH-1:0] S_PRDATA,
+    output reg [MASTER_PORTS-1:0]            S_PREADY,
 
     // MASTER interface to a slave
     output  [BUS_WIDTH-1:0]                 M_PADDR,
     output                                  M_PWRITE,
     output  [SLAVE_PORTS-1:0]               M_PSELx,
     output                                  M_PENABLE,
-    output  [BUS_WIDTH-1:0]                 M_PWDATA,
+    output  [DATA_WIDTH-1:0]                M_PWDATA,
     // inputs from each slave
-    input   [SLAVE_PORTS*BUS_WIDTH-1:0]     M_PRDATA,
+    input   [SLAVE_PORTS*DATA_WIDTH-1:0]    M_PRDATA,
     input   [SLAVE_PORTS-1:0]               M_PREADY
 );
     reg [`clog2(MASTER_PORTS)-1:0]  last_active = 0;
@@ -90,8 +91,8 @@ module apb_intercon_s # (
     wire                    a_S_PWRITE  = S_PWRITE [active];
     wire                    a_S_PSELx   = S_PSELx  [active];
     wire                    a_S_PENABLE = S_PENABLE[active];
-    wire  [BUS_WIDTH-1:0]   a_S_PWDATA  = S_PWDATA [active*BUS_WIDTH +: BUS_WIDTH];
-    wire  [BUS_WIDTH-1:0]   a_S_PRDATA  = S_PRDATA [active*BUS_WIDTH +: BUS_WIDTH];
+    wire  [DATA_WIDTH-1:0]  a_S_PWDATA  = S_PWDATA [active*DATA_WIDTH +: DATA_WIDTH];
+    wire  [DATA_WIDTH-1:0]  a_S_PRDATA  = S_PRDATA [active*DATA_WIDTH +: DATA_WIDTH];
     wire                    a_S_PREADY  = S_PREADY [active];
 
     wire active_ended = !a_S_PSELx;
@@ -124,14 +125,14 @@ module apb_intercon_s # (
     assign M_PWDATA  = a_S_PWDATA;
     
     // Demuxed transfer response back from slave to active master
-    wire [BUS_WIDTH-1:0]    a_M_PRDATA = M_PRDATA[M_PSELx_int*BUS_WIDTH +: BUS_WIDTH];
+    wire [BUS_WIDTH-1:0]    a_M_PRDATA = M_PRDATA[M_PSELx_int*DATA_WIDTH +: DATA_WIDTH];
     wire [SLAVE_PORTS-1:0]  a_M_PREADY = |(M_PSELx & M_PREADY);
 
     // transfer back to the active master
     always @(*) begin
         S_PREADY = 0;
         S_PRDATA = 0;
-        S_PREADY[active]                        = a_M_PREADY;
-        S_PRDATA[active*BUS_WIDTH +: BUS_WIDTH] = a_M_PRDATA;
+        S_PREADY[active]                          = a_M_PREADY;
+        S_PRDATA[active*DATA_WIDTH +: DATA_WIDTH] = a_M_PRDATA;
     end
 endmodule

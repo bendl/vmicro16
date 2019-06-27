@@ -24,29 +24,30 @@ module vmicro16_soc (
         dbug0 <= dbug0 + 1;
 
     // Peripherals (master to slave)
-    (*dont_touch="true"*) wire [`APB_WIDTH-1:0]         M_PADDR;
-    (*dont_touch="true"*) wire                          M_PWRITE;
-    (*dont_touch="true"*) wire [`SLAVES-1:0]            M_PSELx;  // not shared
-    (*dont_touch="true"*) wire                          M_PENABLE;
-    (*dont_touch="true"*) wire [`APB_WIDTH-1:0]         M_PWDATA; 
-    (*dont_touch="true"*) wire [`SLAVES*`APB_WIDTH-1:0] M_PRDATA; // input to intercon
-    (*dont_touch="true"*) wire [`SLAVES-1:0]            M_PREADY; // input
+    (*dont_touch="true"*) wire [`APB_WIDTH-1:0]          M_PADDR;
+    (*dont_touch="true"*) wire                           M_PWRITE;
+    (*dont_touch="true"*) wire [`SLAVES-1:0]             M_PSELx;  // not shared
+    (*dont_touch="true"*) wire                           M_PENABLE;
+    (*dont_touch="true"*) wire [`DATA_WIDTH-1:0]         M_PWDATA; 
+    (*dont_touch="true"*) wire [`SLAVES*`DATA_WIDTH-1:0] M_PRDATA; // input to intercon
+    (*dont_touch="true"*) wire [`SLAVES-1:0]             M_PREADY; // input
 
     // Master apb interfaces
-    (*dont_touch="true"*) wire [`CORES*`APB_WIDTH-1:0] w_PADDR;
-    (*dont_touch="true"*) wire [`CORES-1:0]            w_PWRITE;
-    (*dont_touch="true"*) wire [`CORES-1:0]            w_PSELx;
-    (*dont_touch="true"*) wire [`CORES-1:0]            w_PENABLE;
-    (*dont_touch="true"*) wire [`CORES*`APB_WIDTH-1:0] w_PWDATA;
-    (*dont_touch="true"*) wire [`CORES*`APB_WIDTH-1:0] w_PRDATA;
-    (*dont_touch="true"*) wire [`CORES-1:0]            w_PREADY;
+    (*dont_touch="true"*) wire [`CORES*`APB_WIDTH-1:0]   w_PADDR;
+    (*dont_touch="true"*) wire [`CORES-1:0]              w_PWRITE;
+    (*dont_touch="true"*) wire [`CORES-1:0]              w_PSELx;
+    (*dont_touch="true"*) wire [`CORES-1:0]              w_PENABLE;
+    (*dont_touch="true"*) wire [`CORES*`DATA_WIDTH-1:0]   w_PWDATA;
+    (*dont_touch="true"*) wire [`CORES*`DATA_WIDTH-1:0]   w_PRDATA;
+    (*dont_touch="true"*) wire [`CORES-1:0]              w_PREADY;
 
     (*dont_touch="true"*)
     (* keep_hierarchy = "yes" *)
     apb_intercon_s # (
         .MASTER_PORTS(`CORES),
         .SLAVE_PORTS (`SLAVES),
-        .BUS_WIDTH   (`APB_WIDTH)
+        .BUS_WIDTH   (`APB_WIDTH),
+        .DATA_WIDTH  (`DATA_WIDTH)
     ) apb (
         .clk        (clk),
         .reset      (reset),
@@ -71,7 +72,7 @@ module vmicro16_soc (
     (*dont_touch="true"*)
     (* keep_hierarchy = "yes" *)
     vmicro16_gpio_apb # (
-        .BUS_WIDTH  (`APB_WIDTH),
+        .BUS_WIDTH  (`DATA_WIDTH),
         .PORTS      (`APB_GPIO0_PINS)
     ) gpio0_apb (
         .clk        (clk),
@@ -82,7 +83,7 @@ module vmicro16_soc (
         .S_PSELx    (M_PSELx[`APB_PSELX_GPIO0]),
         .S_PENABLE  (M_PENABLE),
         .S_PWDATA   (M_PWDATA),
-        .S_PRDATA   (M_PRDATA[`APB_PSELX_GPIO0*`APB_WIDTH +: `APB_WIDTH]),
+        .S_PRDATA   (M_PRDATA[`APB_PSELX_GPIO0*`DATA_WIDTH +: `DATA_WIDTH]),
         .S_PREADY   (M_PREADY[`APB_PSELX_GPIO0]),
         .gpio       (gpio0)
     );
@@ -102,7 +103,7 @@ module vmicro16_soc (
         .S_PSELx    (M_PSELx[`APB_PSELX_GPIO1]),
         .S_PENABLE  (M_PENABLE),
         .S_PWDATA   (M_PWDATA),
-        .S_PRDATA   (M_PRDATA[`APB_PSELX_GPIO1*`APB_WIDTH +: `APB_WIDTH]),
+        .S_PRDATA   (M_PRDATA[`APB_PSELX_GPIO1*`DATA_WIDTH +: `DATA_WIDTH]),
         .S_PREADY   (M_PREADY[`APB_PSELX_GPIO1]),
         .gpio       (gpio1)
     );
@@ -122,7 +123,7 @@ module vmicro16_soc (
         .S_PSELx    (M_PSELx[`APB_PSELX_GPIO2]),
         .S_PENABLE  (M_PENABLE),
         .S_PWDATA   (M_PWDATA),
-        .S_PRDATA   (M_PRDATA[`APB_PSELX_GPIO2*`APB_WIDTH +: `APB_WIDTH]),
+        .S_PRDATA   (M_PRDATA[`APB_PSELX_GPIO2*`DATA_WIDTH +: `DATA_WIDTH]),
         .S_PREADY   (M_PREADY[`APB_PSELX_GPIO2]),
         .gpio       (gpio2)
     );
@@ -138,7 +139,7 @@ module vmicro16_soc (
         .S_PSELx    (M_PSELx[`APB_PSELX_UART0]),
         .S_PENABLE  (M_PENABLE),
         .S_PWDATA   (M_PWDATA),
-        .S_PRDATA   (M_PRDATA[`APB_PSELX_UART0*`APB_WIDTH +: `APB_WIDTH]),
+        .S_PRDATA   (M_PRDATA[`APB_PSELX_UART0*`DATA_WIDTH +: `DATA_WIDTH]),
         .S_PREADY   (M_PREADY[`APB_PSELX_UART0]),
         // uart wires
         .tx_wire    (uart_tx),
@@ -163,14 +164,15 @@ module vmicro16_soc (
         .S_PSELx    (M_PSELx[`APB_PSELX_REGS0]),
         .S_PENABLE  (M_PENABLE),
         .S_PWDATA   (M_PWDATA),
-        .S_PRDATA   (M_PRDATA[`APB_PSELX_REGS0*`APB_WIDTH +: `APB_WIDTH]),
+        .S_PRDATA   (M_PRDATA[`APB_PSELX_REGS0*`DATA_WIDTH +: `DATA_WIDTH]),
         .S_PREADY   (M_PREADY[`APB_PSELX_REGS0])
     );
 
     (*dont_touch="true"*)
     (* keep_hierarchy = "yes" *)
     vmicro16_bram_ex_apb # (
-        .MEM_WIDTH    (`APB_WIDTH),
+        .BUS_WIDTH    (`APB_WIDTH),
+        .MEM_WIDTH    (`DATA_WIDTH),
         .MEM_DEPTH    (`APB_BRAM0_CELLS),
         .CORE_ID_BITS (`clog2(`CORES))
     ) bram_apb (
@@ -182,7 +184,7 @@ module vmicro16_soc (
         .S_PSELx    (M_PSELx[`APB_PSELX_BRAM0]),
         .S_PENABLE  (M_PENABLE),
         .S_PWDATA   (M_PWDATA),
-        .S_PRDATA   (M_PRDATA[`APB_PSELX_BRAM0*`APB_WIDTH +: `APB_WIDTH]),
+        .S_PRDATA   (M_PRDATA[`APB_PSELX_BRAM0*`DATA_WIDTH +: `DATA_WIDTH]),
         .S_PREADY   (M_PREADY[`APB_PSELX_BRAM0])
     );
 
@@ -200,8 +202,8 @@ module vmicro16_soc (
             .w_PWRITE   (w_PWRITE  [i]                         ),
             .w_PSELx    (w_PSELx   [i]                         ),
             .w_PENABLE  (w_PENABLE [i]                         ),
-            .w_PWDATA   (w_PWDATA  [`APB_WIDTH*i +: `APB_WIDTH] ),
-            .w_PRDATA   (w_PRDATA  [`APB_WIDTH*i +: `APB_WIDTH] ),
+            .w_PWDATA   (w_PWDATA  [`DATA_WIDTH*i +: `DATA_WIDTH] ),
+            .w_PRDATA   (w_PRDATA  [`DATA_WIDTH*i +: `DATA_WIDTH] ),
             .w_PREADY   (w_PREADY  [i]                         )
         );
     end

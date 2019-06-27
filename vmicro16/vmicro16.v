@@ -24,44 +24,68 @@ module vmicro16_bram_ex_apb # (
     input clk,
     input reset,
 
-    //  19     18           16 15           0
-    // | LWEX | 3 bit CORE_ID |     S_PADDR |
-    input  [(1 + CORE_ID_BITS + (BUS_WIDTH-1):0] S_PADDR,
+    // |19    |18    |16             |15          0|
+    // | LWEX | SWEX | 3 bit CORE_ID |     S_PADDR |
+    input  [`APB_WIDTH-1:0]         S_PADDR,
 
     input                           S_PWRITE,
     input                           S_PSELx,
     input                           S_PENABLE,
-    input  [BUS_WIDTH-1:0]          S_PWDATA,
+    input  [MEM_WIDTH-1:0]          S_PWDATA,
     
-    output [BUS_WIDTH-1:0]          S_PRDATA,
+    output reg [MEM_WIDTH-1:0]      S_PRDATA,
     output                          S_PREADY
 );
     // exclusive flag checks
     wire [MEM_WIDTH-1:0] mem_out;
     wire [MEM_WIDTH-1:0] mem_out_ex;
+    reg                  swex_success = 0;
 
-    always (*)
-        if (we && lwex)
-            // SWEX
-            // return 0 or 1 
-
-    assign S_PRDATA = (S_PSELx & S_PENABLE) ? mem_out_ex : 16'h0000;
+    //assign S_PRDATA = (S_PSELx & S_PENABLE) ? swex_success ? 16'hF0F0 : 16'h0000;
     assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1       : 1'b0;
     assign we       = (S_PSELx & S_PENABLE & S_PWRITE);
+    wire   en       = (S_PSELx & S_PENABLE);
 
     // Similar to:
     //   http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0204f/Cihbghef.html
 
     // mem_wd is the CORE_ID sent in bits [18:16] 
-    localparam TOP_BIT_INDEX         = (1 + CORE_ID_BITS + (BUS_WIDTH-1);
-    localparam PADDR_CORE_ID_MSB     = TOP_BIT_INDEX - 1;
+    localparam TOP_BIT_INDEX         = `APB_WIDTH -1;
+    localparam PADDR_CORE_ID_MSB     = TOP_BIT_INDEX - 2;
     localparam PADDR_CORE_ID_LSB     = PADDR_CORE_ID_MSB - (CORE_ID_BITS-1);
 
     // [LWEX, CORE_ID, mem_addr] from S_PADDR
-    wire                    lwex       = S_PADDR[TOP_BIT_INDEX];
-    wire [CORE_ID_BITS-1:0] addr_is_ex;
-    wire [CORE_ID_BITS-1:0] mem_wd     = S_PADDR[PADDR_CORE_ID_MSB:PADDR_CORE_ID_LSB];
-    wire [BUS_WIDTH-1:0]    mem_addr   = S_PADDR[BUS_WIDTH-1:0];
+    wire                    lwex        = S_PADDR[TOP_BIT_INDEX];
+    wire                    swex        = S_PADDR[TOP_BIT_INDEX-1];
+    wire [CORE_ID_BITS-1:0] core_id     = S_PADDR[PADDR_CORE_ID_MSB:PADDR_CORE_ID_LSB];
+    // CORE_ID to write to ex_flags register
+    wire [BUS_WIDTH-1:0]    mem_addr    = S_PADDR[MEM_WIDTH-1:0];
+
+    wire [CORE_ID_BITS-1:0] ex_flags_read;
+    wire                    is_locked      = |ex_flags_read;
+    wire                    is_locked_self = is_locked && (core_id == (ex_flags_read-1));
+
+    // Check exclusive access flags
+    always @(*) begin
+        swex_success = 0;
+        if (en)
+            if (swex)
+                if (is_locked && !is_locked_self)
+                    // someone else has locked it
+                    swex_success = 0;
+                else if (is_locked && is_locked_self)
+                    swex_success = 1;
+    end
+
+    always @(*)
+        if (swex)
+            if (swex_success)
+                S_PRDATA = 16'h0001;
+            else
+                S_PRDATA = 16'h0000;
+        else
+            S_PRDATA = mem_out;
+
 
     // Exclusive flag for each memory cell
     (* keep_hierarchy = "yes" *)
@@ -78,25 +102,19 @@ module vmicro16_bram_ex_apb # (
         .reset      (reset),
         // async port 0
         .rs1        (mem_addr),
-        .rd1        (addr_is_ex),
+        .rd1        (ex_flags_read),
         // async port 1
         //.rs2        (),
         //.rd2        (),
         // write port
-        .we         (lwex && we),
+        .we         (lwex && en && !is_locked),
         .ws1        (mem_addr),
-        .wd         (r_reg_wd)
+        .wd         (core_id + 1)
     );
-
-    // Check exclusive access flags
-    always @(posedge clk)
-        if (we && ex_en)
-            // SWEX
-            // 
 
     always @(*)
         if (S_PSELx && S_PENABLE)
-            $display($time, "\t\tMEM => %h", mem_out);
+            $display($time, "\t\tBRAMex => %h", mem_out);
 
     always @(posedge clk)
         if (we)
@@ -196,7 +214,7 @@ module vmicro16_bram # (
         for (i = 0; i < MEM_DEPTH; i = i + 1) mem[i] = 0;
         //$readmemh("../../test.hex", mem);
         
-        `define TEST_COMPILER
+        //`define TEST_COMPILER
         `ifdef TEST_COMPILER
 mem[0] = 16'h2f3f;
 mem[1] = 16'h2903;
@@ -249,6 +267,16 @@ mem[47] = 16'h27c0;
 mem[48] = 16'h0ee0;
 mem[49] = 16'h37a1;
 mem[50] = 16'h6000;
+        `endif
+
+
+        `define TEST_LWEX
+        `ifdef TEST_LWEX
+        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC5};
+        mem[1] = {`VMICRO16_OP_SW,      3'h0, 3'h0, 5'h1};
+        mem[2] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h1};
+        mem[3] = {`VMICRO16_OP_LWEX,    3'h2, 3'h0, 5'h1};
+        mem[4] = {`VMICRO16_OP_SWEX,    3'h3, 3'h0, 5'h1};
         `endif
 
         //`define TEST_MULTICORE
@@ -349,7 +377,8 @@ module vmicro16_core_mmu # (
     parameter MEM_WIDTH     = 16,
     parameter MEM_DEPTH     = 64,
 
-    parameter CORE_ID       = 3'h0
+    parameter CORE_ID       = 3'h0,
+    parameter CORE_ID_BITS  = `clog2(CORE_ID)
 ) (
     input clk,
     input reset,
@@ -361,6 +390,8 @@ module vmicro16_core_mmu # (
     input      [MEM_WIDTH-1:0]  mmu_addr,
     input      [MEM_WIDTH-1:0]  mmu_in,
     input                       mmu_we,
+    input                       mmu_lwex,
+    input                       mmu_swex,
     output reg [MEM_WIDTH-1:0]  mmu_out,
 
     // TO APB interconnect
@@ -377,7 +408,7 @@ module vmicro16_core_mmu # (
     localparam MMU_STATE_T1  = 0;
     localparam MMU_STATE_T2  = 1;
     localparam MMU_STATE_T3  = 2;
-    reg [1:0] mmu_state      = MMU_STATE_T1;
+    reg [1:0]  mmu_state      = MMU_STATE_T1;
     
     reg  [MEM_WIDTH-1:0] per_out = 0;
     wire [MEM_WIDTH-1:0] tim0_out;
@@ -419,7 +450,7 @@ module vmicro16_core_mmu # (
             casex (mmu_state)
                 MMU_STATE_T1: begin
                     if (req && apb_en) begin
-                        M_PADDR   <= {1'b0, CORE_ID, mmu_addr};
+                        M_PADDR   <= {mmu_lwex, mmu_swex, CORE_ID[CORE_ID_BITS-1:0], mmu_addr[MEM_WIDTH-1:0]};
                         M_PWDATA  <= mmu_in;
                         M_PSELx   <= 1;
                         M_PWRITE  <= mmu_we;
@@ -691,7 +722,8 @@ module vmicro16_dec # (
 
     output halt,
 
-    output reg has_ex
+    output reg has_lwex,
+    output reg has_swex
     
     // TODO: Use to identify bad instruction and
     //       raise exceptions
@@ -752,6 +784,8 @@ module vmicro16_dec # (
 
     // Register writes
     always @(*) case (opcode)
+        `VMICRO16_OP_LWEX,
+        `VMICRO16_OP_SWEX,
         `VMICRO16_OP_LW,
         `VMICRO16_OP_MOV,
         `VMICRO16_OP_MOVI,
@@ -814,9 +848,13 @@ module vmicro16_dec # (
 
     // Performs exclusive checks
     always @(*) case (opcode)
-        `VMICRO16_OP_LWEX,
-        `VMICRO16_OP_SWEX:   has_ex = 1'b1;
-        default:             has_ex = 1'b0;
+        `VMICRO16_OP_LWEX:   has_lwex = 1'b1;
+        default:             has_lwex = 1'b0;
+    endcase
+
+    always @(*) case (opcode)
+        `VMICRO16_OP_SWEX:   has_swex = 1'b1;
+        default:             has_swex = 1'b0;
     endcase
 endmodule
 
@@ -900,7 +938,7 @@ module vmicro16_core # (
     output [7:0] dbug_pc,
     
     // APB master to slave interface (apb_intercon)
-    output  [MEM_WIDTH-1:0]     w_PADDR,
+    output  [`APB_WIDTH-1:0]    w_PADDR,
     output                      w_PWRITE,
     output                      w_PSELx,
     output                      w_PENABLE,
@@ -938,6 +976,8 @@ module vmicro16_core # (
     wire        r_instr_has_mem;
     wire        r_instr_has_mem_we;
     wire        r_instr_halt;
+    wire        r_instr_has_lwex;
+    wire        r_instr_has_swex;
 
     wire [15:0] r_alu_out;
 
@@ -1074,6 +1114,8 @@ module vmicro16_core # (
         .mmu_addr       (r_mem_scratch_addr), 
         .mmu_in         (r_mem_scratch_in), 
         .mmu_we         (r_mem_scratch_we), 
+        .mmu_lwex       (r_instr_has_lwex),
+        .mmu_swex       (r_instr_has_swex),
         .mmu_out        (r_mem_scratch_out),
         // APB maste    r to slave
         .M_PADDR        (w_PADDR),
@@ -1106,13 +1148,16 @@ module vmicro16_core # (
         .has_cmp        (r_instr_has_cmp),
         .has_mem        (r_instr_has_mem),
         .has_mem_we     (r_instr_has_mem_we),
-        .halt           ()
+        .halt           (),
+        .has_lwex       (r_instr_has_lwex),
+        .has_swex       (r_instr_has_swex)
     );
     
     // Software registers
     (* keep_hierarchy = "yes" *)
     vmicro16_regs # (
-        .CORE_ID (CORE_ID)
+        .CORE_ID    (CORE_ID),
+        .CELL_WIDTH (`DATA_WIDTH)
     ) regs (
         .clk        (clk),
         .reset      (reset),

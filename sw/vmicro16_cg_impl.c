@@ -567,57 +567,109 @@ void cg_while_vm16(struct ast_while *v)
 }
 
 void
+cg_fix_bp_offset(struct ast_lvar *lv)
+{
+        struct list_item        *item_it;
+        struct ast_lvar         *ldecl;
+        int                     offset = -1;
+
+        item_it = cg_cur_function->locals;
+        list_for_each(item_it) {
+                ldecl = item_it->value;
+
+                // current ldecl matches lv
+                if (strcmp(ldecl->var->name, lv->var->name) == 0) {
+                        // Set the bp_offset
+                        lv->bp_offset = offset;
+                        break;
+                }
+
+                offset -= ldecl->var->width;
+
+                dbprintf(D_GEN, "\t\tFDECL %s[%d] w=%d bp=%d\r\n",
+                         ldecl->var->name, ldecl->index, ldecl->var->width, ldecl->bp_offset);
+        }
+        dbprintf(D_GEN, "\r\n");
+}
+
+void
+cg_init_decl(struct ast_func *f)
+{
+        struct list_item        *item_it;
+        struct ast_lvar         *ldecl;
+        int                     offset = -1;
+
+        dbprintf(D_INFO, "cg_init_decl\r\n");
+
+        //dbprintf(D_GEN, "\t\tLOOP %s[%d] w=%d bp=%d\r\n",
+        //         sv->var->name, sv->index, sv->var->width, sv->bp_offset);
+
+        dbprintf(D_GEN, "FUNCTION %s has decls:\r\n", f->proto->name);
+
+        item_it = cg_cur_function->locals;
+        list_for_each(item_it) {
+                ldecl            = item_it->value;
+                // Set the bp_offset
+                ldecl->bp_offset = offset;
+
+                offset -= ldecl->var->width;
+
+                dbprintf(D_GEN, "\t\tDECL %s[%d] w=%d bp=%d\r\n",
+                         ldecl->var->name, ldecl->index, ldecl->var->width, ldecl->bp_offset);
+        }
+        dbprintf(D_GEN, "\r\n");
+}
+
+
+void
 cg_assignment_vm16(struct ast_assign *a)
 {
+        int stack_ref_offset = a->var->bp_offset - a->var->index;
+
         dbprintf(D_GEN, "cg_assignment_vm16 %s\r\n",
                 a->var->var->name);
 
         // codegen the value
         cg_expr_vm16(a->val);
 
+        // SW/LW contains a 5-bit signed offset
+        // Make sure the variable stack offset can fit into this width
+        assert((stack_ref_offset >= -16) && (stack_ref_offset <= 15));
+        // If not, cg the offset into a register and use that
+
         // Value now in R0 register,
         // store it in stack location
-        vm16_asm_push(vm16_opcode_sw(R0, Bp, a->var->bp_offset));
+        vm16_asm_push(vm16_opcode_sw(R0, Bp, stack_ref_offset));
         asm_comment(a->var->var->name);
 }
 
 void
-cg_var_ref_vm16(struct ast_lvar *v)
+cg_var_ref_vm16(struct ast_lvar *lv)
 {
-        vm16_asm_push(vm16_opcode_lw(R0, Bp, v->bp_offset));
-        asm_comment(v->var->name);
-}
-
-void
-cg_local_decl_vm16(struct ast_lvar *v)
-{
-        struct list_item *item_it;
-        struct ast_lvar *sv;
-        struct prco_op_struct op_stack_alloc;
-        int offset = -1;
-
-        dbprintf(D_INFO, "cg_local_decl_vm16\r\n");
-
-        item_it = cg_cur_function->locals;
-        list_for_each(item_it) {
-                sv = item_it->value;
-                sv->bp_offset = offset;
-
-                if (strcmp(v->var->name, sv->var->name) == 0) {
-                        dbprintf(D_INFO, "Found var: %s %+d\r\n",
-                                sv->var->name,
-                                sv->bp_offset);
-                        break;
-                }
-
-                offset -= 1;
+        // broken bp_offset refind it
+        if (lv->bp_offset == 0) {
+                cg_fix_bp_offset(lv);
         }
 
-        op_stack_alloc = vm16_opcode_sub_ri(Sp, R5, 1);
+        int stack_ref_offset = lv->bp_offset - lv->index;
+
+        assert((stack_ref_offset >= -16) && (stack_ref_offset <= 15));
+
+        vm16_asm_push(vm16_opcode_lw(R0, Bp, stack_ref_offset));
+        asm_comment(lv->var->name);
+}
+
+// Allocate space on the stack for the local variable (decl)
+void
+cg_local_decl_vm16(struct ast_lvar *lv)
+{
+        struct prco_op_struct op_stack_alloc;
+        op_stack_alloc = vm16_opcode_sub_ri(Sp, R5, lv->var->width);
         op_stack_alloc.comment = malloc(32);
-        snprintf(op_stack_alloc.comment, 32, "VAR ALLOC %s %d",
-                 v->var->name,
-                 v->bp_offset);
+        snprintf(op_stack_alloc.comment, 32,
+                 "VAR ALLOC %s %d",
+                 lv->var->name,
+                 lv->bp_offset);
         vm16_asm_push(op_stack_alloc);
 }
 
@@ -736,6 +788,57 @@ cg_if_vm16(struct ast_if *v)
         vm16_asm_push(op_after);
 }
 
+
+void ast_iter(struct ast_item* item) {
+        struct ast_lvar*   lv;
+        struct ast_lvar*   vr;
+        struct ast_assign* as;
+
+        if (!item)
+                return;
+
+        switch(item->type) {
+        case AST_LOCAL_VAR:
+                lv = item->expr;
+                dbprintf(D_GEN, "\tAST_LOCAL_VAR\t%s bp=%d index=%d\r\n",
+                         lv->var->name,
+                         lv->bp_offset,
+                         lv->index);
+                break;
+        case AST_ASSIGNMENT:
+                as = item->expr;
+                dbprintf(D_GEN, "\tAST_ASSIGNMENT\t%s = %d\r\n",
+                         as->var->var->name, as->val->type);
+                break;
+        case AST_VAR_REF:
+                vr = item->expr;
+                dbprintf(D_GEN, "\tAST_VAR_REF\t%s bp=%d index=%d\r\n",
+                         vr->var->name,
+                         vr->bp_offset,
+                         vr->index);
+                break;
+        }
+        ast_iter(item->next);
+}
+
+void func_show(struct ast_func* f) {
+        struct list_item        *lit;
+        struct ast_lvar         *ldecl;
+        struct ast_item         *item;
+
+        // Print local decls
+        lit = cg_cur_function->locals;
+        list_for_each(lit) {
+                ldecl = lit->value;
+                dbprintf(D_GEN, "\t\tDECL %s[%d] w=%d bp=%d\r\n",
+                         ldecl->var->name, ldecl->index, ldecl->var->width, ldecl->bp_offset);
+        }
+
+        // iterate f->body
+        //   find AST_VAR_REF
+        ast_iter(f->body);
+}
+
 void
 cg_function_vm16(struct ast_func *f)
 {
@@ -751,14 +854,6 @@ cg_function_vm16(struct ast_func *f)
                         var->var->name, var->bp_offset);
         }
 
-        arg_it = f->locals;
-        list_for_each(arg_it) {
-                struct ast_lvar *var = arg_it->value;
-                if(!var) continue;
-
-                dbprintf(D_GEN, "FUNC LOCALS: %s %d\r\n",
-                        var->var->name, var->bp_offset);
-        }
         assert(f);
         assert(f->proto);
         assert(f->body);
@@ -768,6 +863,12 @@ cg_function_vm16(struct ast_func *f)
 
         // Create stack frame
         cg_sf_start(f);
+
+        // Calculate base pointer (bp) offsets (bp_offset)
+        // for each local variable declaration (decl)
+        cg_init_decl(f);
+
+        func_show(f);
 
         // cg the function body
         cg_expr_vm16(f->body);

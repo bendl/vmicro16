@@ -1,0 +1,24 @@
+
+__stdcall fnc main()
+{
+    int GPIO0 = 0x90;
+    int GPIO2 = 0xA0;
+    int a[10];
+
+    GPIO0;
+
+    GPIO2;
+    GPIO2[1];
+    GPIO2[2];
+
+    a;
+    a;
+    a[0];
+    a[1];
+    a[2];
+    a[3];
+    a[4];
+    a[9];
+
+    50;
+}

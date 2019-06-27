@@ -10,6 +10,13 @@ __stdcall fnc main()
 
     int UART0  = 0xA0;
 
+    asm("0x40");
+    asm("0x41");
+    asm("0x42");
+    asm("0x43");
+    asm("0x44");
+    asm("0x45");
+    
     @IDX;
     @CORES;
     @SLAVES;

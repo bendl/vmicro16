@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 `include "../vmicro16_isa.v"
+`include "../formal.v"
 
 module tb_alu();
     
@@ -36,14 +37,16 @@ module tb_alu();
 
     initial begin
         $monitor($time, "\ta=%h b=%h c=%b N=%b Z=%b C=%b V=%b COND=%h EN=%b", 
-            a, b, c, c[3], c[2], c[1], c[0], cond, en);
+            a, b, c[3:0], c[3], c[2], c[1], c[0], cond, en);
         
         // Initialize Inputs
         clk  = 0;
-        cond = 8'h00; 
+        cond = `VMICRO16_OP_BR_U; 
         
         a = 5'h00;
         b = 5'h00;
+        `rassert(c == 4'b0100);
+        `rassert(en == 1'b1);
         @(posedge clk);
         
         @(posedge clk);
@@ -52,31 +55,52 @@ module tb_alu();
         @(posedge clk);
         cond = `VMICRO16_OP_BR_U;
         @(posedge clk);
+        `rassert(c == 4'b1000);
+        `rassert(en == 1'b1);
+        
         cond = `VMICRO16_OP_BR_E;
         @(posedge clk);
+        `rassert(c == 4'b1000);
+        `rassert(en == 1'b0);
+        
         cond = `VMICRO16_OP_BR_NE;
         @(posedge clk);
+        `rassert(c == 4'b1000);
+        `rassert(en == 1'b1);
+        
         cond = `VMICRO16_OP_BR_L;
         @(posedge clk);
+        `rassert(c == 4'b1000);
+        `rassert(en == 1'b1);
+        
         cond = `VMICRO16_OP_BR_G;
         @(posedge clk);
+        `rassert(c == 4'b1000);
+        `rassert(en == 1'b0);
         
         a = 5'h0B;
         b = 5'h0A;
         cond = `VMICRO16_OP_BR_G;
         @(posedge clk);
+        `rassert(c == 4'b0000);
+        `rassert(en == 1'b1);
+        
         cond = `VMICRO16_OP_BR_L;
         @(posedge clk);
+        `rassert(c == 4'b0000);
+        `rassert(en == 1'b0);
+        
         cond = `VMICRO16_OP_BR_E;
         @(posedge clk);
+        `rassert(c == 4'b0000);
+        `rassert(en == 1'b0);
         
-        @(posedge clk);
         a = 5'h0A;
         b = 5'h0A;
-
         @(posedge clk);
-        @(posedge clk);
-        @(posedge clk);
-        @(posedge clk);
+        `rassert(c == 4'b0100);
+        `rassert(en == 1'b1);
+        
+        $display("ALL tests passed!");
     end
 endmodule

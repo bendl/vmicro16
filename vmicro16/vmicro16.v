@@ -778,6 +778,8 @@ module vmicro16_dec # (
 
         `VMICRO16_OP_BR:              alu_op = `VMICRO16_ALU_BR;
         `VMICRO16_OP_MULT:            alu_op = `VMICRO16_ALU_MULT;
+
+        `VMICRO16_OP_SETC:            alu_op = `VMICRO16_ALU_SETC;
         
         `VMICRO16_OP_BIT:     casez (simm5)
             `VMICRO16_OP_BIT_OR:      alu_op = `VMICRO16_ALU_BIT_OR;
@@ -892,16 +894,18 @@ module vmicro16_alu # (
     input      [OP_WIDTH-1:0]   op,
     input      [DATA_WIDTH-1:0] a, // rs1/dst
     input      [DATA_WIDTH-1:0] b, // rs2
+    input      [3:0]            flags,
     output reg [DATA_WIDTH-1:0] c
 );
     localparam TOP_BIT = (DATA_WIDTH-1);
     // 17-bit register
     reg [DATA_WIDTH:0] cmp_tmp = 0; // = {carry, [15:0]}
+    wire r_setc;
 
     always @(*) case (op)
         // branch/nop, output nothing
         `VMICRO16_ALU_BR,
-        `VMICRO16_ALU_NOP:          c = 0;
+        `VMICRO16_ALU_NOP:          c = {{DATA_WIDTH}{0}};
         // load/store addresses (use value in rd2)
         `VMICRO16_ALU_LW,
         `VMICRO16_ALU_SW:           c = b;
@@ -954,12 +958,20 @@ module vmicro16_alu # (
             endcase
         end
 
+        `VMICRO16_ALU_SETC: c = {{{15}{1'b0}}, r_setc};
+
         // TODO: Parameterise
         default: begin
             $display($time, "\tALU: unknown op: %h", op);
             c = 16'h0000;
         end
     endcase
+
+    branch setc_check (
+        .flags      (flags),
+        .cond       (b[7:0]),
+        .en         (r_setc)
+    );
 endmodule
 
 // flags = 4 bit r_cmp_flags register
@@ -1233,6 +1245,7 @@ module vmicro16_core # (
         .op         (r_instr_alu_op),
         .a          (r_instr_rdd),
         .b          (r_instr_rda),
+        .flags      (r_cmp_flags),
         // async output
         .c          (r_alu_out)
     );

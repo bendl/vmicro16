@@ -624,7 +624,14 @@ cg_init_decl(struct ast_func *f)
 void
 cg_assignment_vm16(struct ast_assign *a)
 {
-        int stack_ref_offset = a->var->bp_offset - a->var->index;
+        int stack_ref_offset;
+
+
+        if (a->var->bp_offset == 0) {
+                cg_fix_bp_offset(a->var);
+        }
+
+        stack_ref_offset = a->var->bp_offset - a->var->index;
 
         dbprintf(D_GEN, "cg_assignment_vm16 %s\r\n",
                 a->var->var->name);

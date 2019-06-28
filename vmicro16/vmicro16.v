@@ -942,7 +942,7 @@ module vmicro16_alu # (
             // V   Overflow condition code flag
             c[`VMICRO16_SFLAG_N] = cmp_tmp[TOP_BIT];
             c[`VMICRO16_SFLAG_Z] = (cmp_tmp == 0);
-            c[`VMICRO16_SFLAG_C] = 0;//cmp_tmp[TOP_BIT+1];
+            c[`VMICRO16_SFLAG_C] = 0; //cmp_tmp[TOP_BIT+1]; // not used
 
             // Overflow flag
             // https://stackoverflow.com/questions/30957188/

@@ -41,6 +41,12 @@
 `define VMICRO16_OP_BR_S         8'h07
 `define VMICRO16_OP_BR_NS        8'h08
 
+// flag bit positions
+`define VMICRO16_SFLAG_N         4'h03
+`define VMICRO16_SFLAG_Z         4'h02
+`define VMICRO16_SFLAG_C         4'h01
+`define VMICRO16_SFLAG_V         4'h00
+
 // microcode operations
 `define VMICRO16_ALU_BIT_OR      5'h00
 `define VMICRO16_ALU_BIT_XOR     5'h01
@@ -76,7 +82,3 @@
 `define VMICRO16_ALU_MULT        5'h1e
 `endif
 `define VMICRO16_ALU_BAD         5'h1f
-
-`define VMICRO16_SFLAG_U         5'h00
-`define VMICRO16_SFLAG_Z         5'h01
-`define VMICRO16_SFLAG_L         5'h02

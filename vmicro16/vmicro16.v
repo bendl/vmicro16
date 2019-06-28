@@ -86,10 +86,10 @@ module vmicro16_bram_ex_apb # (
         else
             S_PRDATA = mem_out;
 
-    //core_id + 1
-    reg [CORE_ID_BITS:0] reg_wd;
-    wire                 reg_we = en && ((lwex && !is_locked) 
-                                      || (swex && swex_success));
+    wire reg_we = en && ((lwex && !is_locked) 
+                      || (swex && swex_success));
+
+    reg  [CORE_ID_BITS:0] reg_wd;
     always @(*) begin
         reg_wd = {{CORE_ID_BITS}{1'b0}};
 
@@ -104,7 +104,6 @@ module vmicro16_bram_ex_apb # (
                 if (is_locked && is_locked_self)
                     reg_wd = {{CORE_ID_BITS}{1'b0}};
     end
-
 
     // Exclusive flag for each memory cell
     (* keep_hierarchy = "yes" *)
@@ -288,8 +287,14 @@ mem[49] = 16'h37a1;
 mem[50] = 16'h6000;
         `endif
 
+        `define TEST_CMP
+        `ifdef TEST_CMP
+        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h0A};
+        mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'h0B};
+        mem[1] = {`VMICRO16_OP_CMP,     3'h1, 3'h0, 5'h1};
+        `endif
 
-        `define TEST_LWEX
+        //`define TEST_LWEX
         `ifdef TEST_LWEX
         mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC5};
         mem[1] = {`VMICRO16_OP_SW,      3'h0, 3'h0, 5'h1};
@@ -889,7 +894,9 @@ module vmicro16_alu # (
     input      [DATA_WIDTH-1:0] b, // rs2
     output reg [DATA_WIDTH-1:0] c
 );
-    reg [4:0] cmp_tmp = 0;
+    localparam TOP_BIT = (DATA_WIDTH-1);
+    // 17-bit register
+    reg [DATA_WIDTH:0] cmp_tmp = 0; // = {carry, [15:0]}
 
     always @(*) case (op)
         // branch/nop, output nothing
@@ -929,9 +936,22 @@ module vmicro16_alu # (
             //       Set zero, overflow, carry, signed bits in result
             cmp_tmp = a - b;
             c = 0;
-            c[`VMICRO16_SFLAG_U] = 1;
+            // N   Negative condition code flag
+            // Z   Zero condition code flag
+            // C   Carry condition code flag
+            // V   Overflow condition code flag
+            c[`VMICRO16_SFLAG_N] = cmp_tmp[TOP_BIT];
             c[`VMICRO16_SFLAG_Z] = (cmp_tmp == 0);
-            c[`VMICRO16_SFLAG_L] = (a < b);
+            c[`VMICRO16_SFLAG_C] = 0;//cmp_tmp[TOP_BIT+1];
+
+            // Overflow flag
+            // https://stackoverflow.com/questions/30957188/
+            // https://github.com/bendl/prco304/blob/master/prco_core/rtl/prco_alu.v#L50
+            case(cmp_tmp[TOP_BIT+1:TOP_BIT])
+                2'b01:   c[`VMICRO16_SFLAG_V] = 1;
+                2'b10:   c[`VMICRO16_SFLAG_V] = 1;
+                default: c[`VMICRO16_SFLAG_V] = 0;
+            endcase
         end
 
         // TODO: Parameterise
@@ -940,6 +960,27 @@ module vmicro16_alu # (
             c = 16'h0000;
         end
     endcase
+endmodule
+
+// flags = 4 bit r_cmp_flags register
+// cond  = 8 bit VMICRO16_OP_BR_? value. See vmicro16_isa.v
+module branch (
+    input [3:0] flags,
+    input [7:0] cond,
+    output reg  en
+);
+    always @(*)
+        case (cond)
+            `VMICRO16_OP_BR_U:  en = 1;
+            `VMICRO16_OP_BR_E:  en = (flags[`VMICRO16_SFLAG_Z] == 1);
+            `VMICRO16_OP_BR_NE: en = (flags[`VMICRO16_SFLAG_Z] == 0);
+            `VMICRO16_OP_BR_G:  en = (flags[`VMICRO16_SFLAG_Z] == 0) && 
+                                     (flags[`VMICRO16_SFLAG_N] == flags[`VMICRO16_SFLAG_V]);
+            `VMICRO16_OP_BR_L:  en = (flags[`VMICRO16_SFLAG_Z] != flags[`VMICRO16_SFLAG_N]);
+            `VMICRO16_OP_BR_GE: en = (flags[`VMICRO16_SFLAG_Z] == flags[`VMICRO16_SFLAG_N]);
+            `VMICRO16_OP_BR_LE: en = (flags[`VMICRO16_SFLAG_Z] == 1) || 
+                                     (flags[`VMICRO16_SFLAG_N] != flags[`VMICRO16_SFLAG_V]);
+        endcase
 endmodule
 
 (*dont_touch="true"*)
@@ -1016,21 +1057,15 @@ module vmicro16_core # (
     // branching
     reg         r_branch_en   = 0;
     wire        w_branching   = r_instr_has_br && r_branch_en;
-    reg  [4:0]  r_cmp_flags   = 5'h00; // Z, O, S, L, etc.
-    reg  [15:0] r_cmp_result  = 5'h00; // a - b
+    reg  [3:0]  r_cmp_flags   = 4'h00; // N, Z, C, V
     
+    // Store the CMP flags in a special register
     always @(posedge clk)
-        if (r_instr_has_cmp) 
-            r_cmp_flags <= r_alu_out;
+        if (r_instr_has_cmp)
+            r_cmp_flags <= r_alu_out[3:0];
     
-    always @(posedge clk)
-        if (r_instr_has_br)
-            case (r_instr_imm8)
-                `VMICRO16_OP_BR_U:  r_branch_en <= 1;
-                `VMICRO16_OP_BR_E:  r_branch_en <= r_cmp_flags[`VMICRO16_SFLAG_Z];
-                `VMICRO16_OP_BR_L:  r_branch_en <= r_cmp_flags[`VMICRO16_SFLAG_L];
-                default:            r_branch_en <= 0;
-            endcase
+    always @(r_cmp_flags)
+        $display($time, "\tC%02h:\tALU CMP: %b", CORE_ID, r_cmp_flags);
 
     // 2 cycle register fetch
     always @(*) begin
@@ -1200,6 +1235,12 @@ module vmicro16_core # (
         .b          (r_instr_rda),
         // async output
         .c          (r_alu_out)
+    );
+
+    branch branch_check (
+        .flags      (r_cmp_flags),
+        .cond       (r_instr_imm8),
+        .en         (r_branch_en)
     );
 
 endmodule

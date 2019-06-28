@@ -37,8 +37,8 @@ module vmicro16_soc (
     (*dont_touch="true"*) wire [`CORES-1:0]              w_PWRITE;
     (*dont_touch="true"*) wire [`CORES-1:0]              w_PSELx;
     (*dont_touch="true"*) wire [`CORES-1:0]              w_PENABLE;
-    (*dont_touch="true"*) wire [`CORES*`DATA_WIDTH-1:0]   w_PWDATA;
-    (*dont_touch="true"*) wire [`CORES*`DATA_WIDTH-1:0]   w_PRDATA;
+    (*dont_touch="true"*) wire [`CORES*`DATA_WIDTH-1:0]  w_PWDATA;
+    (*dont_touch="true"*) wire [`CORES*`DATA_WIDTH-1:0]  w_PRDATA;
     (*dont_touch="true"*) wire [`CORES-1:0]              w_PREADY;
 
     (*dont_touch="true"*)
@@ -93,6 +93,7 @@ module vmicro16_soc (
     (* keep_hierarchy = "yes" *)
     vmicro16_gpio_apb # (
         .BUS_WIDTH  (`APB_WIDTH),
+        .DATA_WIDTH (`DATA_WIDTH),
         .PORTS      (`APB_GPIO1_PINS)
     ) gpio1_apb (
         .clk        (clk),
@@ -152,6 +153,7 @@ module vmicro16_soc (
     (* keep_hierarchy = "yes" *)
     vmicro16_regs_apb # (
         .BUS_WIDTH          (`APB_WIDTH),
+        .DATA_WIDTH         (`DATA_WIDTH),
         .CELL_DEPTH         (8),
         .PARAM_DEFAULTS_R0  (`CORES),
         .PARAM_DEFAULTS_R1  (`SLAVES)

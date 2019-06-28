@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="1411839157fs"></ZoomEndTime>
-      <Cursor1Time time="250000000fs"></Cursor1Time>
+      <ZoomStartTime time="4161000000fs"></ZoomStartTime>
+      <ZoomEndTime time="5540000001fs"></ZoomEndTime>
+      <Cursor1Time time="4790000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="183"></NameColumnWidth>
-      <ValueColumnWidth column_width="113"></ValueColumnWidth>
+      <ValueColumnWidth column_width="109"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="97" />
+   <WVObjectSize size="103" />
    <wvobject fp_name="/tb_vmicro16_soc/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -31,6 +31,18 @@
    <wvobject type="divider" fp_name="divider3">
       <obj_property name="label">C0</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /r_state" type="array">
+      <obj_property name="ElementShortName">r_state[2:0]</obj_property>
+      <obj_property name="ObjectShortName">r_state[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /r_pc" type="array">
+      <obj_property name="ElementShortName">r_pc[15:0]</obj_property>
+      <obj_property name="ObjectShortName">r_pc[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /r_instr" type="array">
+      <obj_property name="ElementShortName">r_instr[15:0]</obj_property>
+      <obj_property name="ObjectShortName">r_instr[15:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /dec/has_lwex" type="logic">
       <obj_property name="ElementShortName">has_lwex</obj_property>
@@ -88,6 +100,18 @@
       <obj_property name="label">C1</obj_property>
       <obj_property name="DisplayName">label</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /r_state" type="array">
+      <obj_property name="ElementShortName">r_state[2:0]</obj_property>
+      <obj_property name="ObjectShortName">r_state[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /r_pc" type="array">
+      <obj_property name="ElementShortName">r_pc[15:0]</obj_property>
+      <obj_property name="ObjectShortName">r_pc[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /r_instr" type="array">
+      <obj_property name="ElementShortName">r_instr[15:0]</obj_property>
+      <obj_property name="ObjectShortName">r_instr[15:0]</obj_property>
+   </wvobject>
    <wvobject type="divider" fp_name="divider5">
       <obj_property name="label">C2</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -97,32 +121,32 @@
       <obj_property name="DisplayName">label</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/apb/S_PADDR" type="array">
-      <obj_property name="ElementShortName">S_PADDR[18:0]</obj_property>
-      <obj_property name="ObjectShortName">S_PADDR[18:0]</obj_property>
+      <obj_property name="ElementShortName">S_PADDR[37:0]</obj_property>
+      <obj_property name="ObjectShortName">S_PADDR[37:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/apb/S_PWRITE" type="array">
-      <obj_property name="ElementShortName">S_PWRITE[0:0]</obj_property>
-      <obj_property name="ObjectShortName">S_PWRITE[0:0]</obj_property>
+      <obj_property name="ElementShortName">S_PWRITE[1:0]</obj_property>
+      <obj_property name="ObjectShortName">S_PWRITE[1:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/apb/S_PSELx" type="array">
-      <obj_property name="ElementShortName">S_PSELx[0:0]</obj_property>
-      <obj_property name="ObjectShortName">S_PSELx[0:0]</obj_property>
+      <obj_property name="ElementShortName">S_PSELx[1:0]</obj_property>
+      <obj_property name="ObjectShortName">S_PSELx[1:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/apb/S_PENABLE" type="array">
-      <obj_property name="ElementShortName">S_PENABLE[0:0]</obj_property>
-      <obj_property name="ObjectShortName">S_PENABLE[0:0]</obj_property>
+      <obj_property name="ElementShortName">S_PENABLE[1:0]</obj_property>
+      <obj_property name="ObjectShortName">S_PENABLE[1:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/apb/S_PWDATA" type="array">
-      <obj_property name="ElementShortName">S_PWDATA[15:0]</obj_property>
-      <obj_property name="ObjectShortName">S_PWDATA[15:0]</obj_property>
+      <obj_property name="ElementShortName">S_PWDATA[31:0]</obj_property>
+      <obj_property name="ObjectShortName">S_PWDATA[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/apb/S_PRDATA" type="array">
-      <obj_property name="ElementShortName">S_PRDATA[15:0]</obj_property>
-      <obj_property name="ObjectShortName">S_PRDATA[15:0]</obj_property>
+      <obj_property name="ElementShortName">S_PRDATA[31:0]</obj_property>
+      <obj_property name="ObjectShortName">S_PRDATA[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/apb/S_PREADY" type="array">
-      <obj_property name="ElementShortName">S_PREADY[0:0]</obj_property>
-      <obj_property name="ObjectShortName">S_PREADY[0:0]</obj_property>
+      <obj_property name="ElementShortName">S_PREADY[1:0]</obj_property>
+      <obj_property name="ObjectShortName">S_PREADY[1:0]</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider35">
       <obj_property name="label">IARB</obj_property>
@@ -285,20 +309,20 @@
       <obj_property name="ObjectShortName">S_PENABLE</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/regs0_apb/S_PWDATA" type="array">
-      <obj_property name="ElementShortName">S_PWDATA[18:0]</obj_property>
-      <obj_property name="ObjectShortName">S_PWDATA[18:0]</obj_property>
+      <obj_property name="ElementShortName">S_PWDATA[15:0]</obj_property>
+      <obj_property name="ObjectShortName">S_PWDATA[15:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/regs0_apb/S_PRDATA" type="array">
-      <obj_property name="ElementShortName">S_PRDATA[18:0]</obj_property>
-      <obj_property name="ObjectShortName">S_PRDATA[18:0]</obj_property>
+      <obj_property name="ElementShortName">S_PRDATA[15:0]</obj_property>
+      <obj_property name="ObjectShortName">S_PRDATA[15:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/regs0_apb/S_PREADY" type="logic">
       <obj_property name="ElementShortName">S_PREADY</obj_property>
       <obj_property name="ObjectShortName">S_PREADY</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/regs0_apb/rd1" type="array">
-      <obj_property name="ElementShortName">rd1[18:0]</obj_property>
-      <obj_property name="ObjectShortName">rd1[18:0]</obj_property>
+      <obj_property name="ElementShortName">rd1[15:0]</obj_property>
+      <obj_property name="ObjectShortName">rd1[15:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/regs0_apb/reg_we" type="logic">
       <obj_property name="ElementShortName">reg_we</obj_property>
@@ -357,12 +381,12 @@
       <obj_property name="ObjectShortName">S_PENABLE</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/gpio1_apb/S_PWDATA" type="array">
-      <obj_property name="ElementShortName">S_PWDATA[18:0]</obj_property>
-      <obj_property name="ObjectShortName">S_PWDATA[18:0]</obj_property>
+      <obj_property name="ElementShortName">S_PWDATA[15:0]</obj_property>
+      <obj_property name="ObjectShortName">S_PWDATA[15:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/gpio1_apb/S_PRDATA" type="array">
-      <obj_property name="ElementShortName">S_PRDATA[18:0]</obj_property>
-      <obj_property name="ObjectShortName">S_PRDATA[18:0]</obj_property>
+      <obj_property name="ElementShortName">S_PRDATA[15:0]</obj_property>
+      <obj_property name="ObjectShortName">S_PRDATA[15:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/gpio1_apb/S_PREADY" type="logic">
       <obj_property name="ElementShortName">S_PREADY</obj_property>

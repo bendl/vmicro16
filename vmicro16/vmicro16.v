@@ -61,7 +61,7 @@ module vmicro16_bram_ex_apb # (
     // CORE_ID to write to ex_flags register
     wire [BUS_WIDTH-1:0]    mem_addr    = S_PADDR[MEM_WIDTH-1:0];
 
-    wire [CORE_ID_BITS-1:0] ex_flags_read;
+    wire [CORE_ID_BITS:0]   ex_flags_read;
     wire                    is_locked      = |ex_flags_read;
     wire                    is_locked_self = is_locked && (core_id == (ex_flags_read-1));
 
@@ -232,7 +232,7 @@ module vmicro16_bram # (
         for (i = 0; i < MEM_DEPTH; i = i + 1) mem[i] = 0;
         //$readmemh("../../test.hex", mem);
         
-        //`define TEST_COMPILER
+        `define TEST_COMPILER
         `ifdef TEST_COMPILER
 mem[0] = 16'h2f3f;
 mem[1] = 16'h2903;
@@ -287,7 +287,7 @@ mem[49] = 16'h37a1;
 mem[50] = 16'h6000;
         `endif
 
-        `define TEST_CMP
+        //`define TEST_CMP
         `ifdef TEST_CMP
         mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h0A};
         mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'h0B};
@@ -629,6 +629,7 @@ endmodule
 (* dont_touch = "yes" *)
 module vmicro16_regs_apb # (
     parameter BUS_WIDTH         = 16,
+    parameter DATA_WIDTH        = 16,
     parameter CELL_DEPTH        = 8,
     parameter PARAM_DEFAULTS_R0 = 0,
     parameter PARAM_DEFAULTS_R1 = 0
@@ -640,12 +641,12 @@ module vmicro16_regs_apb # (
     input                           S_PWRITE,
     input                           S_PSELx,
     input                           S_PENABLE,
-    input  [BUS_WIDTH-1:0]          S_PWDATA,
+    input  [DATA_WIDTH-1:0]          S_PWDATA,
     
-    output [BUS_WIDTH-1:0]          S_PRDATA,
+    output [DATA_WIDTH-1:0]          S_PRDATA,
     output                          S_PREADY
 );
-    wire [BUS_WIDTH-1:0] rd1;
+    wire [DATA_WIDTH-1:0] rd1;
 
     assign S_PRDATA = (S_PSELx & S_PENABLE) ? rd1  : 16'h0000;
     assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1 : 1'b0;
@@ -660,6 +661,7 @@ module vmicro16_regs_apb # (
 
     vmicro16_regs # (
         .CELL_DEPTH         (CELL_DEPTH),
+        .CELL_WIDTH         (DATA_WIDTH),
         .PARAM_DEFAULTS_R0  (PARAM_DEFAULTS_R0),
         .PARAM_DEFAULTS_R1  (PARAM_DEFAULTS_R1)
     ) regs_apb (
@@ -683,6 +685,7 @@ endmodule
 (* keep_hierarchy = "yes" *)
 module vmicro16_gpio_apb # (
     parameter BUS_WIDTH  = 16,
+    parameter DATA_WIDTH = 16,
     parameter PORTS      = 8
 ) (
     input clk,
@@ -692,9 +695,9 @@ module vmicro16_gpio_apb # (
     input                           S_PWRITE,
     input                           S_PSELx,
     input                           S_PENABLE,
-    input  [BUS_WIDTH-1:0]          S_PWDATA,
+    input  [DATA_WIDTH-1:0]         S_PWDATA,
     
-    output [BUS_WIDTH-1:0]          S_PRDATA,
+    output [DATA_WIDTH-1:0]          S_PRDATA,
     output                          S_PREADY,
     output reg [PORTS-1:0]          gpio
 );
@@ -1067,8 +1070,8 @@ module vmicro16_core # (
     wire        r_reg_we = r_instr_has_we && (r_state == STATE_WB);
 
     // branching
-    reg         r_branch_en   = 0;
-    wire        w_branching   = r_instr_has_br && r_branch_en;
+    wire        w_branch_en;
+    wire        w_branching   = r_instr_has_br && w_branch_en;
     reg  [3:0]  r_cmp_flags   = 4'h00; // N, Z, C, V
     
     // Store the CMP flags in a special register
@@ -1253,7 +1256,7 @@ module vmicro16_core # (
     branch branch_check (
         .flags      (r_cmp_flags),
         .cond       (r_instr_imm8),
-        .en         (r_branch_en)
+        .en         (w_branch_en)
     );
 
 endmodule

@@ -242,56 +242,85 @@ mem[4] = 16'h16e0;
 mem[5] = 16'h26e0;
 mem[6] = 16'h3fa1;
 mem[7] = 16'h2890;
-mem[8] = 16'h10d9;
+mem[8] = 16'h10d8;
 mem[9] = 16'h3fa1;
 mem[10] = 16'h2891;
-mem[11] = 16'h10da;
+mem[11] = 16'h10d9;
 mem[12] = 16'h3fa1;
 mem[13] = 16'h2892;
-mem[14] = 16'h10db;
+mem[14] = 16'h10da;
 mem[15] = 16'h3fa1;
-mem[16] = 16'h2880;
-mem[17] = 16'h10dc;
+mem[16] = 16'h28a0;
+mem[17] = 16'h10db;
 mem[18] = 16'h3fa1;
-mem[19] = 16'h28b0;
-mem[20] = 16'h10dd;
+mem[19] = 16'h2880;
+mem[20] = 16'h10dc;
 mem[21] = 16'h3fa1;
-mem[22] = 16'h28b1;
-mem[23] = 16'h10de;
+mem[22] = 16'h28b0;
+mem[23] = 16'h10dd;
 mem[24] = 16'h3fa1;
-mem[25] = 16'h28a0;
-mem[26] = 16'h10df;
-mem[27] = 16'h08dc;
-mem[28] = 16'h0800;
-mem[29] = 16'h08dd;
-mem[30] = 16'h0800;
-mem[31] = 16'h08de;
-mem[32] = 16'h0800;
-mem[33] = 16'h08de;
-mem[34] = 16'h0800;
-mem[35] = 16'h3fa1;
-mem[36] = 16'h10e0;
-mem[37] = 16'h2830;
-mem[38] = 16'h0be0;
-mem[39] = 16'h37a1;
-mem[40] = 16'h307f;
-mem[41] = 16'h3fa1;
-mem[42] = 16'h10e0;
-mem[43] = 16'h08df;
-mem[44] = 16'h0be0;
-mem[45] = 16'h37a1;
-mem[46] = 16'h1300;
-mem[47] = 16'h27c0;
-mem[48] = 16'h0ee0;
-mem[49] = 16'h37a1;
-mem[50] = 16'h6000;
+mem[25] = 16'h28b1;
+mem[26] = 16'h10de;
+mem[27] = 16'h3fa1;
+mem[28] = 16'h08dc;
+mem[29] = 16'h0800;
+mem[30] = 16'h3fa1;
+mem[31] = 16'h10e0;
+mem[32] = 16'h2801;
+mem[33] = 16'h0be0;
+mem[34] = 16'h37a1;
+mem[35] = 16'h4b00;
+mem[36] = 16'h5001;
+mem[37] = 16'h2b00;
+mem[38] = 16'h4860;
+mem[39] = 16'h292c;
+mem[40] = 16'h4101;
+mem[41] = 16'h2864;
+mem[42] = 16'h292e;
+mem[43] = 16'h4100;
+mem[44] = 16'h0000;
+mem[45] = 16'h28c8;
+mem[46] = 16'h0000;
+mem[47] = 16'h08dc;
+mem[48] = 16'h0800;
+mem[49] = 16'h3fa1;
+mem[50] = 16'h10e0;
+mem[51] = 16'h2805;
+mem[52] = 16'h0be0;
+mem[53] = 16'h37a1;
+mem[54] = 16'h5860;
+mem[55] = 16'h10df;
+mem[56] = 16'h08df;
+mem[57] = 16'h3fa1;
+mem[58] = 16'h10e0;
+mem[59] = 16'h2830;
+mem[60] = 16'h0be0;
+mem[61] = 16'h37a1;
+mem[62] = 16'h307f;
+mem[63] = 16'h3fa1;
+mem[64] = 16'h10e0;
+mem[65] = 16'h08db;
+mem[66] = 16'h0be0;
+mem[67] = 16'h37a1;
+mem[68] = 16'h1300;
+mem[69] = 16'h2832;
+mem[70] = 16'h27c0;
+mem[71] = 16'h0ee0;
+mem[72] = 16'h37a1;
+mem[73] = 16'h6000;
+
+        `endif
+
+        //`define TEST_COND
+        `ifdef TEST_CMP
+        mem[0] = {`VMICRO16_OP_MOVI,    3'h7, 8'h80};
         `endif
 
         //`define TEST_CMP
         `ifdef TEST_CMP
         mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h0A};
         mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'h0B};
-        mem[1] = {`VMICRO16_OP_CMP,     3'h1, 3'h0, 5'h1};
+        mem[2] = {`VMICRO16_OP_CMP,     3'h1, 3'h0, 5'h1};
         `endif
 
         //`define TEST_LWEX
@@ -747,7 +776,7 @@ module vmicro16_dec # (
     output reg has_mem_we,
     output reg has_cmp,
 
-    output halt,
+    output     halt,
 
     output reg has_lwex,
     output reg has_swex
@@ -782,6 +811,7 @@ module vmicro16_dec # (
         `VMICRO16_OP_BR:              alu_op = `VMICRO16_ALU_BR;
         `VMICRO16_OP_MULT:            alu_op = `VMICRO16_ALU_MULT;
 
+        `VMICRO16_OP_CMP:             alu_op = `VMICRO16_ALU_CMP;
         `VMICRO16_OP_SETC:            alu_op = `VMICRO16_ALU_SETC;
         
         `VMICRO16_OP_BIT:     casez (simm5)
@@ -890,7 +920,8 @@ endmodule
 (* keep_hierarchy = "yes" *)
 module vmicro16_alu # (
     parameter OP_WIDTH   = 5,
-    parameter DATA_WIDTH = 16
+    parameter DATA_WIDTH = 16,
+    parameter CORE_ID    = 0
 ) (
     // input clk, // TODO: make clocked
 
@@ -943,6 +974,7 @@ module vmicro16_alu # (
             //       Set zero, overflow, carry, signed bits in result
             cmp_tmp = a - b;
             c = 0;
+
             // N   Negative condition code flag
             // Z   Zero condition code flag
             // C   Carry condition code flag
@@ -959,6 +991,8 @@ module vmicro16_alu # (
                 2'b10:   c[`VMICRO16_SFLAG_V] = 1;
                 default: c[`VMICRO16_SFLAG_V] = 0;
             endcase
+
+            $display($time, "\tC%02h: ALU CMP: %h %h = %h = %b", CORE_ID, a, b, cmp_tmp, c[3:0]);
         end
 
         `VMICRO16_ALU_SETC: c = {{{15}{1'b0}}, r_setc};
@@ -995,12 +1029,14 @@ module branch (
             `VMICRO16_OP_BR_GE: en = (flags[`VMICRO16_SFLAG_Z] == flags[`VMICRO16_SFLAG_N]);
             `VMICRO16_OP_BR_LE: en = (flags[`VMICRO16_SFLAG_Z] == 1) || 
                                      (flags[`VMICRO16_SFLAG_N] != flags[`VMICRO16_SFLAG_V]);
+            default:            en = 0;
         endcase
 endmodule
 
 (*dont_touch="true"*)
 (* keep_hierarchy = "yes" *)
 module vmicro16_core # (
+    parameter DATA_WIDTH        = 16,
     parameter MEM_INSTR_DEPTH   = 64,
     parameter MEM_SCRATCH_DEPTH = 64,
     parameter MEM_WIDTH         = 16,
@@ -1017,8 +1053,8 @@ module vmicro16_core # (
     output                      w_PWRITE,
     output                      w_PSELx,
     output                      w_PENABLE,
-    output  [MEM_WIDTH-1:0]     w_PWDATA,
-    input   [MEM_WIDTH-1:0]     w_PRDATA,
+    output  [DATA_WIDTH-1:0]    w_PWDATA,
+    input   [DATA_WIDTH-1:0]    w_PRDATA,
     input                       w_PREADY
 );
     localparam STATE_IF = 0;
@@ -1028,56 +1064,52 @@ module vmicro16_core # (
     localparam STATE_WB = 4;
     reg  [2:0] r_state = STATE_IF;
 
-    reg  [15:0] r_pc          = 16'h0000;
-    reg  [15:0] r_instr       = 16'h0000;
-    wire [15:0] w_mem_instr_out;
+    reg  [DATA_WIDTH-1:0] r_pc          = 16'h0000;
+    reg  [DATA_WIDTH-1:0] r_instr       = 16'h0000;
+    wire [DATA_WIDTH-1:0] w_mem_instr_out;
+    wire                  w_halt;
 
     assign dbug_pc = r_pc[7:0];
 
-    wire [4:0]  r_instr_opcode;
-    wire [4:0]  r_instr_alu_op;
-    wire [2:0]  r_instr_rsd;
-    wire [2:0]  r_instr_rsa;
-    reg  [15:0] r_instr_rdd = 0;
-    reg  [15:0] r_instr_rda = 0;
-    wire [3:0]  r_instr_imm4;
-    wire [7:0]  r_instr_imm8;
-    wire [4:0]  r_instr_simm5;
-    wire        r_instr_has_imm4;
-    wire        r_instr_has_imm8;
-    wire        r_instr_has_we;
-    wire        r_instr_has_br;
-    wire        r_instr_has_cmp;
-    wire        r_instr_has_mem;
-    wire        r_instr_has_mem_we;
-    wire        r_instr_halt;
-    wire        r_instr_has_lwex;
-    wire        r_instr_has_swex;
+    wire [4:0]            r_instr_opcode;
+    wire [4:0]            r_instr_alu_op;
+    wire [2:0]            r_instr_rsd;
+    wire [2:0]            r_instr_rsa;
+    reg  [DATA_WIDTH-1:0] r_instr_rdd = 0;
+    reg  [DATA_WIDTH-1:0] r_instr_rda = 0;
+    wire [3:0]            r_instr_imm4;
+    wire [7:0]            r_instr_imm8;
+    wire [4:0]            r_instr_simm5;
+    wire                  r_instr_has_imm4;
+    wire                  r_instr_has_imm8;
+    wire                  r_instr_has_we;
+    wire                  r_instr_has_br;
+    wire                  r_instr_has_cmp;
+    wire                  r_instr_has_mem;
+    wire                  r_instr_has_mem_we;
+    wire                  r_instr_halt;
+    wire                  r_instr_has_lwex;
+    wire                  r_instr_has_swex;
 
-    wire [15:0] r_alu_out;
+    wire [DATA_WIDTH-1:0] r_alu_out;
 
-    wire [15:0] r_mem_scratch_addr = $signed(r_alu_out) + $signed(r_instr_simm5);
-    wire [15:0] r_mem_scratch_in   = r_instr_rdd;
-    wire [15:0] r_mem_scratch_out;
-    wire        r_mem_scratch_we   = r_instr_has_mem_we && (r_state == STATE_ME);
-    reg         r_mem_scratch_req  = 0;
-    wire        r_mem_scratch_busy;
+    wire [DATA_WIDTH-1:0] r_mem_scratch_addr = $signed(r_alu_out) + $signed(r_instr_simm5);
+    wire [DATA_WIDTH-1:0] r_mem_scratch_in   = r_instr_rdd;
+    wire [DATA_WIDTH-1:0] r_mem_scratch_out;
+    wire                  r_mem_scratch_we   = r_instr_has_mem_we && (r_state == STATE_ME);
+    reg                   r_mem_scratch_req  = 0;
+    wire                  r_mem_scratch_busy;
 
-    reg  [2:0]  r_reg_rs1 = 0;
-    wire [15:0] r_reg_rd1;
+    reg  [2:0]            r_reg_rs1 = 0;
+    wire [DATA_WIDTH-1:0] r_reg_rd1;
     //wire [15:0] r_reg_rd2;
-    wire [15:0] r_reg_wd = (r_instr_has_mem) ? r_mem_scratch_out : r_alu_out;
-    wire        r_reg_we = r_instr_has_we && (r_state == STATE_WB);
+    wire [DATA_WIDTH-1:0] r_reg_wd = (r_instr_has_mem) ? r_mem_scratch_out : r_alu_out;
+    wire                  r_reg_we = r_instr_has_we && (r_state == STATE_WB);
 
     // branching
     wire        w_branch_en;
     wire        w_branching   = r_instr_has_br && w_branch_en;
     reg  [3:0]  r_cmp_flags   = 4'h00; // N, Z, C, V
-    
-    // Store the CMP flags in a special register
-    always @(posedge clk)
-        if (r_instr_has_cmp)
-            r_cmp_flags <= r_alu_out[3:0];
     
     always @(r_cmp_flags)
         $display($time, "\tC%02h:\tALU CMP: %b", CORE_ID, r_cmp_flags);
@@ -1104,14 +1136,21 @@ module vmicro16_core # (
             r_instr_rda       <= 0;
         end 
         else begin
-            if (r_state == STATE_IF) begin
-                r_instr <= w_mem_instr_out;
 
-                $display("");
-                $display($time, "\tC%02h: PC: %h",    CORE_ID, r_pc);
-                $display($time, "\tC%02h: INSTR: %h", CORE_ID, w_mem_instr_out);
-                
-                r_state <= STATE_R1;
+            if (r_state == STATE_IF) begin
+                if (w_halt) begin
+                    $display("");
+                    $display("");
+                    $display($time, "\tC%02h: PC: %h HALT", CORE_ID, r_pc);
+                end else begin
+                    r_instr <= w_mem_instr_out;
+
+                    $display("");
+                    $display($time, "\tC%02h: PC: %h",    CORE_ID, r_pc);
+                    $display($time, "\tC%02h: INSTR: %h", CORE_ID, w_mem_instr_out);
+                    
+                    r_state <= STATE_R1;
+                end
             end
             else if (r_state == STATE_R1) begin
                 // primary operand
@@ -1123,6 +1162,11 @@ module vmicro16_core # (
                 if      (r_instr_has_imm8)  r_instr_rda <= r_instr_imm8;
                 else if (r_instr_has_imm4)  r_instr_rda <= r_reg_rd1 + r_instr_imm4;
                 else                        r_instr_rda <= r_reg_rd1;
+
+                if (r_instr_has_cmp) begin
+                    $display($time, "\tC%02h: CMP: %h", CORE_ID, r_alu_out[3:0]);
+                    r_cmp_flags <= r_alu_out[3:0];
+                end
 
                 if (r_instr_has_mem) begin
                     r_state           <= STATE_ME;
@@ -1144,7 +1188,8 @@ module vmicro16_core # (
                 // Pulse req
                 r_mem_scratch_req <= 0;
                 // Wait for MMU to finish
-                if (!r_mem_scratch_busy) r_state <= STATE_WB;
+                if (!r_mem_scratch_busy) 
+                    r_state <= STATE_WB;
             end
             else if (r_state == STATE_WB) begin
                 r_state <= STATE_IF;
@@ -1154,7 +1199,7 @@ module vmicro16_core # (
     // Instruction ROM
     (* keep_hierarchy = "yes" *)
     vmicro16_bram # (
-        .MEM_WIDTH      (16),
+        .MEM_WIDTH      (DATA_WIDTH),
         .MEM_DEPTH      (MEM_INSTR_DEPTH),
         .CORE_ID        (CORE_ID),
         .NAME           ("INSTR_MEM")
@@ -1163,7 +1208,7 @@ module vmicro16_core # (
         .reset          (reset), 
         // port 1       
         .mem_addr       (r_pc), 
-        .mem_in         (16'h0000), 
+        .mem_in         (0), 
         .mem_we         (1'b0),  // ROM
         .mem_out        (w_mem_instr_out)
     );
@@ -1171,8 +1216,8 @@ module vmicro16_core # (
     // MMU
     (* keep_hierarchy = "yes" *)
     vmicro16_core_mmu # (
-        .MEM_WIDTH      (`DATA_WIDTH),
-        .MEM_DEPTH      (`DEF_MMU_TIM0_CELLS),
+        .MEM_WIDTH      (DATA_WIDTH),
+        .MEM_DEPTH      (MEM_SCRATCH_DEPTH),
         .CORE_ID        (CORE_ID)
     ) mmu (
         .clk            (clk), 
@@ -1217,7 +1262,7 @@ module vmicro16_core # (
         .has_cmp        (r_instr_has_cmp),
         .has_mem        (r_instr_has_mem),
         .has_mem_we     (r_instr_has_mem_we),
-        .halt           (),
+        .halt           (w_halt),
         .has_lwex       (r_instr_has_lwex),
         .has_swex       (r_instr_has_swex)
     );
@@ -1244,7 +1289,9 @@ module vmicro16_core # (
 
     // ALU
     (* keep_hierarchy = "yes" *)
-    vmicro16_alu alu (
+    vmicro16_alu # (
+        .CORE_ID(CORE_ID)
+    ) alu (
         .op         (r_instr_alu_op),
         .a          (r_instr_rdd),
         .b          (r_instr_rda),

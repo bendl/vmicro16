@@ -194,7 +194,11 @@ module vmicro16_soc (
     generate for(i = 0; i < `CORES; i = i + 1) begin : cores
         (* keep_hierarchy = "yes" *)
         vmicro16_core # (
-            .CORE_ID    (i)
+            .CORE_ID            (i),
+            .DATA_WIDTH         (`DATA_WIDTH),
+            
+            .MEM_INSTR_DEPTH    (`DEF_MEM_INSTR_DEPTH),
+            .MEM_SCRATCH_DEPTH  (`DEF_MMU_TIM0_CELLS)
         ) c1 (
             .clk        (clk),
             .reset      (reset),

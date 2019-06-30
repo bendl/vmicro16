@@ -127,18 +127,46 @@ def cg_replace_labels(xs):
     x = xs[i]
 
     while True:
-        if (x.op == "movi") and x.ref:
-            print("Replacing movi's {0} with index".format(x.ref))
+        if x.ref:
+            # it might be a label
             label = find_str_label(x.ref)
-            assert(label)
-            assert(label.index >= 0)
-            x.imm8 = label.index
+            if label:
+                assert(label.index >= 0)
+                x.imm8 = label.index
+            else:
+                label = cg_str_to_imm(x.ref)
+                if label != None:
+                    x.imm8 = label
+                else:
+                    sys.stderr.write("Unknown label '{:s}'".format(x.ref))
         try:
             i += 1
             x = xs[i]
         except:
             break
 
+def cg_str_to_imm(str):
+    if str == "BR_U":
+        return 0
+    elif str == "BR_E":
+        return 1
+    elif str == "BR_NE":
+        return 2
+    elif str == "BR_G":
+        return 3
+    elif str == "BR_GE":
+        return 4
+    elif str == "BR_L":
+        return 5
+    elif str == "BR_LE":
+        return 6
+    elif str == "BR_S":
+        return 7
+    elif str == "BR_S":
+        return 8
+    else:
+        sys.stderr.write("cg_str_to_imm for {:s} not implemented!".format(str))
+        return None
 
 def cg(xs):
     # assert all items are of type Instr
@@ -147,6 +175,7 @@ def cg(xs):
     binstr = []
 
     for x in xs:
+        print("Cg for {:s}".format(x.op))
         op = 0
         if x.op == "movi":
             op |= 0b00101 << 11
@@ -168,7 +197,43 @@ def cg(xs):
             op |= x.rs1 << 8
             op |= x.imm8 << 0
             binstr.append(op)
-    
+        elif x.op == "lw":
+            op |= 0b00001 << 11
+            op |= x.rs1 << 8
+            op |= x.rs2 << 5
+            assert(x.imm8 >= -16 and x.imm8 <= 15)
+            op |= x.imm8 << 0
+            binstr.append(op)
+        elif x.op == "sw":
+            op |= 0b00010 << 11
+            op |= x.rs1 << 8
+            op |= x.rs2 << 5
+            assert(x.imm8 >= -16 and x.imm8 <= 15)
+            op |= x.imm8 << 0
+            binstr.append(op)
+        elif x.op == "halt":
+            op |= 0b01100 << 11
+            op |= x.rs1 << 8
+            op |= x.rs2 << 5
+            op |= x.imm8 << 0
+            binstr.append(op)
+        elif x.op == "lwex":
+            op |= 0b01101 << 11
+            op |= x.rs1 << 8
+            op |= x.rs2 << 5
+            assert(x.imm8 >= -16 and x.imm8 <= 15)
+            op |= x.imm8 << 0
+            binstr.append(op)
+        elif x.op == "swex":
+            op |= 0b01101 << 11
+            op |= x.rs1 << 8
+            op |= x.rs2 << 5
+            assert(x.imm8 >= -16 and x.imm8 <= 15)
+            op |= x.imm8 << 0
+            binstr.append(op)
+        else:
+            sys.stderr.write("Cg for '{:s}' not implemented!".format(x.op))
+
     print(binstr)
     return binstr
 
@@ -186,18 +251,23 @@ with open(args.fname, "r") as f:
     all_instr  = list(filter(lambda x: isinstance(x, Instr), lines))
     all_labels = list(filter(lambda x: isinstance(x, Label), lines))
 
-    print(list(lines))
-    print(list(all_instr))
-    print(list(all_labels))
+    print("Found {:d} LABELS".format(len(all_labels)))
+    print("Found {:d} INSTR".format(len(all_instr)))
 
     for i in all_instr:
         print(i)
 
+    print("Replacing labels...")
     cg_replace_labels(all_instr)
     for i in all_instr:
         print(i)
 
+    # Write hex words to verilog memh file
     binstr = cg(all_instr)
-    for b in binstr:
-        print("{:04x}\n".format(b))
+    with open("asm.s.hex", "w") as out:
+        for i, b in enumerate(binstr):
+            print("{:d}\t{:04x}".format(i, b))
+            out.write("{:04x}\n".format(b))
+        print("Written asm.s.hex file!")
+
 

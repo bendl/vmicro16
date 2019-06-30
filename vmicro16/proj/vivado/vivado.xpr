@@ -32,7 +32,7 @@
     <Option Name="EnableBDX" Val="FALSE"/>
     <Option Name="DSAVendor" Val="xilinx"/>
     <Option Name="DSANumComputeUnits" Val="60"/>
-    <Option Name="WTXSimLaunchSim" Val="187"/>
+    <Option Name="WTXSimLaunchSim" Val="209"/>
     <Option Name="WTModelSimLaunchSim" Val="0"/>
     <Option Name="WTQuestaLaunchSim" Val="0"/>
     <Option Name="WTIesLaunchSim" Val="0"/>
@@ -212,6 +212,11 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PPRDIR/../../test/waves/tb_lwex.wcfg">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
         <Option Name="TopModule" Val="tb_vmicro16_soc"/>
@@ -222,6 +227,7 @@
         <Option Name="XSimWcfgFile" Val="$PPRDIR/../tb_vmicro16_soc_behav.wcfg"/>
         <Option Name="XSimWcfgFile" Val="$PPRDIR/tb_ex.wcfg"/>
         <Option Name="XSimWcfgFile" Val="$PPRDIR/tb_alu_setc_behav.wcfg"/>
+        <Option Name="XSimWcfgFile" Val="$PPRDIR/../../test/waves/tb_lwex.wcfg"/>
         <Option Name="NLNetlistMode" Val="funcsim"/>
       </Config>
     </FileSet>

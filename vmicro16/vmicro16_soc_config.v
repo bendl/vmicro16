@@ -4,7 +4,7 @@
 
 `include "clog2.v"
 
-`define CORES           3
+`define CORES           1
 `define SLAVES          6
 
 `define DEF_ALU_HW_MULT 1

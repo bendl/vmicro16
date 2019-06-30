@@ -187,6 +187,23 @@ def cg(xs):
             op |= x.rs1 << 8
             op |= x.rs2 << 5
             binstr.append(op)
+        elif x.op == "add":
+            op |= 0b00110 << 11
+            op |= x.rs1 << 8
+            op |= x.rs2 << 5
+            op |= 0b11111 << 0;
+            binstr.append(op)
+        elif x.op == "sub":
+            op |= 0b00110 << 11
+            op |= x.rs1 << 8
+            op |= x.rs2 << 5
+            op |= 0b10000 << 0;
+            binstr.append(op)
+        elif x.op == "setc":
+            op |= 0b01010 << 11
+            op |= x.rs1 << 8
+            op |= x.imm8
+            binstr.append(op)
         elif x.op == "br":
             op |= 0b01000 << 11
             op |= x.rs1 << 8
@@ -225,7 +242,7 @@ def cg(xs):
             op |= x.imm8 << 0
             binstr.append(op)
         elif x.op == "swex":
-            op |= 0b01101 << 11
+            op |= 0b01110 << 11
             op |= x.rs1 << 8
             op |= x.rs2 << 5
             assert(x.imm8 >= -16 and x.imm8 <= 15)
@@ -262,8 +279,8 @@ with open(args.fname, "r") as f:
 
     print("Replacing labels...")
     cg_replace_labels(all_instr)
-    for i in all_instr:
-        print(i)
+    for i, k in enumerate(all_instr):
+        print(i, k)
 
     # Write hex words to verilog memh file
     binstr = cg(all_instr)

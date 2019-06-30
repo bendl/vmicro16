@@ -986,6 +986,7 @@ module vmicro16_core # (
     always @(r_cmp_flags)
         $display($time, "\tC%02h:\tALU CMP: %b", CORE_ID, r_cmp_flags);
 
+
     // 2 cycle register fetch
     always @(*) begin
         r_reg_rs1 = 0;
@@ -1035,26 +1036,12 @@ module vmicro16_core # (
                 else if (r_instr_has_imm4)  r_instr_rda <= r_reg_rd1 + r_instr_imm4;
                 else                        r_instr_rda <= r_reg_rd1;
 
-                if (r_instr_has_cmp) begin
-                    $display($time, "\tC%02h: CMP: %h", CORE_ID, r_alu_out[3:0]);
-                    r_cmp_flags <= r_alu_out[3:0];
-                end
-
                 if (r_instr_has_mem) begin
                     r_state           <= STATE_ME;
                     // Pulse req
                     r_mem_scratch_req <= 1;
                 end else
                     r_state <= STATE_WB;
-
-                    
-                if (w_branching) begin
-                    $display($time, "\tbranching to %h", r_instr_rdd);
-                    r_pc <= r_instr_rdd;
-                end
-                else if (r_pc < (MEM_INSTR_DEPTH-1))
-                    r_pc <= r_pc + 1;
-
             end
             else if (r_state == STATE_ME) begin
                 // Pulse req
@@ -1064,6 +1051,18 @@ module vmicro16_core # (
                     r_state <= STATE_WB;
             end
             else if (r_state == STATE_WB) begin
+                if (r_instr_has_cmp) begin
+                    $display($time, "\tC%02h: CMP: %h", CORE_ID, r_alu_out[3:0]);
+                    r_cmp_flags <= r_alu_out[3:0];
+                end
+
+                if (w_branching) begin
+                    $display($time, "\tbranching to %h", r_instr_rdd);
+                    r_pc <= r_instr_rdd;
+                end
+                else if (r_pc < (MEM_INSTR_DEPTH-1))
+                    r_pc <= r_pc + 1;
+
                 r_state <= STATE_IF;
             end
         end

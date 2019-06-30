@@ -130,7 +130,7 @@ module vmicro16_bram_ex_apb # (
 
     always @(posedge clk)
         if (we)
-            $display($time, "\t\tBRAM[%h] <= %h", S_PADDR, S_PWDATA);
+            $display($time, "\t\tBRAMex[%h] <= %h", S_PADDR, S_PWDATA);
 
     vmicro16_bram # (
         .MEM_WIDTH  (MEM_WIDTH),
@@ -142,7 +142,7 @@ module vmicro16_bram_ex_apb # (
 
         .mem_addr   (S_PADDR),
         .mem_in     (S_PWDATA),
-        .mem_we     (we),
+        .mem_we     (we && swex_success),
         .mem_out    (mem_out)
     );
 endmodule

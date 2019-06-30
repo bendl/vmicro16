@@ -1,8 +1,12 @@
 // LWEX/SWEX test
 
-    movi r0, #0x80
+    sw      r0, r5 + #0x2
 main:
-    mov  r0, r1
-    br   main, #0x01
-    foo1  r0, r1
-    foo2  r0, r1
+    mov     r0, r1
+
+    // jump to main
+    movi    r5, main
+    br      r5, #0x01
+
+    lw      r0, r5 + #0x1
+    sw      r0, r5 + #0x2

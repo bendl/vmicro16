@@ -15,7 +15,9 @@ r_comment   = re.compile("//.*")
 r_label     = re.compile("(\w+):")
 r_instr_rr  = re.compile("\s+(\w+)\s+r(\d),\s+r(\d)")
 r_instr_ri  = re.compile("\s+(\w+)\s+r(\d),\s+#0x([A-Fa-f0-9]+)")
+r_instr_rif = re.compile("\s+(\w+)\s+r(\d),\s+(\w+)")
 r_instr_br  = re.compile("\s+(br)\s+(\w+),\s+#0x([A-Fa-f0-9]+)")
+r_instr_lw  = re.compile("\s+(\w+)\s+r(\d),\s+r(\d) \+ #0x([A-Fa-f0-9]+)")
 
 all_instr  = []
 all_labels = []
@@ -43,6 +45,15 @@ def parse_line(l):
     if m:
         return None
 
+    m = r_instr_lw.match(l)
+    if m:
+        r = Instr()
+        r.op = m.group(1)
+        r.rs1 = int(m.group(2))
+        r.rs2 = int(m.group(3))
+        r.imm8 = int(m.group(4), 16)
+        return r
+
     m = r_label.match(l)
     if m:
         r = Label()
@@ -57,6 +68,7 @@ def parse_line(l):
         r.rs1 = int(m.group(2))
         r.rs2 = int(m.group(3))
         return r
+
 
     m = r_instr_ri.match(l)
     if m:
@@ -73,6 +85,15 @@ def parse_line(l):
         r.ref = m.group(2)
         r.imm8 = int(m.group(3), 16)
         return r
+
+    m = r_instr_rif.match(l)
+    if m:
+        r = Instr()
+        r.op = m.group(1)
+        r.rs1 = int(m.group(2))
+        r.ref = m.group(3)
+        return r
+
 
 def calc_offset(ls):
     lsi = iter(ls)
@@ -93,7 +114,10 @@ def calc_offset(ls):
             l.index = n.index
 
 def find_str_label(s):
-    return list(filter(lambda l: l.name == s, all_labels))[0]
+    for l in all_labels:
+        if l.name == s:
+            return l
+    return None
 
 def cg_replace_labels(xs):
     # assert all items are of type Instr
@@ -103,26 +127,12 @@ def cg_replace_labels(xs):
     x = xs[i]
 
     while True:
-        if x.op == "br":
-            print("Replacing br's {0} with index".format(x.ref))
+        if (x.op == "movi") and x.ref:
+            print("Replacing movi's {0} with index".format(x.ref))
             label = find_str_label(x.ref)
             assert(label)
             assert(label.index >= 0)
-
-            # Build address
-            br_mov = Instr()
-            br_mov.op = "movi"
-            br_mov.rs1 = 5
-            br_mov.index = i
-            br_mov.imm8 = label.index
-            xs.insert(i, br_mov)
-            # reformat current br instruction to use rs1 
-            x.rs1 = 5
-            x.index += 1
-
-            calc_offset(xs)
-
-            i += 1
+            x.imm8 = label.index
         try:
             i += 1
             x = xs[i]
@@ -134,23 +144,33 @@ def cg(xs):
     # assert all items are of type Instr
     assert(all(isinstance(x, Instr) for x in xs))
 
-    i = 0
-    x = xs[i]
+    binstr = []
 
-    while True:
-        i += 1
-
-
-
-        try:
-            x = xs[i]
-        except:
-            break
-
-    return
-
-
-
+    for x in xs:
+        op = 0
+        if x.op == "movi":
+            op |= 0b00101 << 11
+            op |= x.rs1 << 8
+            op |= x.imm8 << 0
+            binstr.append(op)
+        elif x.op == "mov":
+            op |= 0b00100 << 11
+            op |= x.rs1 << 8
+            op |= x.rs2 << 5
+            binstr.append(op)
+        elif x.op == "br":
+            op |= 0b01000 << 11
+            op |= x.rs1 << 8
+            op |= x.imm8 << 0
+            binstr.append(op)
+        elif x.op == "cmp":
+            op |= 0b01001 << 11
+            op |= x.rs1 << 8
+            op |= x.imm8 << 0
+            binstr.append(op)
+    
+    print(binstr)
+    return binstr
 
 with open(args.fname, "r") as f:
     # Apply a structure to each line
@@ -177,4 +197,7 @@ with open(args.fname, "r") as f:
     for i in all_instr:
         print(i)
 
-    cg(all_instr)
+    binstr = cg(all_instr)
+    for b in binstr:
+        print("{:04x}\n".format(b))
+

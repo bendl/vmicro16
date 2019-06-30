@@ -4,6 +4,150 @@
 `include "vmicro16_soc_config.v"
 `include "clog2.v"
 
+// Shared memory with hardware monitor (LWEX/SWEX)
+(* keep_hierarchy = "yes" *)
+(* dont_touch = "yes" *)
+module vmicro16_bram_ex_apb # (
+    parameter BUS_WIDTH    = 16,
+    parameter MEM_WIDTH    = 16,
+    parameter MEM_DEPTH    = 64,
+    parameter CORE_ID_BITS = 3,
+    parameter SWEX_SUCCESS = 16'h0000,
+    parameter SWEX_FAIL    = 16'h0001
+) (
+    input clk,
+    input reset,
+
+    // |19    |18    |16             |15          0|
+    // | LWEX | SWEX | 3 bit CORE_ID |     S_PADDR |
+    input  [`APB_WIDTH-1:0]         S_PADDR,
+
+    input                           S_PWRITE,
+    input                           S_PSELx,
+    input                           S_PENABLE,
+    input  [MEM_WIDTH-1:0]          S_PWDATA,
+    
+    output reg [MEM_WIDTH-1:0]      S_PRDATA,
+    output                          S_PREADY
+);
+    // exclusive flag checks
+    wire [MEM_WIDTH-1:0] mem_out;
+    wire [MEM_WIDTH-1:0] mem_out_ex;
+    reg                  swex_success = 0;
+
+    //assign S_PRDATA = (S_PSELx & S_PENABLE) ? swex_success ? 16'hF0F0 : 16'h0000;
+    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1       : 1'b0;
+    assign we       = (S_PSELx & S_PENABLE & S_PWRITE);
+    wire   en       = (S_PSELx & S_PENABLE);
+
+    // Similar to:
+    //   http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0204f/Cihbghef.html
+
+    // mem_wd is the CORE_ID sent in bits [18:16] 
+    localparam TOP_BIT_INDEX         = `APB_WIDTH -1;
+    localparam PADDR_CORE_ID_MSB     = TOP_BIT_INDEX - 2;
+    localparam PADDR_CORE_ID_LSB     = PADDR_CORE_ID_MSB - (CORE_ID_BITS-1);
+
+    // [LWEX, CORE_ID, mem_addr] from S_PADDR
+    wire                    lwex        = S_PADDR[TOP_BIT_INDEX];
+    wire                    swex        = S_PADDR[TOP_BIT_INDEX-1];
+    wire [CORE_ID_BITS-1:0] core_id     = S_PADDR[PADDR_CORE_ID_MSB:PADDR_CORE_ID_LSB];
+    // CORE_ID to write to ex_flags register
+    wire [BUS_WIDTH-1:0]    mem_addr    = S_PADDR[MEM_WIDTH-1:0];
+
+    wire [CORE_ID_BITS:0]   ex_flags_read;
+    wire                    is_locked      = |ex_flags_read;
+    wire                    is_locked_self = is_locked && (core_id == (ex_flags_read-1));
+
+    // Check exclusive access flags
+    always @(*) begin
+        swex_success = 0;
+        if (en)
+            if (swex)
+                if (is_locked && !is_locked_self)
+                    // someone else has locked it
+                    swex_success = 0;
+                else if (is_locked && is_locked_self)
+                    swex_success = 1;
+    end
+
+    always @(*)
+        if (swex)
+            if (swex_success)
+                S_PRDATA = SWEX_SUCCESS;
+            else
+                S_PRDATA = SWEX_FAIL;
+        else
+            S_PRDATA = mem_out;
+
+    wire reg_we = en && ((lwex && !is_locked) 
+                      || (swex && swex_success));
+
+    reg  [CORE_ID_BITS:0] reg_wd;
+    always @(*) begin
+        reg_wd = {{CORE_ID_BITS}{1'b0}};
+
+        if (en)
+            // if wanting to lock the addr
+            if (lwex)
+                // and not already locked
+                if (!is_locked) begin
+                    reg_wd = (core_id + 1);
+                end
+            else if (swex)
+                if (is_locked && is_locked_self)
+                    reg_wd = {{CORE_ID_BITS}{1'b0}};
+    end
+
+    // Exclusive flag for each memory cell
+    (* keep_hierarchy = "yes" *)
+    vmicro16_regs # (
+        // Each cell is for storing the CORE_ID of the core 
+        // that has exclusive access
+        .CELL_WIDTH (CORE_ID_BITS + 1),
+        // Same number of cells as the memory
+        .CELL_DEPTH (MEM_DEPTH),
+        // register exclusive
+        .DEBUG_NAME ("REX")
+    ) ex_flags (
+        .clk        (clk),
+        .reset      (reset),
+        // async port 0
+        .rs1        (mem_addr),
+        .rd1        (ex_flags_read),
+        // async port 1
+        //.rs2        (),
+        //.rd2        (),
+        // write port
+        .we         (reg_we),
+        .ws1        (mem_addr),
+        .wd         (reg_wd)
+    );
+
+    always @(*)
+        if (S_PSELx && S_PENABLE)
+            $display($time, "\t\tBRAMex => %h", mem_out);
+
+    always @(posedge clk)
+        if (we)
+            $display($time, "\t\tBRAM[%h] <= %h", S_PADDR, S_PWDATA);
+
+    vmicro16_bram # (
+        .MEM_WIDTH  (MEM_WIDTH),
+        .MEM_DEPTH  (MEM_DEPTH),
+        .NAME       ("BRAM")
+    ) bram_apb (
+        .clk        (clk),
+        .reset      (reset),
+
+        .mem_addr   (S_PADDR),
+        .mem_in     (S_PWDATA),
+        .mem_we     (we),
+        .mem_out    (mem_out)
+    );
+endmodule
+
+
 (*dont_touch="true"*)
 (* keep_hierarchy = "yes" *)
 module vmicro16_soc (
@@ -72,8 +216,10 @@ module vmicro16_soc (
     (*dont_touch="true"*)
     (* keep_hierarchy = "yes" *)
     vmicro16_gpio_apb # (
-        .BUS_WIDTH  (`DATA_WIDTH),
-        .PORTS      (`APB_GPIO0_PINS)
+        .BUS_WIDTH  (`APB_WIDTH),
+        .DATA_WIDTH (`DATA_WIDTH),
+        .PORTS      (`APB_GPIO0_PINS),
+        .NAME       ("GPIO0")
     ) gpio0_apb (
         .clk        (clk),
         .reset      (reset),
@@ -94,7 +240,8 @@ module vmicro16_soc (
     vmicro16_gpio_apb # (
         .BUS_WIDTH  (`APB_WIDTH),
         .DATA_WIDTH (`DATA_WIDTH),
-        .PORTS      (`APB_GPIO1_PINS)
+        .PORTS      (`APB_GPIO1_PINS),
+        .NAME       ("GPIO1")
     ) gpio1_apb (
         .clk        (clk),
         .reset      (reset),
@@ -114,7 +261,9 @@ module vmicro16_soc (
     (* keep_hierarchy = "yes" *)
     vmicro16_gpio_apb # (
         .BUS_WIDTH  (`APB_WIDTH),
-        .PORTS      (`APB_GPIO2_PINS)
+        .DATA_WIDTH (`DATA_WIDTH),
+        .PORTS      (`APB_GPIO2_PINS),
+        .NAME       ("GPI02")
     ) gpio2_apb (
         .clk        (clk),
         .reset      (reset),

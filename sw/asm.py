@@ -234,6 +234,9 @@ def cg(xs):
         else:
             sys.stderr.write("Cg for '{:s}' not implemented!".format(x.op))
 
+        # check op fits within 16-bits
+        assert((op >= 0x0000) and (op <= 0xFFFF))
+
     print(binstr)
     return binstr
 

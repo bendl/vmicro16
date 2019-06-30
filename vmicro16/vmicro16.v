@@ -13,145 +13,6 @@
 `include "formal.v"
 
 
-(* keep_hierarchy = "yes" *)
-(* dont_touch = "yes" *)
-module vmicro16_bram_ex_apb # (
-    parameter BUS_WIDTH    = 16,
-    parameter MEM_WIDTH    = 16,
-    parameter MEM_DEPTH    = 64,
-    parameter CORE_ID_BITS = 3
-) (
-    input clk,
-    input reset,
-
-    // |19    |18    |16             |15          0|
-    // | LWEX | SWEX | 3 bit CORE_ID |     S_PADDR |
-    input  [`APB_WIDTH-1:0]         S_PADDR,
-
-    input                           S_PWRITE,
-    input                           S_PSELx,
-    input                           S_PENABLE,
-    input  [MEM_WIDTH-1:0]          S_PWDATA,
-    
-    output reg [MEM_WIDTH-1:0]      S_PRDATA,
-    output                          S_PREADY
-);
-    // exclusive flag checks
-    wire [MEM_WIDTH-1:0] mem_out;
-    wire [MEM_WIDTH-1:0] mem_out_ex;
-    reg                  swex_success = 0;
-
-    //assign S_PRDATA = (S_PSELx & S_PENABLE) ? swex_success ? 16'hF0F0 : 16'h0000;
-    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1       : 1'b0;
-    assign we       = (S_PSELx & S_PENABLE & S_PWRITE);
-    wire   en       = (S_PSELx & S_PENABLE);
-
-    // Similar to:
-    //   http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0204f/Cihbghef.html
-
-    // mem_wd is the CORE_ID sent in bits [18:16] 
-    localparam TOP_BIT_INDEX         = `APB_WIDTH -1;
-    localparam PADDR_CORE_ID_MSB     = TOP_BIT_INDEX - 2;
-    localparam PADDR_CORE_ID_LSB     = PADDR_CORE_ID_MSB - (CORE_ID_BITS-1);
-
-    // [LWEX, CORE_ID, mem_addr] from S_PADDR
-    wire                    lwex        = S_PADDR[TOP_BIT_INDEX];
-    wire                    swex        = S_PADDR[TOP_BIT_INDEX-1];
-    wire [CORE_ID_BITS-1:0] core_id     = S_PADDR[PADDR_CORE_ID_MSB:PADDR_CORE_ID_LSB];
-    // CORE_ID to write to ex_flags register
-    wire [BUS_WIDTH-1:0]    mem_addr    = S_PADDR[MEM_WIDTH-1:0];
-
-    wire [CORE_ID_BITS:0]   ex_flags_read;
-    wire                    is_locked      = |ex_flags_read;
-    wire                    is_locked_self = is_locked && (core_id == (ex_flags_read-1));
-
-    // Check exclusive access flags
-    always @(*) begin
-        swex_success = 0;
-        if (en)
-            if (swex)
-                if (is_locked && !is_locked_self)
-                    // someone else has locked it
-                    swex_success = 0;
-                else if (is_locked && is_locked_self)
-                    swex_success = 1;
-    end
-
-    always @(*)
-        if (swex)
-            if (swex_success)
-                S_PRDATA = 16'h0001;
-            else
-                S_PRDATA = 16'h0000;
-        else
-            S_PRDATA = mem_out;
-
-    wire reg_we = en && ((lwex && !is_locked) 
-                      || (swex && swex_success));
-
-    reg  [CORE_ID_BITS:0] reg_wd;
-    always @(*) begin
-        reg_wd = {{CORE_ID_BITS}{1'b0}};
-
-        if (en)
-            // if wanting to lock the addr
-            if (lwex)
-                // and not already locked
-                if (!is_locked) begin
-                    reg_wd = (core_id + 1);
-                end
-            else if (swex)
-                if (is_locked && is_locked_self)
-                    reg_wd = {{CORE_ID_BITS}{1'b0}};
-    end
-
-    // Exclusive flag for each memory cell
-    (* keep_hierarchy = "yes" *)
-    vmicro16_regs # (
-        // Each cell is for storing the CORE_ID of the core 
-        // that has exclusive access
-        .CELL_WIDTH (CORE_ID_BITS + 1),
-        // Same number of cells as the memory
-        .CELL_DEPTH (MEM_DEPTH),
-        // register exclusive
-        .DEBUG_NAME ("REX")
-    ) ex_flags (
-        .clk        (clk),
-        .reset      (reset),
-        // async port 0
-        .rs1        (mem_addr),
-        .rd1        (ex_flags_read),
-        // async port 1
-        //.rs2        (),
-        //.rd2        (),
-        // write port
-        .we         (reg_we),
-        .ws1        (mem_addr),
-        .wd         (reg_wd)
-    );
-
-    always @(*)
-        if (S_PSELx && S_PENABLE)
-            $display($time, "\t\tBRAMex => %h", mem_out);
-
-    always @(posedge clk)
-        if (we)
-            $display($time, "\t\tBRAM[%h] <= %h", S_PADDR, S_PWDATA);
-
-    vmicro16_bram # (
-        .MEM_WIDTH  (MEM_WIDTH),
-        .MEM_DEPTH  (MEM_DEPTH),
-        .NAME       ("BRAM")
-    ) bram_apb (
-        .clk        (clk),
-        .reset      (reset),
-
-        .mem_addr   (S_PADDR),
-        .mem_in     (S_PWDATA),
-        .mem_we     (we),
-        .mem_out    (mem_out)
-    );
-endmodule
 
 
 (* keep_hierarchy = "yes" *)
@@ -230,9 +91,18 @@ module vmicro16_bram # (
     integer i;
     initial begin
         for (i = 0; i < MEM_DEPTH; i = i + 1) mem[i] = 0;
-        //$readmemh("../../test.hex", mem);
         
-        `define TEST_COMPILER
+        //`define TEST_SW
+        `ifdef TEST_SW
+        $readmemh("E:\\Projects\\uni\\vmicro16\\sw\\verilog_memh.txt", mem);
+        `endif
+
+        `define TEST_ASM
+        `ifdef TEST_ASM
+        $readmemh("E:\\Projects\\uni\\vmicro16\\sw\\asm.s.hex", mem);
+        `endif
+        
+        //`define TEST_COMPILER
         `ifdef TEST_COMPILER
 mem[0] = 16'h2f3f;
 mem[1] = 16'h2903;
@@ -312,8 +182,9 @@ mem[73] = 16'h6000;
         `endif
 
         //`define TEST_COND
-        `ifdef TEST_CMP
-        mem[0] = {`VMICRO16_OP_MOVI,    3'h7, 8'h80};
+        `ifdef TEST_COND
+        mem[0] = {`VMICRO16_OP_MOVI,    3'h7, 8'hC0}; // lock
+        mem[0] = {`VMICRO16_OP_MOVI,    3'h7, 8'hC0}; // lock
         `endif
 
         //`define TEST_CMP
@@ -715,7 +586,8 @@ endmodule
 module vmicro16_gpio_apb # (
     parameter BUS_WIDTH  = 16,
     parameter DATA_WIDTH = 16,
-    parameter PORTS      = 8
+    parameter PORTS      = 8,
+    parameter NAME       = "GPIO"
 ) (
     input clk,
     input reset,
@@ -738,7 +610,7 @@ module vmicro16_gpio_apb # (
         if (reset)
             gpio <= 0;
         else if (ports_we) begin
-            $display($time, "\t\tGPIO <= %h", S_PWDATA[PORTS-1:0]);
+            $display($time, "\t\%s <= %h", NAME, S_PWDATA[PORTS-1:0]);
             gpio <= S_PWDATA[PORTS-1:0];
         end
 endmodule
@@ -1020,7 +892,7 @@ module branch (
 );
     always @(*)
         case (cond)
-            `VMICRO16_OP_BR_U:  en = 1;
+            `VMICRO16_OP_BR_U:  en = 1; `VMICRO16_OP_BR_U:  en = 1;
             `VMICRO16_OP_BR_E:  en = (flags[`VMICRO16_SFLAG_Z] == 1);
             `VMICRO16_OP_BR_NE: en = (flags[`VMICRO16_SFLAG_Z] == 0);
             `VMICRO16_OP_BR_G:  en = (flags[`VMICRO16_SFLAG_Z] == 0) && 

@@ -934,6 +934,7 @@ module vmicro16_core # (
     localparam STATE_R2 = 2;
     localparam STATE_ME = 3;
     localparam STATE_WB = 4;
+    localparam STATE_FE = 5;
     reg  [2:0] r_state = STATE_IF;
 
     reg  [DATA_WIDTH-1:0] r_pc          = 16'h0000;
@@ -1022,6 +1023,7 @@ module vmicro16_core # (
                     $display($time, "\tC%02h: PC: %h",    CORE_ID, r_pc);
                     $display($time, "\tC%02h: INSTR: %h", CORE_ID, w_mem_instr_out);
                     
+    
                     r_state <= STATE_R1;
                 end
             end
@@ -1063,6 +1065,10 @@ module vmicro16_core # (
                 else if (r_pc < (MEM_INSTR_DEPTH-1))
                     r_pc <= r_pc + 1;
 
+
+                r_state <= STATE_FE;
+            end
+            else if (r_state == STATE_FE) begin
                 r_state <= STATE_IF;
             end
         end

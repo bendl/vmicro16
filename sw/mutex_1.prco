@@ -2,8 +2,15 @@
 __stdcall fnc main()
 {
     int GPIO0  = 0x90;
+    int GPIO1  = 0x91;
+    int GPIO2  = 0x92;
+    int UART0  = 0xA0;
+    int IDX    = 0x80;
+    int LOCK   = 0xC0;
 
-    asm("0x40");
+
+
+    $(UART0) = start + 48;
 
     50;
 }

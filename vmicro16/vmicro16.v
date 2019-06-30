@@ -302,7 +302,7 @@ module vmicro16_core_mmu # (
     parameter MEM_DEPTH     = 64,
 
     parameter CORE_ID       = 3'h0,
-    parameter CORE_ID_BITS  = `clog2(CORE_ID)
+    parameter CORE_ID_BITS  = `clog2(`CORES)
 ) (
     input clk,
     input reset,
@@ -918,7 +918,7 @@ module vmicro16_core # (
     input        clk,
     input        reset,
 
-    output [7:0] dbug_pc,
+    output [7:0] dbug,
     
     // APB master to slave interface (apb_intercon)
     output  [`APB_WIDTH-1:0]    w_PADDR,
@@ -935,6 +935,7 @@ module vmicro16_core # (
     localparam STATE_ME = 3;
     localparam STATE_WB = 4;
     localparam STATE_FE = 5;
+    localparam STATE_HALT = 7;
     reg  [2:0] r_state = STATE_IF;
 
     reg  [DATA_WIDTH-1:0] r_pc          = 16'h0000;
@@ -942,7 +943,7 @@ module vmicro16_core # (
     wire [DATA_WIDTH-1:0] w_mem_instr_out;
     wire                  w_halt;
 
-    assign dbug_pc = r_pc[7:0];
+    assign dbug = {{7{1'b0}}, ;
 
     wire [4:0]            r_instr_opcode;
     wire [4:0]            r_instr_alu_op;
@@ -1016,6 +1017,7 @@ module vmicro16_core # (
                     $display("");
                     $display("");
                     $display($time, "\tC%02h: PC: %h HALT", CORE_ID, r_pc);
+                    r_state <= STATE_HALT;
                 end else begin
                     r_instr <= w_mem_instr_out;
 
@@ -1070,6 +1072,8 @@ module vmicro16_core # (
             end
             else if (r_state == STATE_FE) begin
                 r_state <= STATE_IF;
+            end
+            else if (r_state == STATE_HALT) begin
             end
         end
 

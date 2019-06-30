@@ -212,7 +212,7 @@ def cg(xs):
         elif x.op == "cmp":
             op |= 0b01001 << 11
             op |= x.rs1 << 8
-            op |= x.imm8 << 0
+            op |= x.rs2 << 5
             binstr.append(op)
         elif x.op == "lw":
             op |= 0b00001 << 11

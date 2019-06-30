@@ -35,10 +35,21 @@ module vmicro16_bram_ex_apb # (
     wire [MEM_WIDTH-1:0] mem_out_ex;
     reg                  swex_success = 0;
 
+    // hack to create a 1 clock delay to S_PREADY 
+    // for bram to be ready
+    reg cdelay = 1;
+    always @(posedge clk)
+        if (S_PSELx)
+            cdelay <= 0;
+        else
+            cdelay <= 1;
+
     //assign S_PRDATA = (S_PSELx & S_PENABLE) ? swex_success ? 16'hF0F0 : 16'h0000;
-    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1       : 1'b0;
+    assign S_PREADY = (S_PSELx & S_PENABLE & (!cdelay)) ? 1'b1       : 1'b0;
     assign we       = (S_PSELx & S_PENABLE & S_PWRITE);
     wire   en       = (S_PSELx & S_PENABLE);
+
+
 
     // Similar to:
     //   http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0204f/Cihbghef.html

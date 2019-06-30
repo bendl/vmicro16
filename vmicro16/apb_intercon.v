@@ -83,6 +83,15 @@ module apb_intercon_s # (
     reg [`clog2(MASTER_PORTS)-1:0]  last_active = 0;
     reg [`clog2(MASTER_PORTS)-1:0]  active      = 0;
 
+    localparam STATE_IDLE = 0;
+    localparam STATE_T1   = 1;
+    localparam STATE_T2   = 2;
+    reg [1:0] state = STATE_IDLE;
+
+    reg S_PENABLE_gate = 0;
+    always @(posedge clk)
+        S_PENABLE_gate <= ((|a_S_PSELx));
+
     always @(active)
         $display("active core: %h", active);
 
@@ -90,7 +99,7 @@ module apb_intercon_s # (
     wire  [BUS_WIDTH-1:0]   a_S_PADDR   = S_PADDR  [active*BUS_WIDTH +: BUS_WIDTH];
     wire                    a_S_PWRITE  = S_PWRITE [active];
     wire                    a_S_PSELx   = S_PSELx  [active];
-    wire                    a_S_PENABLE = S_PENABLE[active];
+    wire                    a_S_PENABLE = S_PENABLE[active] & S_PENABLE_gate;
     wire  [DATA_WIDTH-1:0]  a_S_PWDATA  = S_PWDATA [active*DATA_WIDTH +: DATA_WIDTH];
     wire  [DATA_WIDTH-1:0]  a_S_PRDATA  = S_PRDATA [active*DATA_WIDTH +: DATA_WIDTH];
     wire                    a_S_PREADY  = S_PREADY [active];

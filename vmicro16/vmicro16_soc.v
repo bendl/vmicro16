@@ -275,6 +275,7 @@ module vmicro16_soc (
     // Interrupts
     wire [`DEF_NUM_INT-1:0]              ints;
     wire [`DEF_NUM_INT*`DATA_WIDTH-1:0]  ints_data;
+    assign ints[7:1] = 0;
 
     (*dont_touch="true"*)
     (* keep_hierarchy = "yes" *)

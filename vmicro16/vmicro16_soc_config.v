@@ -48,30 +48,32 @@
 // GPIO2
 `define DEF_MMU_GPIO2_S     16'h0092
 `define DEF_MMU_GPIO2_E     16'h0092
-
 // UART0
 `define DEF_MMU_UART0_S     16'h00A0
 `define DEF_MMU_UART0_E     16'h00A1
-
 // REGS0
 `define DEF_MMU_REGS0_S     16'h00B0
 `define DEF_MMU_REGS0_E     16'h00B7
-
 // BRAM0
 `define DEF_MMU_BRAM0_CELLS  128
 `define DEF_MMU_BRAM0_S     16'h00C0
 `define DEF_MMU_BRAM0_E     16'h00FF
-
 // TIMR0
-`define DEF_MMU_TIMR0_S     16'h0100
-`define DEF_MMU_TIMR0_E     16'h0101
+`define DEF_MMU_TIMR0_S     16'h0200
+`define DEF_MMU_TIMR0_E     16'h0201
 
 //////////////////////////////////////////////////////////
 // Interrupts
 //////////////////////////////////////////////////////////
-`define DEF_NUM_INT     1
-`define DEF_INT_MASK    1
+`define DEF_NUM_INT     8
+`define DEF_INT_MASK    0
 `define DEF_INT_TIMR0   0
+// Interrupt vector memory location
+`define DEF_MMU_INTSV_S     16'h0100
+`define DEF_MMU_INTSV_E     16'h0107
+// Interrupt vector memory location
+`define DEF_MMU_INTSM_S     16'h0108
+`define DEF_MMU_INTSM_E     16'h0108
 
 
 ///////////////////////////////////////////////////////////

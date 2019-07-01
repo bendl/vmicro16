@@ -318,6 +318,10 @@ module vmicro16_core_mmu # (
     input                       mmu_swex,
     output reg [MEM_WIDTH-1:0]  mmu_out,
 
+    // interrupts
+    output reg [`DATA_WIDTH*`DEF_NUM_INT-1:0] ints_vector,
+    output reg [`DEF_NUM_INT-1:0]             ints_mask,
+
     // TO APB interconnect
     output reg [`APB_WIDTH-1:0]  M_PADDR,
     output reg                   M_PWRITE,
@@ -328,7 +332,6 @@ module vmicro16_core_mmu # (
     input      [MEM_WIDTH-1:0]   M_PRDATA,
     input                        M_PREADY
 );
-    localparam TIM_BITS_ADDR = `clog2(MEM_DEPTH);
     localparam MMU_STATE_T1  = 0;
     localparam MMU_STATE_T2  = 1;
     localparam MMU_STATE_T3  = 2;
@@ -344,20 +347,56 @@ module vmicro16_core_mmu # (
                 && (mmu_addr <= `DEF_MMU_TIM0_E);
     wire sreg_en = (mmu_addr >= `DEF_MMU_SREG_S) 
                 && (mmu_addr <= `DEF_MMU_SREG_E);
-
+    wire intv_en = (mmu_addr >= `DEF_MMU_INTSV_S) 
+                && (mmu_addr <= `DEF_MMU_INTSV_E);
+    wire intm_en = (mmu_addr >= `DEF_MMU_INTSM_S) 
+                && (mmu_addr <= `DEF_MMU_INTSM_E);
     
-    wire [TIM_BITS_ADDR-1:0] tim0_addr = (mmu_addr - `DEF_MMU_TIM0_S);
-    wire                     tim0_we   = (tim0_en && mmu_we);
-    wire                     apb_en    = (!tim0_en) && (!sreg_en);
+    wire apb_en    = !(|{tim0_en, sreg_en, intv_en, intm_en});
+    wire tim0_we   = (tim0_en && mmu_we);
+    wire intv_we   = (intv_en && mmu_we);
+    wire intm_we   = (intm_en && mmu_we);
 
+    // Special register selects
     localparam SPECIAL_REGS = 8;
-    wire [`clog2(SPECIAL_REGS)-1:0] sr_sel = (mmu_addr - `DEF_MMU_SREG_S);
     wire [MEM_WIDTH-1:0]            sr_val;
+    wire [`clog2(SPECIAL_REGS)-1:0] sr_sel    = (mmu_addr - `DEF_MMU_SREG_S);
+
+
+    // Interrupt vector and mask
+    initial ints_vector = 0;
+    initial ints_mask   = 0;
+    wire [2:0] intv_addr = mmu_addr[`clog2(`DEF_NUM_INT)-1:0];
+    always @(posedge clk)
+        if (intv_we)
+            ints_vector[intv_addr*`DATA_WIDTH +: `DATA_WIDTH] <= mmu_in;
+
+    always @(posedge clk)
+        if (intm_we)
+            ints_mask <= mmu_in;
+            
+
+    always @(ints_vector)
+        $display($time, "\tC%d\t\tints_vector W: | %h %h %h %h | %h %h %h %h |", CORE_ID, 
+            ints_vector[0*`DATA_WIDTH +: `DATA_WIDTH],
+            ints_vector[1*`DATA_WIDTH +: `DATA_WIDTH],
+            ints_vector[2*`DATA_WIDTH +: `DATA_WIDTH],
+            ints_vector[3*`DATA_WIDTH +: `DATA_WIDTH],
+            ints_vector[4*`DATA_WIDTH +: `DATA_WIDTH],
+            ints_vector[5*`DATA_WIDTH +: `DATA_WIDTH],
+            ints_vector[6*`DATA_WIDTH +: `DATA_WIDTH],
+            ints_vector[7*`DATA_WIDTH +: `DATA_WIDTH]
+            );
+
+    always @(intm_we)
+        $display($time, "\tC%d\t\tintm_we W: %b", CORE_ID, ints_mask);
 
     // Output port
     always @(*)
         if      (tim0_en) mmu_out = tim0_out;
         else if (sreg_en) mmu_out = sr_val;
+        else if (intv_en) mmu_out = ints_vector[mmu_addr[2:0]*`DATA_WIDTH +: `DATA_WIDTH];
+        else if (intm_en) mmu_out = ints_mask;
         else              mmu_out = per_out;
 
     // APB master to slave interface
@@ -425,9 +464,7 @@ module vmicro16_core_mmu # (
                     end
                 `endif
             endcase
-    
-    reg [`DEF_NUM_INT-1:0]  ints_mask = 0;
-    wire [`DEF_NUM_INT-1:0] ints_masked = ints & ints_mask;
+
 
     vmicro16_regs # (
         .CELL_DEPTH         (SPECIAL_REGS),
@@ -438,7 +475,7 @@ module vmicro16_core_mmu # (
     ) regs_apb (
         .clk    (clk),
         .reset  (reset),
-        .rs1    (sr_sel),
+        .rs1    (mmu_addr[`clog2(SPECIAL_REGS)-1:0]),
         .rd1    (sr_val),
         //.rs2    (),
         //.rd2    (),
@@ -456,7 +493,7 @@ module vmicro16_core_mmu # (
     ) TIM0 (
         .clk        (clk),
         .reset      (reset),
-        .mem_addr   (tim0_addr),
+        .mem_addr   (mmu_addr[7:0]),
         .mem_in     (mmu_in),
         .mem_we     (tim0_we),
         .mem_out    (tim0_out)
@@ -1007,11 +1044,9 @@ module vmicro16_core # (
             r_reg_rs1 = 3'h0;
     end
 
-    
-    //always @(posedge clk)
-    //    if (|int_masked)
-    //        // an interrupt
-
+    wire [`DEF_NUM_INT*`DATA_WIDTH-1:0] ints_mask;
+    wire [`DEF_NUM_INT-1:0]             ints_vector;
+    wire                                has_int = ints & ints_mask;
 
     // cpu state machine
     always @(posedge clk)
@@ -1118,6 +1153,9 @@ module vmicro16_core # (
         .reset          (reset), 
         .req            (r_mem_scratch_req),
         .busy           (r_mem_scratch_busy),
+        // interrupts
+        .ints_vector    (ints_vector),
+        .ints_mask      (ints_mask),
         // port 1
         .mmu_addr       (r_mem_scratch_addr), 
         .mmu_in         (r_mem_scratch_in), 

@@ -8,14 +8,25 @@ var3:
     nop     r0, r0
 
 entry:
+    // Set interrupt vector (0)
+    movi    r0, isr0
+    movi    r1, #0x1
+    movi    r2, #0x08
+    lshft   r1, r2
+    sw      r0, r1
+    
+    // enable all interrupts
+    movi    r0, #0x00
+    sw      r0, r1 + #0x8
+
     // get core idx 0x80 in r7
     movi    r7, #0x80
     lw      r7, r7
 
-    // set timr0 address 0x100 into r0
+    // set timr0 address 0x200 into r0
+    // shift left 8 places
     movi    r0, #0x01
-    // shift left 8 places to get 0x100
-    movi    r1, #0x08
+    movi    r1, #0x09
     lshft   r0, r1
 
     // Set load value
@@ -30,4 +41,10 @@ entry:
 
 exit:
     // Halt processor
+    halt    r0, r0
+
+isr0:
+    movi    r0, #0xEE
+    movi    r1, #0xDD
+    movi    r2, #0xCC
     halt    r0, r0

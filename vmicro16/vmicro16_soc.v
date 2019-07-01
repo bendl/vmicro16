@@ -171,12 +171,13 @@ module vmicro16_soc (
     output [`APB_GPIO1_PINS-1:0]    gpio1,
     output [`APB_GPIO2_PINS-1:0]    gpio2,
 
-    output reg [7:0]                dbug0,
+    output     [7:0]                dbug0,
     output     [`CORES*8:0]         dbug1
 );
-    initial dbug0 = 0;
-    always @(posedge clk)
-        dbug0 <= dbug0 + 1;
+    genvar di;
+    generate for(di = 0; di < 8; di = di + 1)
+        assign dbug0[di] = dbug1[di*8];
+    endgenerate
 
     // Peripherals (master to slave)
     (*dont_touch="true"*) wire [`APB_WIDTH-1:0]          M_PADDR;
@@ -362,7 +363,7 @@ module vmicro16_soc (
         ) c1 (
             .clk        (clk),
             .reset      (reset),
-            .dbug_pc    (dbug1[i*8 +: 8]),
+            .dbug       (dbug1[i*8 +: 8]),
 
             .w_PADDR    (w_PADDR   [`APB_WIDTH*i +: `APB_WIDTH] ),
             .w_PWRITE   (w_PWRITE  [i]                         ),

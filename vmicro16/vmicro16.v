@@ -943,7 +943,7 @@ module vmicro16_core # (
     wire [DATA_WIDTH-1:0] w_mem_instr_out;
     wire                  w_halt;
 
-    assign dbug = {{7{1'b0}}, ;
+    assign dbug = {7'h00, w_halt};
 
     wire [4:0]            r_instr_opcode;
     wire [4:0]            r_instr_alu_op;

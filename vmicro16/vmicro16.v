@@ -724,6 +724,7 @@ module vmicro16_dec # (
         `VMICRO16_OP_ARITH_U,
         `VMICRO16_OP_ARITH_S,
         `VMICRO16_OP_SETC,
+        `VMICRO16_OP_BIT,
         `VMICRO16_OP_MULT:      has_we = 1'b1;
         default:                has_we = 1'b0;
     endcase
@@ -919,6 +920,9 @@ module vmicro16_core # (
     input        reset,
 
     output [7:0] dbug,
+
+    // interrupt sources
+    input  [`NUM_INTERRUPTS-1:0] int,
     
     // APB master to slave interface (apb_intercon)
     output  [`APB_WIDTH-1:0]    w_PADDR,

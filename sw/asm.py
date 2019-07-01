@@ -37,10 +37,13 @@ class Instr:
     imm5    = 0
     index   = -1
     ref     = ""
+    linestr = ""
+    label   = None
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
 
 def parse_line(l):
+    l = l.rstrip()
     m = r_comment.match(l)
     if m:
         return None
@@ -52,6 +55,7 @@ def parse_line(l):
         r.rs1 = int(m.group(2))
         r.rs2 = int(m.group(3))
         r.imm8 = int(m.group(4), 16)
+        r.linestr = l
         return r
 
     m = r_label.match(l)
@@ -59,6 +63,7 @@ def parse_line(l):
         r = Label()
         r.addra = 0
         r.name = m.group(1)
+        r.linestr = l
         return r
 
     m = r_instr_rr.match(l)
@@ -67,6 +72,7 @@ def parse_line(l):
         r.op = m.group(1)
         r.rs1 = int(m.group(2))
         r.rs2 = int(m.group(3))
+        r.linestr = l
         return r
 
 
@@ -76,6 +82,7 @@ def parse_line(l):
         r.op = m.group(1)
         r.rs1 = int(m.group(2))
         r.imm8 = int(m.group(3), 16)
+        r.linestr = l
         return r
 
     m = r_instr_br.match(l)
@@ -84,6 +91,7 @@ def parse_line(l):
         r.op = m.group(1)
         r.ref = m.group(2)
         r.imm8 = int(m.group(3), 16)
+        r.linestr = l
         return r
 
     m = r_instr_rif.match(l)
@@ -92,6 +100,7 @@ def parse_line(l):
         r.op = m.group(1)
         r.rs1 = int(m.group(2))
         r.ref = m.group(3)
+        r.linestr = l
         return r
 
 
@@ -112,6 +121,7 @@ def calc_offset(ls):
             while(not isinstance(n, Instr)):
                 n = next(lsi)
             l.index = n.index
+            n.label = l
 
 def find_str_label(s):
     for l in all_labels:
@@ -132,6 +142,7 @@ def cg_replace_labels(xs):
             label = find_str_label(x.ref)
             if label:
                 assert(label.index >= 0)
+                x.label = label
                 x.imm8 = label.index
             else:
                 label = cg_str_to_imm(x.ref)
@@ -173,7 +184,6 @@ def cg(xs):
     assert(all(isinstance(x, Instr) for x in xs))
 
     binstr = []
-
     for x in xs:
         print("Cg for {:s}".format(x.op))
         op = 0
@@ -186,6 +196,21 @@ def cg(xs):
             op |= 0b00100 << 11
             op |= x.rs1 << 8
             op |= x.rs2 << 5
+            binstr.append(op)
+        elif x.op == "lshft":
+            op |= 0b00011 << 11
+            op |= x.rs1 << 8
+            op |= x.rs2 << 5
+            op |= 0b00100
+            binstr.append(op)
+        elif x.op == "rshft":
+            op |= 0b00011 << 11
+            op |= x.rs1 << 8
+            op |= x.rs2 << 5
+            op |= 0b00101
+            binstr.append(op)
+        elif x.op == "nop":
+            op = 0x0000
             binstr.append(op)
         elif x.op == "add":
             op |= 0b00110 << 11
@@ -254,13 +279,13 @@ def cg(xs):
         # check op fits within 16-bits
         assert((op >= 0x0000) and (op <= 0xFFFF))
 
-    print(binstr)
     return binstr
 
 with open(args.fname, "r") as f:
     # Apply a structure to each line
     lines = list(map(parse_line, f.readlines()))
-    print(list(lines))
+    for i, k in enumerate(lines):
+        print(i+1, k)
 
     # Removes empty information
     lines = list(filter(lambda x: x != None, lines))
@@ -274,9 +299,6 @@ with open(args.fname, "r") as f:
     print("Found {:d} LABELS".format(len(all_labels)))
     print("Found {:d} INSTR".format(len(all_instr)))
 
-    for i in all_instr:
-        print(i)
-
     print("Replacing labels...")
     cg_replace_labels(all_instr)
     for i, k in enumerate(all_instr):
@@ -284,10 +306,14 @@ with open(args.fname, "r") as f:
 
     # Write hex words to verilog memh file
     binstr = cg(all_instr)
+    print("")
     with open("asm.s.hex", "w") as out:
         for i, b in enumerate(binstr):
-            print("{:d}\t{:04x}".format(i, b))
+            if all_instr[i].label:
+                print("{:s}:".format(all_instr[i].label.name))
+            print("\t{:d}\t{:s}\t\t{:04x}".format(i, all_instr[i].linestr, b), end = '')
+            
+            print("")
             out.write("{:04x}\n".format(b))
-        print("Written asm.s.hex file!")
-
+        print("\nWritten asm.s.hex file!")
 

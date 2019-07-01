@@ -4,6 +4,77 @@
 `include "vmicro16_soc_config.v"
 `include "clog2.v"
 
+module timer_apb # (
+    parameter CLK_HZ = 50_000_000
+) (
+    input clk,
+    input reset,
+    
+    // 0 16-bit value   R/W
+    // 1 16-bit control R    b0 = start, b1 = reset
+    input      [0:0]                S_PADDR,
+
+    input                           S_PWRITE,
+    input                           S_PSELx,
+    input                           S_PENABLE,
+    input      [`DATA_WIDTH-1:0]    S_PWDATA,
+    
+    output reg [`DATA_WIDTH-1:0]    S_PRDATA,
+    output                          S_PREADY,
+
+    output out
+);
+    //assign S_PRDATA = (S_PSELx & S_PENABLE) ? swex_success ? 16'hF0F0 : 16'h0000;
+    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1 : 1'b0;
+    wire   en       = (S_PSELx & S_PENABLE);
+    wire   we       = (en & S_PWRITE);
+
+    reg [`DATA_WIDTH-1:0] r_counter = 0;
+    reg [`DATA_WIDTH-1:0] r_load = 0;
+    reg [`DATA_WIDTH-1:0] r_ctrl = 0;
+
+    localparam CTRL_START = 0;
+    localparam CTRL_RESET = 1;
+
+    localparam ADDR_LOAD = 1'b0;
+    localparam ADDR_CTRL = 1'b1;
+    
+    always @(*) begin
+        S_PRDATA = 0;
+        if (en)
+            case(S_PADDR)
+                ADDR_LOAD: S_PRDATA = r_counter;
+                ADDR_CTRL: S_PRDATA = r_ctrl;
+                default:   S_PRDATA = 0;
+            endcase
+    end
+
+    always @(posedge clk)
+        if (we)
+            case(S_PADDR)
+                // Write to the load register:
+                //   Set load register
+                //   Set counter register
+                ADDR_LOAD: begin
+                    r_load          <= S_PWDATA;
+                    r_counter       <= S_PWDATA;
+                end
+                ADDR_CTRL: r_ctrl   <= S_PWDATA;
+            endcase
+        else
+            if (r_ctrl[CTRL_START]) begin
+                if (r_counter == 0)
+                    r_counter <= r_load;
+                else
+                    r_counter <= r_counter -1;
+            end else if (r_ctrl[CTRL_RESET])
+                r_counter <= r_load;
+            
+    // generate the output pulse when r_counter == 0
+    //   out = (counter reached zero && counter started)
+    assign out = (r_counter == 0) && r_ctrl[CTRL_START];
+endmodule
+
 // Shared memory with hardware monitor (LWEX/SWEX)
 (* keep_hierarchy = "yes" *)
 (* dont_touch = "yes" *)
@@ -308,6 +379,23 @@ module vmicro16_soc (
         .rx_wire    (uart_rx)
     );
 
+    (*dont_touch="true"*)
+    (* keep_hierarchy = "yes" *)
+    timer_apb timr0 (
+        .clk        (clk),
+        .reset      (reset),
+        // apb slave to master interface
+        .S_PADDR    (M_PADDR),
+        .S_PWRITE   (M_PWRITE),
+        .S_PSELx    (M_PSELx[`APB_PSELX_TIMR0]),
+        .S_PENABLE  (M_PENABLE),
+        .S_PWDATA   (M_PWDATA),
+        .S_PRDATA   (M_PRDATA[`APB_PSELX_TIMR0*`DATA_WIDTH +: `DATA_WIDTH]),
+        .S_PREADY   (M_PREADY[`APB_PSELX_TIMR0]),
+        //
+        .out        (timr0_out)
+    );
+
     // Shared register set for system-on-chip info
     // R0 = number of cores
     (*dont_touch="true"*)
@@ -364,6 +452,8 @@ module vmicro16_soc (
             .clk        (clk),
             .reset      (reset),
             .dbug       (dbug1[i*8 +: 8]),
+
+            .int        (timr0_out),
 
             .w_PADDR    (w_PADDR   [`APB_WIDTH*i +: `APB_WIDTH] ),
             .w_PWRITE   (w_PWRITE  [i]                         ),

@@ -4,8 +4,8 @@
 
 `include "clog2.v"
 
-`define CORES           7
-`define SLAVES          6
+`define CORES           1
+`define SLAVES          7
 
 `define DEF_ALU_HW_MULT 1
 
@@ -18,6 +18,7 @@
 `define APB_PSELX_BRAM0 3
 `define APB_PSELX_GPIO1 4
 `define APB_PSELX_GPIO2 5
+`define APB_PSELX_TIMR0 6
 
 `define APB_GPIO0_PINS  8
 `define APB_GPIO1_PINS  16
@@ -60,6 +61,16 @@
 `define DEF_MMU_BRAM0_CELLS  128
 `define DEF_MMU_BRAM0_S     16'h00C0
 `define DEF_MMU_BRAM0_E     16'h00FF
+
+// TIMR0
+`define DEF_MMU_TIMR0_S     16'h0100
+`define DEF_MMU_TIMR0_E     16'h0101
+
+//////////////////////////////////////////////////////////
+// Interrupts
+//////////////////////////////////////////////////////////
+`define NUM_INTERRUPTS      1
+
 
 ///////////////////////////////////////////////////////////
 // Core parameters

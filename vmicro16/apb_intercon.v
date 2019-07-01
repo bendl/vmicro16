@@ -14,6 +14,7 @@ module addr_dec # (
     output     [SLAVE_PORTS-1:0]         sel,
     output reg [`clog2(SLAVE_PORTS)-1:0] seli
 );
+    // binary bit output
     // GPIO0
     assign sel[`APB_PSELX_GPIO0] = ((addr >= `DEF_MMU_GPIO0_S) 
                                  && (addr <= `DEF_MMU_GPIO0_E));
@@ -32,7 +33,11 @@ module addr_dec # (
     // BRAM0
     assign sel[`APB_PSELX_BRAM0] = ((addr >= `DEF_MMU_BRAM0_S) 
                                  && (addr <= `DEF_MMU_BRAM0_E));
+    // TIMR0
+    assign sel[`APB_PSELX_TIMR0] = ((addr >= `DEF_MMU_TIMR0_S) 
+                                 && (addr <= `DEF_MMU_TIMR0_E));
 
+    // binary number output
     always @(*)
         if      ((addr >= `DEF_MMU_GPIO0_S) && (addr <= `DEF_MMU_GPIO0_E))
             seli = `APB_PSELX_GPIO0;
@@ -46,6 +51,8 @@ module addr_dec # (
             seli = `APB_PSELX_REGS0;
         else if ((addr >= `DEF_MMU_BRAM0_S) && (addr <= `DEF_MMU_BRAM0_E))
             seli = `APB_PSELX_BRAM0;
+        else if ((addr >= `DEF_MMU_TIMR0_S) && (addr <= `DEF_MMU_TIMR0_E))
+            seli = `APB_PSELX_TIMR0;
         else
             seli = 0;
 endmodule

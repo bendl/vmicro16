@@ -9,6 +9,8 @@ entry:
     movi    r1, #0xC1
     movi    r2, #0x01
 
+
+
 try_inc:
     lwex    r0, r1
     // increment value
@@ -24,5 +26,6 @@ try_inc:
     //cmp r2, #0
     //bne try_increment
 
+exit:
     // Halt processor
     halt    r0, r0

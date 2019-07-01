@@ -306,12 +306,13 @@ with open(args.fname, "r") as f:
 
     # Write hex words to verilog memh file
     binstr = cg(all_instr)
-    print("")
+    print("\n{:s} produces:".format(args.fname))
+    print("=====================================\n")
     with open("asm.s.hex", "w") as out:
         for i, b in enumerate(binstr):
             if all_instr[i].label:
                 print("{:s}:".format(all_instr[i].label.name))
-            print("\t{:d}\t{:s}\t\t{:04x}".format(i, all_instr[i].linestr, b), end = '')
+            print("\t{:x}\t{:s}\t\t{:04x}".format(i, all_instr[i].linestr, b), end = '')
             
             print("")
             out.write("{:04x}\n".format(b))

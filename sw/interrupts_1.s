@@ -1,4 +1,4 @@
-// vars.s
+// interrupts.s
 //   Test global stack variables
 var1:
     nop     r0, r0
@@ -25,17 +25,6 @@ entry:
     lw      r2, r0
 
     // Start the timer (write 0x0001 to 0x0101)
-    movi    r1, #0x01
-    sw      r1, r0 + #0x01
-    
-    // Read 
-    lw      r2, r0
-
-    // Stop the timer (write 0x0002 to 0x0101)
-    movi    r1, #0x02
-    sw      r1, r0 + #0x01
-
-    // Restart the timer
     movi    r1, #0x01
     sw      r1, r0 + #0x01
 

@@ -425,13 +425,16 @@ module vmicro16_core_mmu # (
                     end
                 `endif
             endcase
+    
+    reg [`DEF_NUM_INT-1:0]  ints_mask = 0;
+    wire [`DEF_NUM_INT-1:0] ints_masked = ints & ints_mask;
 
     vmicro16_regs # (
         .CELL_DEPTH         (SPECIAL_REGS),
         .CELL_WIDTH         (MEM_WIDTH),
         // per core special values
         .PARAM_DEFAULTS_R0  (CORE_ID),
-        .PARAM_DEFAULTS_R1  ({16{1'b0}})
+        .PARAM_DEFAULTS_R1  (`DEF_INT_MASK)
     ) regs_apb (
         .clk    (clk),
         .reset  (reset),
@@ -922,7 +925,8 @@ module vmicro16_core # (
     output [7:0] dbug,
 
     // interrupt sources
-    input  [`NUM_INTERRUPTS-1:0] int,
+    input  [`DEF_NUM_INT-1:0]             ints,
+    input  [`DEF_NUM_INT*`DATA_WIDTH-1:0] ints_data,
     
     // APB master to slave interface (apb_intercon)
     output  [`APB_WIDTH-1:0]    w_PADDR,
@@ -992,7 +996,6 @@ module vmicro16_core # (
     always @(r_cmp_flags)
         $display($time, "\tC%02h:\tALU CMP: %b", CORE_ID, r_cmp_flags);
 
-
     // 2 cycle register fetch
     always @(*) begin
         r_reg_rs1 = 0;
@@ -1003,6 +1006,12 @@ module vmicro16_core # (
         else
             r_reg_rs1 = 3'h0;
     end
+
+    
+    //always @(posedge clk)
+    //    if (|int_masked)
+    //        // an interrupt
+
 
     // cpu state machine
     always @(posedge clk)

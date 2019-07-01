@@ -11,7 +11,7 @@
             "program": "${file}",
             "cwd": "${workspaceFolder}/sw/",
             "console": "integratedTerminal",
-            "args": ["timr_1.s"]
+            "args": ["interrupts_1.s"]
         }
     ]
 }

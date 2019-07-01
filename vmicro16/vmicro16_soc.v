@@ -9,6 +9,8 @@ module timer_apb # (
 ) (
     input clk,
     input reset,
+
+    input clk_en,
     
     // 0 16-bit value   R/W
     // 1 16-bit control R    b0 = start, b1 = reset
@@ -22,7 +24,8 @@ module timer_apb # (
     output reg [`DATA_WIDTH-1:0]    S_PRDATA,
     output                          S_PREADY,
 
-    output out
+    output out,
+    output [`DATA_WIDTH-1:0] int_data
 );
     //assign S_PRDATA = (S_PSELx & S_PENABLE) ? swex_success ? 16'hF0F0 : 16'h0000;
     assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1 : 1'b0;
@@ -72,7 +75,8 @@ module timer_apb # (
             
     // generate the output pulse when r_counter == 0
     //   out = (counter reached zero && counter started)
-    assign out = (r_counter == 0) && r_ctrl[CTRL_START];
+    assign out      = (r_counter == 0) && r_ctrl[CTRL_START];
+    assign int_data = {`DATA_WIDTH{1'b0}};
 endmodule
 
 // Shared memory with hardware monitor (LWEX/SWEX)
@@ -268,6 +272,10 @@ module vmicro16_soc (
     (*dont_touch="true"*) wire [`CORES*`DATA_WIDTH-1:0]  w_PRDATA;
     (*dont_touch="true"*) wire [`CORES-1:0]              w_PREADY;
 
+    // Interrupts
+    wire [`DEF_NUM_INT-1:0]              ints;
+    wire [`DEF_NUM_INT*`DATA_WIDTH-1:0]  ints_data;
+
     (*dont_touch="true"*)
     (* keep_hierarchy = "yes" *)
     apb_intercon_s # (
@@ -393,7 +401,8 @@ module vmicro16_soc (
         .S_PRDATA   (M_PRDATA[`APB_PSELX_TIMR0*`DATA_WIDTH +: `DATA_WIDTH]),
         .S_PREADY   (M_PREADY[`APB_PSELX_TIMR0]),
         //
-        .out        (timr0_out)
+        .out        (ints     [`DEF_INT_TIMR0]),
+        .int_data   (ints_data[`DEF_INT_TIMR0*`DATA_WIDTH +: `DATA_WIDTH])
     );
 
     // Shared register set for system-on-chip info
@@ -453,7 +462,8 @@ module vmicro16_soc (
             .reset      (reset),
             .dbug       (dbug1[i*8 +: 8]),
 
-            .int        (timr0_out),
+            .ints       (ints),
+            .ints_data  (ints_data),
 
             .w_PADDR    (w_PADDR   [`APB_WIDTH*i +: `APB_WIDTH] ),
             .w_PWRITE   (w_PWRITE  [i]                         ),

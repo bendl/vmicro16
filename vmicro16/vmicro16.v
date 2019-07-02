@@ -99,7 +99,7 @@ module vmicro16_bram # (
 
         `define TEST_ASM
         `ifdef TEST_ASM
-        $readmemh("E:\\Projects\\uni\\vmicro16\\sw\\asm.s.hex", mem);
+        $readmemh("Z:\\uni\\vmicro16\\sw\\asm.s.hex", mem);
         `endif
         
         //`define TEST_COMPILER
@@ -852,7 +852,7 @@ module vmicro16_alu # (
     always @(*) case (op)
         // branch/nop, output nothing
         `VMICRO16_ALU_BR,
-        `VMICRO16_ALU_NOP:          c = {{DATA_WIDTH}{0}};
+        `VMICRO16_ALU_NOP:          c = {DATA_WIDTH{1'b0}};
         // load/store addresses (use value in rd2)
         `VMICRO16_ALU_LW,
         `VMICRO16_ALU_SW:           c = b;
@@ -908,12 +908,13 @@ module vmicro16_alu # (
             $display($time, "\tC%02h: ALU CMP: %h %h = %h = %b", CORE_ID, a, b, cmp_tmp, c[3:0]);
         end
 
-        `VMICRO16_ALU_SETC: c = {{{15}{1'b0}}, r_setc};
+        `VMICRO16_ALU_SETC: c = { {15{1'b0}}, r_setc };
 
         // TODO: Parameterise
         default: begin
             $display($time, "\tALU: unknown op: %h", op);
             c = 16'h0000;
+				cmp_temp = 0;
         end
     endcase
 

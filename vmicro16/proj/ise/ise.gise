@@ -219,19 +219,15 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1560429259" xil_pn:in_ck="-4602676287062498961" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="2398032887687908319" xil_pn:start_ts="1560429032">
-      <status xil_pn:value="SuccessfullyRun"/>
+    <transform xil_pn:end_ts="1562093580" xil_pn:in_ck="-4602676287062498961" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="2294069330633181799" xil_pn:start_ts="1562093555">
+      <status xil_pn:value="FailedRun"/>
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForProperties"/>
-      <status xil_pn:value="InputChanged"/>
       <outfile xil_pn:name="_xmsgs/xst.xmsgs"/>
       <outfile xil_pn:name="top_ms.lso"/>
       <outfile xil_pn:name="top_ms.ngc"/>
       <outfile xil_pn:name="top_ms.ngr"/>
       <outfile xil_pn:name="top_ms.prj"/>
-      <outfile xil_pn:name="top_ms.stx"/>
       <outfile xil_pn:name="top_ms.syr"/>
       <outfile xil_pn:name="top_ms.xst"/>
       <outfile xil_pn:name="top_ms_xst.xrpt"/>
@@ -289,12 +285,10 @@
       <outfile xil_pn:name="top_ms_par.xrpt"/>
     </transform>
     <transform xil_pn:end_ts="1560421944" xil_pn:in_ck="5544743906236789" xil_pn:name="TRANEXT_bitFile_spartan6" xil_pn:prop_ck="5341574683187206424" xil_pn:start_ts="1560421873">
-      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="AbortedRun"/>
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
       <status xil_pn:value="OutOfDateForPredecessor"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="OutputChanged"/>
       <outfile xil_pn:name="_xmsgs/bitgen.xmsgs"/>
       <outfile xil_pn:name="top_ms.bgn"/>
       <outfile xil_pn:name="top_ms.bit"/>

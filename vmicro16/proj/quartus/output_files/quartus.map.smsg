@@ -1,1 +1,1 @@
-Warning (10273): Verilog HDL warning at vmicro16.v(741): extended using "x" or "z" File: Z:/uni/vmicro16/vmicro16/vmicro16.v Line: 741
+Info (10281): Verilog HDL Declaration information at vmicro16_soc.v(90): object "SWEX_SUCCESS" differs only in case from object "swex_success" in the same scope File: Z:/uni/vmicro16/vmicro16/vmicro16_soc.v Line: 90

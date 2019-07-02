@@ -250,8 +250,9 @@ module vmicro16_soc (
     output     [`CORES*8:0]         dbug1
 );
     genvar di;
-    generate for(di = 0; di < 8; di = di + 1)
+    generate for(di = 0; di < 8; di = di + 1) begin : gen_dbug0
         assign dbug0[di] = dbug1[di*8];
+    end
     endgenerate
 
     // Peripherals (master to slave)

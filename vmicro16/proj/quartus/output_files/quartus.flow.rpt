@@ -1,5 +1,5 @@
 Flow report for quartus
-Fri Jun 14 19:26:52 2019
+Tue Jul 02 19:43:37 2019
 Quartus Prime Version 17.1.0 Build 590 10/25/2017 SJ Lite Edition
 
 
@@ -40,19 +40,19 @@ refer to the applicable agreement for further details.
 +-------------------------------------------------------------------------------+
 ; Flow Summary                                                                  ;
 +---------------------------------+---------------------------------------------+
-; Flow Status                     ; Successful - Fri Jun 14 19:23:46 2019       ;
+; Flow Status                     ; Successful - Tue Jul 02 19:43:37 2019       ;
 ; Quartus Prime Version           ; 17.1.0 Build 590 10/25/2017 SJ Lite Edition ;
 ; Revision Name                   ; quartus                                     ;
 ; Top-level Entity Name           ; top_ms                                      ;
 ; Family                          ; Cyclone V                                   ;
 ; Device                          ; 5CSEMA5F31C6                                ;
 ; Timing Models                   ; Final                                       ;
-; Logic utilization (in ALMs)     ; 28,069 / 32,070 ( 88 % )                    ;
-; Total registers                 ; 20622                                       ;
+; Logic utilization (in ALMs)     ; 7,498 / 32,070 ( 23 % )                     ;
+; Total registers                 ; 9138                                        ;
 ; Total pins                      ; 56 / 457 ( 12 % )                           ;
 ; Total virtual pins              ; 0                                           ;
-; Total block memory bits         ; 197,632 / 4,065,280 ( 5 % )                 ;
-; Total DSP Blocks                ; 87 / 87 ( 100 % )                           ;
+; Total block memory bits         ; 33,792 / 4,065,280 ( < 1 % )                ;
+; Total DSP Blocks                ; 17 / 87 ( 20 % )                            ;
 ; Total HSSI RX PCSs              ; 0                                           ;
 ; Total HSSI PMA RX Deserializers ; 0                                           ;
 ; Total HSSI TX PCSs              ; 0                                           ;
@@ -67,7 +67,7 @@ refer to the applicable agreement for further details.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 06/14/2019 18:58:54 ;
+; Start date & time ; 07/02/2019 19:31:35 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; quartus             ;
 +-------------------+---------------------+
@@ -79,7 +79,7 @@ refer to the applicable agreement for further details.
 ; Assignment Name                         ; Value                                  ; Default Value ; Entity Name ; Section Id      ;
 +-----------------------------------------+----------------------------------------+---------------+-------------+-----------------+
 ; ALM_REGISTER_PACKING_EFFORT             ; High                                   ; Medium        ; --          ; --              ;
-; COMPILER_SIGNATURE_ID                   ; 741621064968.156053513306356           ; --            ; --          ; --              ;
+; COMPILER_SIGNATURE_ID                   ; 741621064968.156209229413336           ; --            ; --          ; --              ;
 ; EDA_DESIGN_INSTANCE_NAME                ; NA                                     ; --            ; --          ; tb_vmicro16_soc ;
 ; EDA_NATIVELINK_SIMULATION_TEST_BENCH    ; tb_vmicro16_soc                        ; --            ; --          ; eda_simulation  ;
 ; EDA_OUTPUT_DATA_FORMAT                  ; Verilog Hdl                            ; --            ; --          ; eda_simulation  ;
@@ -109,11 +109,12 @@ refer to the applicable agreement for further details.
 +---------------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name               ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +---------------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis      ; 00:04:17     ; 1.3                     ; 5469 MB             ; 00:04:44                           ;
-; Fitter                    ; 00:19:23     ; 1.2                     ; 7085 MB             ; 00:35:33                           ;
-; Assembler                 ; 00:00:43     ; 1.0                     ; 5274 MB             ; 00:00:41                           ;
-; TimeQuest Timing Analyzer ; 00:03:04     ; 1.8                     ; 5976 MB             ; 00:05:26                           ;
-; Total                     ; 00:27:27     ; --                      ; --                  ; 00:46:24                           ;
+; Analysis & Synthesis      ; 00:01:20     ; 1.2                     ; 4998 MB             ; 00:01:48                           ;
+; Fitter                    ; 00:08:26     ; 1.2                     ; 6481 MB             ; 00:13:02                           ;
+; Assembler                 ; 00:00:26     ; 1.0                     ; 4968 MB             ; 00:00:23                           ;
+; TimeQuest Timing Analyzer ; 00:01:22     ; 1.8                     ; 5387 MB             ; 00:02:13                           ;
+; EDA Netlist Writer        ; 00:00:11     ; 1.0                     ; 4966 MB             ; 00:00:11                           ;
+; Total                     ; 00:11:45     ; --                      ; --                  ; 00:17:37                           ;
 +---------------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
@@ -126,6 +127,7 @@ refer to the applicable agreement for further details.
 ; Fitter                    ; ben-xps-13       ; Windows 10 ; 10.0       ; x86_64         ;
 ; Assembler                 ; ben-xps-13       ; Windows 10 ; 10.0       ; x86_64         ;
 ; TimeQuest Timing Analyzer ; ben-xps-13       ; Windows 10 ; 10.0       ; x86_64         ;
+; EDA Netlist Writer        ; ben-xps-13       ; Windows 10 ; 10.0       ; x86_64         ;
 +---------------------------+------------------+------------+------------+----------------+
 
 
@@ -136,6 +138,7 @@ quartus_map --read_settings_files=on --write_settings_files=off quartus -c quart
 quartus_fit --read_settings_files=off --write_settings_files=off quartus -c quartus
 quartus_asm --read_settings_files=off --write_settings_files=off quartus -c quartus
 quartus_sta quartus -c quartus
+quartus_eda --read_settings_files=off --write_settings_files=off quartus -c quartus
 
 
 

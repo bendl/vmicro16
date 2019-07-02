@@ -984,6 +984,7 @@ module vmicro16_core # (
     reg  [2:0] r_state = STATE_IF;
 
     reg  [DATA_WIDTH-1:0] r_pc          = 16'h0000;
+    reg  [DATA_WIDTH-1:0] r_pc_saved    = 16'h0000;
     reg  [DATA_WIDTH-1:0] r_instr       = 16'h0000;
     wire [DATA_WIDTH-1:0] w_mem_instr_out;
     wire                  w_halt;
@@ -1107,14 +1108,14 @@ module vmicro16_core # (
                     $display($time, "\tC%02h: CMP: %h", CORE_ID, r_alu_out[3:0]);
                     r_cmp_flags <= r_alu_out[3:0];
                 end
-
+                
+                
                 if (w_branching) begin
-                    $display($time, "\tbranching to %h", r_instr_rdd);
+                    $display($time, "\tC%02h: branching to %h", CORE_ID, r_instr_rdd);
                     r_pc <= r_instr_rdd;
                 end
                 else if (r_pc < (MEM_INSTR_DEPTH-1))
                     r_pc <= r_pc + 1;
-
 
                 r_state <= STATE_FE;
             end

@@ -12,14 +12,14 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="28700000001fs"></ZoomEndTime>
-      <Cursor1Time time="10000000000fs"></Cursor1Time>
+      <ZoomEndTime time="28780000001fs"></ZoomEndTime>
+      <Cursor1Time time="2290000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="178"></NameColumnWidth>
+      <NameColumnWidth column_width="174"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="4" />
+   <WVObjectSize size="5" />
    <wvobject fp_name="group504" type="group">
       <obj_property name="label">C0</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -157,6 +157,23 @@
       <wvobject fp_name="/tb_vmicro16_soc/uut/ints_data" type="array">
          <obj_property name="ElementShortName">ints_data[127:0]</obj_property>
          <obj_property name="ObjectShortName">ints_data[127:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group541" type="group">
+      <obj_property name="label">GPIO2</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/gpio2_apb/S_PWDATA" type="array">
+         <obj_property name="ElementShortName">S_PWDATA[15:0]</obj_property>
+         <obj_property name="ObjectShortName">S_PWDATA[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/gpio2_apb/ports_we" type="logic">
+         <obj_property name="ElementShortName">ports_we</obj_property>
+         <obj_property name="ObjectShortName">ports_we</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/gpio2_apb/gpio" type="array">
+         <obj_property name="ElementShortName">gpio[7:0]</obj_property>
+         <obj_property name="ObjectShortName">gpio[7:0]</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>

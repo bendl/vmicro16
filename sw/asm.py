@@ -142,7 +142,7 @@ def cg_replace_labels(xs):
             label = find_str_label(x.ref)
             if label:
                 assert(label.index >= 0)
-                x.label = label
+                #x.label = label
                 x.imm8 = label.index
             else:
                 label = cg_str_to_imm(x.ref)

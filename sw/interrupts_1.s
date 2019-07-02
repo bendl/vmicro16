@@ -16,7 +16,7 @@ entry:
     sw      r0, r1
     
     // enable all interrupts
-    movi    r0, #0x00
+    movi    r0, #0x0f
     sw      r0, r1 + #0x8
 
     // get core idx 0x80 in r7

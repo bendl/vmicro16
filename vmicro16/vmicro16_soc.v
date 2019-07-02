@@ -76,7 +76,7 @@ module timer_apb # (
     // generate the output pulse when r_counter == 0
     //   out = (counter reached zero && counter started)
     assign out      = (r_counter == 0) && r_ctrl[CTRL_START];
-    assign int_data = {`DATA_WIDTH{1'b0}};
+    assign int_data = {`DATA_WIDTH{1'b1}};
 endmodule
 
 // Shared memory with hardware monitor (LWEX/SWEX)
@@ -276,6 +276,7 @@ module vmicro16_soc (
     wire [`DEF_NUM_INT-1:0]              ints;
     wire [`DEF_NUM_INT*`DATA_WIDTH-1:0]  ints_data;
     assign ints[7:1] = 0;
+    assign ints_data[`DEF_NUM_INT*`DATA_WIDTH-1:`DATA_WIDTH] = {`DEF_NUM_INT*(`DATA_WIDTH-1){1'b0}};
 
     (*dont_touch="true"*)
     (* keep_hierarchy = "yes" *)

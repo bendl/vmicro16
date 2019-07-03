@@ -15,7 +15,7 @@ entry:
 
     // core 0 sets initial shared value
     lwex    r0, r1
-    movi    r0, #0x00
+    movi    r0, #0x30
     swex    r0, r1
 
 try_inc:
@@ -38,8 +38,6 @@ print:
     sw      r5, r1
 
     // and to uart0
-    movi    r1, #0x30
-    add     r5, r1
     movi    r1, #0xA0
     sw      r5, r1
 

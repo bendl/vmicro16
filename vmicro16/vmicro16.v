@@ -74,6 +74,9 @@ module vmicro16_bram # (
     parameter MEM_WIDTH     = 16,
     parameter MEM_DEPTH     = 64,
     parameter CORE_ID       = 0,
+    parameter USE_INITS     = 0,
+    parameter PARAM_DEFAULTS_R0 = 0,
+    parameter PARAM_DEFAULTS_R1 = 0,
     parameter NAME          = "BRAM"
 ) (
     input clk, 
@@ -91,195 +94,198 @@ module vmicro16_bram # (
     integer i;
     initial begin
         for (i = 0; i < MEM_DEPTH; i = i + 1) mem[i] = 0;
-        
-        //`define TEST_SW
-        `ifdef TEST_SW
-        $readmemh("E:\\Projects\\uni\\vmicro16\\sw\\verilog_memh.txt", mem);
-        `endif
+        mem[0] = PARAM_DEFAULTS_R0;
+        mem[1] = PARAM_DEFAULTS_R1;
 
-        `define TEST_ASM
-        `ifdef TEST_ASM
-        $readmemh("Z:\\uni\\vmicro16\\sw\\asm.s.hex", mem);
-        `endif
-        
-        //`define TEST_COMPILER
-        `ifdef TEST_COMPILER
-mem[0] = 16'h2f3f;
-mem[1] = 16'h2903;
-mem[2] = 16'h4100;
-mem[3] = 16'h3fa1;
-mem[4] = 16'h16e0;
-mem[5] = 16'h26e0;
-mem[6] = 16'h3fa1;
-mem[7] = 16'h2890;
-mem[8] = 16'h10d8;
-mem[9] = 16'h3fa1;
-mem[10] = 16'h2891;
-mem[11] = 16'h10d9;
-mem[12] = 16'h3fa1;
-mem[13] = 16'h2892;
-mem[14] = 16'h10da;
-mem[15] = 16'h3fa1;
-mem[16] = 16'h28a0;
-mem[17] = 16'h10db;
-mem[18] = 16'h3fa1;
-mem[19] = 16'h2880;
-mem[20] = 16'h10dc;
-mem[21] = 16'h3fa1;
-mem[22] = 16'h28b0;
-mem[23] = 16'h10dd;
-mem[24] = 16'h3fa1;
-mem[25] = 16'h28b1;
-mem[26] = 16'h10de;
-mem[27] = 16'h3fa1;
-mem[28] = 16'h08dc;
-mem[29] = 16'h0800;
-mem[30] = 16'h3fa1;
-mem[31] = 16'h10e0;
-mem[32] = 16'h2801;
-mem[33] = 16'h0be0;
-mem[34] = 16'h37a1;
-mem[35] = 16'h4b00;
-mem[36] = 16'h5001;
-mem[37] = 16'h2b00;
-mem[38] = 16'h4860;
-mem[39] = 16'h292c;
-mem[40] = 16'h4101;
-mem[41] = 16'h2864;
-mem[42] = 16'h292e;
-mem[43] = 16'h4100;
-mem[44] = 16'h0000;
-mem[45] = 16'h28c8;
-mem[46] = 16'h0000;
-mem[47] = 16'h08dc;
-mem[48] = 16'h0800;
-mem[49] = 16'h3fa1;
-mem[50] = 16'h10e0;
-mem[51] = 16'h2805;
-mem[52] = 16'h0be0;
-mem[53] = 16'h37a1;
-mem[54] = 16'h5860;
-mem[55] = 16'h10df;
-mem[56] = 16'h08df;
-mem[57] = 16'h3fa1;
-mem[58] = 16'h10e0;
-mem[59] = 16'h2830;
-mem[60] = 16'h0be0;
-mem[61] = 16'h37a1;
-mem[62] = 16'h307f;
-mem[63] = 16'h3fa1;
-mem[64] = 16'h10e0;
-mem[65] = 16'h08db;
-mem[66] = 16'h0be0;
-mem[67] = 16'h37a1;
-mem[68] = 16'h1300;
-mem[69] = 16'h2832;
-mem[70] = 16'h27c0;
-mem[71] = 16'h0ee0;
-mem[72] = 16'h37a1;
-mem[73] = 16'h6000;
+        if (USE_INITS) begin
+            //`define TEST_SW
+            `ifdef TEST_SW
+            $readmemh("E:\\Projects\\uni\\vmicro16\\sw\\verilog_memh.txt", mem);
+            `endif
 
-        `endif
+            `define TEST_ASM
+            `ifdef TEST_ASM
+            $readmemh("E:\\Projects\\uni\\vmicro16\\sw\\asm.s.hex", mem);
+            `endif
+            
+            //`define TEST_COMPILER
+            `ifdef TEST_COMPILER
+    mem[0] = 16'h2f3f;
+    mem[1] = 16'h2903;
+    mem[2] = 16'h4100;
+    mem[3] = 16'h3fa1;
+    mem[4] = 16'h16e0;
+    mem[5] = 16'h26e0;
+    mem[6] = 16'h3fa1;
+    mem[7] = 16'h2890;
+    mem[8] = 16'h10d8;
+    mem[9] = 16'h3fa1;
+    mem[10] = 16'h2891;
+    mem[11] = 16'h10d9;
+    mem[12] = 16'h3fa1;
+    mem[13] = 16'h2892;
+    mem[14] = 16'h10da;
+    mem[15] = 16'h3fa1;
+    mem[16] = 16'h28a0;
+    mem[17] = 16'h10db;
+    mem[18] = 16'h3fa1;
+    mem[19] = 16'h2880;
+    mem[20] = 16'h10dc;
+    mem[21] = 16'h3fa1;
+    mem[22] = 16'h28b0;
+    mem[23] = 16'h10dd;
+    mem[24] = 16'h3fa1;
+    mem[25] = 16'h28b1;
+    mem[26] = 16'h10de;
+    mem[27] = 16'h3fa1;
+    mem[28] = 16'h08dc;
+    mem[29] = 16'h0800;
+    mem[30] = 16'h3fa1;
+    mem[31] = 16'h10e0;
+    mem[32] = 16'h2801;
+    mem[33] = 16'h0be0;
+    mem[34] = 16'h37a1;
+    mem[35] = 16'h4b00;
+    mem[36] = 16'h5001;
+    mem[37] = 16'h2b00;
+    mem[38] = 16'h4860;
+    mem[39] = 16'h292c;
+    mem[40] = 16'h4101;
+    mem[41] = 16'h2864;
+    mem[42] = 16'h292e;
+    mem[43] = 16'h4100;
+    mem[44] = 16'h0000;
+    mem[45] = 16'h28c8;
+    mem[46] = 16'h0000;
+    mem[47] = 16'h08dc;
+    mem[48] = 16'h0800;
+    mem[49] = 16'h3fa1;
+    mem[50] = 16'h10e0;
+    mem[51] = 16'h2805;
+    mem[52] = 16'h0be0;
+    mem[53] = 16'h37a1;
+    mem[54] = 16'h5860;
+    mem[55] = 16'h10df;
+    mem[56] = 16'h08df;
+    mem[57] = 16'h3fa1;
+    mem[58] = 16'h10e0;
+    mem[59] = 16'h2830;
+    mem[60] = 16'h0be0;
+    mem[61] = 16'h37a1;
+    mem[62] = 16'h307f;
+    mem[63] = 16'h3fa1;
+    mem[64] = 16'h10e0;
+    mem[65] = 16'h08db;
+    mem[66] = 16'h0be0;
+    mem[67] = 16'h37a1;
+    mem[68] = 16'h1300;
+    mem[69] = 16'h2832;
+    mem[70] = 16'h27c0;
+    mem[71] = 16'h0ee0;
+    mem[72] = 16'h37a1;
+    mem[73] = 16'h6000;
+            `endif
 
-        //`define TEST_COND
-        `ifdef TEST_COND
-        mem[0] = {`VMICRO16_OP_MOVI,    3'h7, 8'hC0}; // lock
-        mem[0] = {`VMICRO16_OP_MOVI,    3'h7, 8'hC0}; // lock
-        `endif
+            //`define TEST_COND
+            `ifdef TEST_COND
+            mem[0] = {`VMICRO16_OP_MOVI,    3'h7, 8'hC0}; // lock
+            mem[0] = {`VMICRO16_OP_MOVI,    3'h7, 8'hC0}; // lock
+            `endif
 
-        //`define TEST_CMP
-        `ifdef TEST_CMP
-        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h0A};
-        mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'h0B};
-        mem[2] = {`VMICRO16_OP_CMP,     3'h1, 3'h0, 5'h1};
-        `endif
+            //`define TEST_CMP
+            `ifdef TEST_CMP
+            mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h0A};
+            mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'h0B};
+            mem[2] = {`VMICRO16_OP_CMP,     3'h1, 3'h0, 5'h1};
+            `endif
 
-        //`define TEST_LWEX
-        `ifdef TEST_LWEX
-        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC5};
-        mem[1] = {`VMICRO16_OP_SW,      3'h0, 3'h0, 5'h1};
-        mem[2] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h1};
-        mem[3] = {`VMICRO16_OP_LWEX,    3'h2, 3'h0, 5'h1};
-        mem[4] = {`VMICRO16_OP_SWEX,    3'h3, 3'h0, 5'h1};
-        `endif
+            //`define TEST_LWEX
+            `ifdef TEST_LWEX
+            mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC5};
+            mem[1] = {`VMICRO16_OP_SW,      3'h0, 3'h0, 5'h1};
+            mem[2] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h1};
+            mem[3] = {`VMICRO16_OP_LWEX,    3'h2, 3'h0, 5'h1};
+            mem[4] = {`VMICRO16_OP_SWEX,    3'h3, 3'h0, 5'h1};
+            `endif
 
-        //`define TEST_MULTICORE
-        `ifdef TEST_MULTICORE
-        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h90};
-        mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
-        mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'h80};
-        mem[4] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
-        mem[5] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
-        mem[6] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
-        mem[7] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
-        mem[8] = {`VMICRO16_OP_MOVI,    3'h0, 8'h91};
-        mem[9] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h0};
-        `endif
+            //`define TEST_MULTICORE
+            `ifdef TEST_MULTICORE
+            mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h90};
+            mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
+            mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+            mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'h80};
+            mem[4] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
+            mem[5] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
+            mem[6] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
+            mem[7] = {`VMICRO16_OP_MOVI,    3'h1, 8'h33};
+            mem[8] = {`VMICRO16_OP_MOVI,    3'h0, 8'h91};
+            mem[9] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h0};
+            `endif
 
-        //`define TEST_BR
-        `ifdef TEST_BR
-        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h0};
-        mem[1] = {`VMICRO16_OP_MOVI,    3'h3, 8'h3};
-        mem[2] = {`VMICRO16_OP_MOVI,    3'h1, 8'h2};
-        mem[3] = {`VMICRO16_OP_ARITH_U, 3'h0, 3'h1, 5'b11111};
-        mem[4] = {`VMICRO16_OP_BR,      3'h3, `VMICRO16_OP_BR_U};
-        mem[5] = {`VMICRO16_OP_MOVI,    3'h0, 8'hFF};
-        `endif
-        
-        //`define ALL_TEST
-        `ifdef ALL_TEST
-        // Standard all test
-        // REGS0
-        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h81};
-        mem[1] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
-        mem[2] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x82] = 6
-        // GPIO0
-        mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'h90};
-        mem[4] = {`VMICRO16_OP_MOVI,    3'h1, 8'hD};
-        mem[5] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        mem[6] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
-        // TIM0
-        mem[7] = {`VMICRO16_OP_MOVI,    3'h0, 8'h07};
-        mem[8] = {`VMICRO16_OP_LW,      3'h3, 3'h0, 5'h03};
-        // UART0
-        mem[9]  = {`VMICRO16_OP_MOVI,    3'h0, 8'hA0};      // UART0
-        mem[10] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41};      // ascii A
-        mem[11] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; 
-        mem[12] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
-        mem[13] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        mem[14] = {`VMICRO16_OP_MOVI,    3'h1, 8'h43}; // ascii C
-        mem[15] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        mem[16] = {`VMICRO16_OP_MOVI,    3'h1, 8'h44}; // ascii D
-        mem[17] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        mem[18] = {`VMICRO16_OP_MOVI,    3'h1, 8'h45}; // ascii D
-        mem[19] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        mem[20] = {`VMICRO16_OP_MOVI,    3'h1, 8'h46}; // ascii E
-        mem[21] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        // BRAM0
-        mem[22] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
-        mem[23] = {`VMICRO16_OP_MOVI,    3'h1, 8'hA};
-        mem[24] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h5};
-        mem[25] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
-        // GPIO1 (SSD 24-bit port)
-        mem[26] = {`VMICRO16_OP_MOVI,    3'h0, 8'h91};
-        mem[27] = {`VMICRO16_OP_MOVI,    3'h1, 8'h12};
-        mem[28] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        mem[29] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
-        // GPIO2
-        mem[30] = {`VMICRO16_OP_MOVI,    3'h0, 8'h92};
-        mem[31] = {`VMICRO16_OP_MOVI,    3'h1, 8'h56};
-        mem[32] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
-        `endif
+            //`define TEST_BR
+            `ifdef TEST_BR
+            mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h0};
+            mem[1] = {`VMICRO16_OP_MOVI,    3'h3, 8'h3};
+            mem[2] = {`VMICRO16_OP_MOVI,    3'h1, 8'h2};
+            mem[3] = {`VMICRO16_OP_ARITH_U, 3'h0, 3'h1, 5'b11111};
+            mem[4] = {`VMICRO16_OP_BR,      3'h3, `VMICRO16_OP_BR_U};
+            mem[5] = {`VMICRO16_OP_MOVI,    3'h0, 8'hFF};
+            `endif
+            
+            //`define ALL_TEST
+            `ifdef ALL_TEST
+            // Standard all test
+            // REGS0
+            mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'h81};
+            mem[1] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; // MMU[0x81] = 6
+            mem[2] = {`VMICRO16_OP_SW,      3'h2, 3'h0, 5'h1}; // MMU[0x82] = 6
+            // GPIO0
+            mem[3] = {`VMICRO16_OP_MOVI,    3'h0, 8'h90};
+            mem[4] = {`VMICRO16_OP_MOVI,    3'h1, 8'hD};
+            mem[5] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+            mem[6] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
+            // TIM0
+            mem[7] = {`VMICRO16_OP_MOVI,    3'h0, 8'h07};
+            mem[8] = {`VMICRO16_OP_LW,      3'h3, 3'h0, 5'h03};
+            // UART0
+            mem[9]  = {`VMICRO16_OP_MOVI,    3'h0, 8'hA0};      // UART0
+            mem[10] = {`VMICRO16_OP_MOVI,    3'h1, 8'h41};      // ascii A
+            mem[11] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0}; 
+            mem[12] = {`VMICRO16_OP_MOVI,    3'h1, 8'h42}; // ascii B
+            mem[13] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+            mem[14] = {`VMICRO16_OP_MOVI,    3'h1, 8'h43}; // ascii C
+            mem[15] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+            mem[16] = {`VMICRO16_OP_MOVI,    3'h1, 8'h44}; // ascii D
+            mem[17] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+            mem[18] = {`VMICRO16_OP_MOVI,    3'h1, 8'h45}; // ascii D
+            mem[19] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+            mem[20] = {`VMICRO16_OP_MOVI,    3'h1, 8'h46}; // ascii E
+            mem[21] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+            // BRAM0
+            mem[22] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
+            mem[23] = {`VMICRO16_OP_MOVI,    3'h1, 8'hA};
+            mem[24] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h5};
+            mem[25] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
+            // GPIO1 (SSD 24-bit port)
+            mem[26] = {`VMICRO16_OP_MOVI,    3'h0, 8'h91};
+            mem[27] = {`VMICRO16_OP_MOVI,    3'h1, 8'h12};
+            mem[28] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+            mem[29] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h0};
+            // GPIO2
+            mem[30] = {`VMICRO16_OP_MOVI,    3'h0, 8'h92};
+            mem[31] = {`VMICRO16_OP_MOVI,    3'h1, 8'h56};
+            mem[32] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h0};
+            `endif
 
-        //`define TEST_BRAM
-        `ifdef TEST_BRAM
-        // 2 core BRAM0 test
-        mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
-        mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'hA};
-        mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h5};
-        mem[3] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
-        `endif
+            //`define TEST_BRAM
+            `ifdef TEST_BRAM
+            // 2 core BRAM0 test
+            mem[0] = {`VMICRO16_OP_MOVI,    3'h0, 8'hC0};
+            mem[1] = {`VMICRO16_OP_MOVI,    3'h1, 8'hA};
+            mem[2] = {`VMICRO16_OP_SW,      3'h1, 3'h0, 5'h5};
+            mem[3] = {`VMICRO16_OP_LW,      3'h2, 3'h0, 5'h5};
+            `endif
+        end
     end
 
     always @(posedge clk) begin
@@ -359,9 +365,7 @@ module vmicro16_core_mmu # (
 
     // Special register selects
     localparam SPECIAL_REGS = 8;
-    wire [MEM_WIDTH-1:0]            sr_val;
-    wire [`clog2(SPECIAL_REGS)-1:0] sr_sel    = (mmu_addr - `DEF_MMU_SREG_S);
-
+    wire [MEM_WIDTH-1:0] sr_val;
 
     // Interrupt vector and mask
     initial ints_vector = 0;
@@ -465,30 +469,27 @@ module vmicro16_core_mmu # (
                 `endif
             endcase
 
-
-    vmicro16_regs # (
-        .CELL_DEPTH         (SPECIAL_REGS),
-        .CELL_WIDTH         (MEM_WIDTH),
-        // per core special values
+    vmicro16_bram # (
+        .MEM_WIDTH  (MEM_WIDTH),
+        .MEM_DEPTH  (SPECIAL_REGS),
+        .USE_INITS  (0),
         .PARAM_DEFAULTS_R0  (CORE_ID),
-        .PARAM_DEFAULTS_R1  (`DEF_INT_MASK)
-    ) regs_apb (
-        .clk    (clk),
-        .reset  (reset),
-        .rs1    (mmu_addr[`clog2(SPECIAL_REGS)-1:0]),
-        .rd1    (sr_val),
-        //.rs2    (),
-        //.rd2    (),
-        .we     (),
-        .ws1    (),
-        .wd     ()
+        .PARAM_DEFAULTS_R1  (`DEF_INT_MASK),
+        .NAME       ("ram_sr")
+    ) ram_sr (
+        .clk        (clk),
+        .reset      (reset),
+        .mem_addr   (mmu_addr[`clog2(SPECIAL_REGS)-1:0]),
+        .mem_in     (),
+        .mem_we     (),
+        .mem_out    (sr_val)
     );
 
     // Each M core has a TIM0 scratch memory
-    
     vmicro16_bram # (
         .MEM_WIDTH  (MEM_WIDTH),
         .MEM_DEPTH  (MEM_DEPTH),
+        .USE_INITS  (0),
         .NAME       ("TIM0")
     ) TIM0 (
         .clk        (clk),
@@ -1131,11 +1132,11 @@ module vmicro16_core # (
         end
 
     // Instruction ROM
-    
     vmicro16_bram # (
         .MEM_WIDTH      (DATA_WIDTH),
         .MEM_DEPTH      (MEM_INSTR_DEPTH),
         .CORE_ID        (CORE_ID),
+        .USE_INITS      (1),
         .NAME           ("INSTR_MEM")
     ) mem_instr (
         .clk            (clk), 
@@ -1148,7 +1149,6 @@ module vmicro16_core # (
     );
 
     // MMU
-    
     vmicro16_core_mmu # (
         .MEM_WIDTH      (DATA_WIDTH),
         .MEM_DEPTH      (MEM_SCRATCH_DEPTH),

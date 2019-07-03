@@ -110,6 +110,8 @@ module vmicro16_bram_ex_apb # (
     wire [MEM_WIDTH-1:0] mem_out_ex;
     reg                  swex_success = 0;
 
+    localparam ADDR_BITS = `clog2(MEM_DEPTH);
+
     // hack to create a 1 clock delay to S_PREADY 
     // for bram to be ready
     reg cdelay = 1;
@@ -124,8 +126,6 @@ module vmicro16_bram_ex_apb # (
     assign we       = (S_PSELx & S_PENABLE & S_PWRITE);
     wire   en       = (S_PSELx & S_PENABLE);
 
-
-
     // Similar to:
     //   http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0204f/Cihbghef.html
 
@@ -139,7 +139,7 @@ module vmicro16_bram_ex_apb # (
     wire                    swex        = S_PADDR[TOP_BIT_INDEX-1];
     wire [CORE_ID_BITS-1:0] core_id     = S_PADDR[PADDR_CORE_ID_MSB:PADDR_CORE_ID_LSB];
     // CORE_ID to write to ex_flags register
-    wire [BUS_WIDTH-1:0]    mem_addr    = S_PADDR[MEM_WIDTH-1:0];
+    wire [ADDR_BITS-1:0]    mem_addr    = S_PADDR[ADDR_BITS-1:0];
 
     wire [CORE_ID_BITS:0]   ex_flags_read;
     wire                    is_locked      = |ex_flags_read;
@@ -212,21 +212,22 @@ module vmicro16_bram_ex_apb # (
 
     always @(*)
         if (S_PSELx && S_PENABLE)
-            $display($time, "\t\tBRAMex => %h", mem_out);
+            $display($time, "\t\tBRAMex[%h] READ %h\tCORE: %h", mem_addr, mem_out, S_PADDR[16 +: CORE_ID_BITS]);
 
     always @(posedge clk)
         if (we)
-            $display($time, "\t\tBRAMex[%h] <= %h", S_PADDR, S_PWDATA);
+            $display($time, "\t\tBRAMex[%h] WRITE %h\tCORE: %h", mem_addr, S_PWDATA, S_PADDR[16 +: CORE_ID_BITS]);
 
     vmicro16_bram # (
         .MEM_WIDTH  (MEM_WIDTH),
         .MEM_DEPTH  (MEM_DEPTH),
-        .NAME       ("BRAM")
+        .USE_INITS  (0),
+        .NAME       ("BRAMexinst")
     ) bram_apb (
         .clk        (clk),
         .reset      (reset),
 
-        .mem_addr   (S_PADDR),
+        .mem_addr   (mem_addr),
         .mem_in     (S_PWDATA),
         .mem_we     (we && swex_success),
         .mem_out    (mem_out)

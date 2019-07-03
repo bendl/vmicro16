@@ -4,9 +4,10 @@ entry:
     movi    r7, #0x80
     lw      r7, r7
     
-    // BRAM0 shared memory C0
-    movi    r1, #0xC1
-    movi    r2, #0x01
+    // BRAM0 shared memory 0x1000
+    movi    r1, #0x01
+    movi    r2, #0x0C
+    lshft   r1, r2
 
     // branch if not core 0
     cmp     r7, r6
@@ -19,6 +20,9 @@ entry:
     swex    r0, r1
 
 try_inc:
+    // increment by 1
+    movi    r2, #0x01
+    
     lwex    r0, r1
     // increment value
     add     r0, r2

@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="7040000001fs"></ZoomEndTime>
-      <Cursor1Time time="1000000000fs"></Cursor1Time>
+      <ZoomStartTime time="519333334fs"></ZoomStartTime>
+      <ZoomEndTime time="3343333335fs"></ZoomEndTime>
+      <Cursor1Time time="1290000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="166"></NameColumnWidth>
-      <ValueColumnWidth column_width="97"></ValueColumnWidth>
+      <ValueColumnWidth column_width="93"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="6" />
+   <WVObjectSize size="7" />
    <wvobject fp_name="group504" type="group">
       <obj_property name="label">C0</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -128,7 +128,6 @@
    <wvobject fp_name="group505" type="group">
       <obj_property name="label">C1</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="group1123" type="group">
          <obj_property name="label">MMU</obj_property>
          <obj_property name="DisplayName">label</obj_property>
@@ -138,7 +137,6 @@
    <wvobject fp_name="group519" type="group">
       <obj_property name="label">TIMR0</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/tb_vmicro16_soc/uut/timr0/out" type="logic">
          <obj_property name="ElementShortName">out</obj_property>
          <obj_property name="ObjectShortName">out</obj_property>
@@ -187,6 +185,35 @@
       <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/tx_wire" type="logic">
          <obj_property name="ElementShortName">tx_wire</obj_property>
          <obj_property name="ObjectShortName">tx_wire</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group290" type="group">
+      <obj_property name="label">SRAM</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/S_PSELx" type="logic">
+         <obj_property name="ElementShortName">S_PSELx</obj_property>
+         <obj_property name="ObjectShortName">S_PSELx</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/S_PWRITE" type="logic">
+         <obj_property name="ElementShortName">S_PWRITE</obj_property>
+         <obj_property name="ObjectShortName">S_PWRITE</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/S_PENABLE" type="logic">
+         <obj_property name="ElementShortName">S_PENABLE</obj_property>
+         <obj_property name="ObjectShortName">S_PENABLE</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/S_PWDATA" type="array">
+         <obj_property name="ElementShortName">S_PWDATA[15:0]</obj_property>
+         <obj_property name="ObjectShortName">S_PWDATA[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/we" type="logic">
+         <obj_property name="ElementShortName">we</obj_property>
+         <obj_property name="ObjectShortName">we</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/swex_success" type="logic">
+         <obj_property name="ElementShortName">swex_success</obj_property>
+         <obj_property name="ObjectShortName">swex_success</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>

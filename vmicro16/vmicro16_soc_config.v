@@ -4,12 +4,33 @@
 
 `include "clog2.v"
 
-`define CORES           4
+`define CORES           2
 `define SLAVES          7
 
+///////////////////////////////////////////////////////////
+// Core parameters
+//////////////////////////////////////////////////////////
+// Top level data width for registers, memory cells, bus widths
+`define DATA_WIDTH      16
+
+// Set this to use a workaround for the MMU's APB T2 clock
+//`define FIX_T3
+
+// Instruction memory (read only) on each core.
+//   Must be large enough to support software program.
+`define DEF_MEM_INSTR_DEPTH 128
+
+// Scratch memory (read/write) on each core.
+//   See `DEF_MMU_TIM0_* defines for info.
+`define DEF_MEM_SCRATCH_DEPTH 64
+
+// Enables hardware multiplier and mult rr instruction
 `define DEF_ALU_HW_MULT 1
 
-`define DATA_WIDTH      16
+
+//////////////////////////////////////////////////////////
+// Memory mapping
+//////////////////////////////////////////////////////////
 `define APB_WIDTH       (2 + `clog2(`CORES) + `DATA_WIDTH)
 
 `define APB_PSELX_GPIO0 0
@@ -24,10 +45,10 @@
 `define APB_GPIO1_PINS  16
 `define APB_GPIO2_PINS  8
 
-`define APB_PADDR_BRAM0 16'h00C0
-`define APB_BRAM0_CELLS 64
+// Shared memory words
+`define APB_BRAM0_CELLS 4096
 
-///////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
 // Memory mapping
 //////////////////////////////////////////////////////////
 // TIM0
@@ -55,9 +76,8 @@
 `define DEF_MMU_REGS0_S     16'h00B0
 `define DEF_MMU_REGS0_E     16'h00B7
 // BRAM0
-`define DEF_MMU_BRAM0_CELLS  128
-`define DEF_MMU_BRAM0_S     16'h00C0
-`define DEF_MMU_BRAM0_E     16'h00FF
+`define DEF_MMU_BRAM0_S     16'h1000
+`define DEF_MMU_BRAM0_E     16'h1fff
 // TIMR0
 `define DEF_MMU_TIMR0_S     16'h0200
 `define DEF_MMU_TIMR0_E     16'h0201
@@ -75,18 +95,5 @@
 `define DEF_MMU_INTSM_S     16'h0108
 `define DEF_MMU_INTSM_E     16'h0108
 
-
-///////////////////////////////////////////////////////////
-// Core parameters
-//////////////////////////////////////////////////////////
-// Set this to use a workaround for the MMU's APB T2 clock
-//`define FIX_T3
-
-// Instruction memory (read only) on each core.
-//   Must be large enough to support software program.
-`define DEF_MEM_INSTR_DEPTH 128
-// Scratch memory (read/write) on each core.
-//   See `DEF_MMU_TIM0_* defines for info.
-`define DEF_MEM_SCRATCH_DEPTH 64
 
 `endif

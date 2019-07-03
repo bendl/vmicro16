@@ -23,9 +23,9 @@ module sync_dual_port_ram
         if (write_en)                               // if write enabled
            ram[write_address] <= write_data_in; // write data to ram and write_address 
             
-                read_address_reg  <= read_address;      // store read_address to reg
+            read_address_reg  <= read_address;      // store read_address to reg
             write_address_reg <= write_address;     // store write_address to reg
-            end
+        end
     
     // assignments for two data out ports
     assign read_data_out  = ram[read_address_reg];

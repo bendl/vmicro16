@@ -562,6 +562,7 @@ module vmicro16_regs # (
             regs[ws1] <= wd;
         end
 
+    // sync writes, async reads
     assign rd1 = regs[rs1];
     //assign rd2 = regs[rs2];
 endmodule
@@ -689,7 +690,8 @@ module vmicro16_dec # (
     output reg has_mem_we,
     output reg has_cmp,
 
-    output     halt,
+    output halt,
+    output intr,
 
     output reg has_lwex,
     output reg has_swex
@@ -705,13 +707,14 @@ module vmicro16_dec # (
     assign imm8   = instr[7:0];
     assign imm12  = instr[11:0];
     assign simm5  = instr[4:0];
-    // Special opcodes
-    assign halt   = (opcode == `VMICRO16_OP_HALT);
 
     // exme_op
     always @(*) case (opcode)
-        `VMICRO16_OP_HALT,    // TODO: stop ifid
-        `VMICRO16_OP_NOP:             alu_op = `VMICRO16_ALU_NOP;
+        `VMICRO16_OP_SPCL: casez(instr[11:0])
+            `VMICRO16_OP_SPCL_NOP,
+            `VMICRO16_OP_SPCL_HALT,
+            `VMICRO16_OP_SPCL_INTR:   alu_op = `VMICRO16_ALU_NOP;
+            default:                  alu_op = `VMICRO16_ALU_NOP; endcase
         
         `VMICRO16_OP_LW:              alu_op = `VMICRO16_ALU_LW;
         `VMICRO16_OP_SW:              alu_op = `VMICRO16_ALU_SW;
@@ -748,11 +751,16 @@ module vmicro16_dec # (
             `VMICRO16_OP_ARITH_SSUBI: alu_op = `VMICRO16_ALU_ARITH_SSUBI; 
             default:                  alu_op = `VMICRO16_ALU_BAD; endcase
         
-        default: begin
+        default: begin  
                                       alu_op = `VMICRO16_ALU_NOP;
             $display($time, "\tDEC: unknown opcode: %h ... NOPPING", opcode);
         end
     endcase
+
+    // Special opcodes
+    //assign nop  == ((opcode == `VMICRO16_OP_SPCL) & (~instr[0]));
+    assign halt = ((opcode == `VMICRO16_OP_SPCL) &   instr[0]);
+    assign intr = ((opcode == `VMICRO16_OP_SPCL) &   instr[1]);
 
     // Register writes
     always @(*) case (opcode)
@@ -969,6 +977,7 @@ module vmicro16_core # (
     // interrupt sources
     input  [`DEF_NUM_INT-1:0]             ints,
     input  [`DEF_NUM_INT*`DATA_WIDTH-1:0] ints_data,
+    output [`DEF_NUM_INT-1:0]             ints_ack,
     
     // APB master to slave interface (apb_intercon)
     output  [`APB_WIDTH-1:0]    w_PADDR,
@@ -985,6 +994,7 @@ module vmicro16_core # (
     localparam STATE_ME = 3;
     localparam STATE_WB = 4;
     localparam STATE_FE = 5;
+    localparam STATE_IDLE = 6;
     localparam STATE_HALT = 7;
     reg  [2:0] r_state = STATE_IF;
 
@@ -1026,12 +1036,15 @@ module vmicro16_core # (
     wire                  r_mem_scratch_busy;
 
     reg  [2:0]            r_reg_rs1 = 0;
-    wire [DATA_WIDTH-1:0] r_reg_rd1;
+    wire [DATA_WIDTH-1:0] r_reg_rd1_s;
+    wire [DATA_WIDTH-1:0] r_reg_rd1_i;
+    wire [DATA_WIDTH-1:0] r_reg_rd1 = regs_use_int ? r_reg_rd1_i : r_reg_rd1_s;
     //wire [15:0] r_reg_rd2;
     wire [DATA_WIDTH-1:0] r_reg_wd = (r_instr_has_mem) ? r_mem_scratch_out : r_alu_out;
     wire                  r_reg_we = r_instr_has_we && (r_state == STATE_WB);
 
     // branching
+    wire        w_intr;
     wire        w_branch_en;
     wire        w_branching   = r_instr_has_br && w_branch_en;
     reg  [3:0]  r_cmp_flags   = 4'h00; // N, Z, C, V
@@ -1050,9 +1063,24 @@ module vmicro16_core # (
             r_reg_rs1 = 3'h0;
     end
 
-    wire [`DEF_NUM_INT*`DATA_WIDTH-1:0] ints_mask;
-    wire [`DEF_NUM_INT-1:0]             ints_vector;
+    wire [`DEF_NUM_INT*`DATA_WIDTH-1:0] ints_vector;
+    wire [`DEF_NUM_INT-1:0]             ints_mask;
     wire                                has_int = ints & ints_mask;
+    reg int_pending = 0;
+    reg int_pending_ack = 0;
+    reg regs_use_int = 0;
+    always @(posedge clk)
+        if (int_pending_ack)
+            // We've now branched to the isr
+            int_pending <= 0;
+        else if (has_int)
+            // Notify fsm to switch to the ints_vector at the last stage
+            int_pending <= 1;
+        else if (w_intr)
+            // Return to Interrupt instruction called, 
+            //   so we've finished with the interrupt
+            int_pending <= 0;
+    
 
     // cpu state machine
     always @(posedge clk)
@@ -1114,13 +1142,29 @@ module vmicro16_core # (
                     r_cmp_flags <= r_alu_out[3:0];
                 end
                 
-                
-                if (w_branching) begin
+                if (int_pending) begin
+                    $display($time, "\tC%02h: Jumping to ISR: %h", CORE_ID, ints_vector[0 +: `DATA_WIDTH]);
+                    // TODO: check bounds
+                    // Save state
+                    r_pc_saved      <= r_pc + 1;
+                    regs_use_int    <= 1;
+                    int_pending_ack <= 1;
+                    // Jump to ISR
+                    r_pc            <= ints_vector[0 +: `DATA_WIDTH];
+                end else if (w_intr) begin
+                    $display($time, "\tC%02h: Returning from ISR: %h", CORE_ID, r_pc_saved);
+                    r_pc            <= r_pc_saved;
+                    regs_use_int    <= 0;
+                    int_pending_ack <= 0;
+                end else if (w_branching) begin
                     $display($time, "\tC%02h: branching to %h", CORE_ID, r_instr_rdd);
-                    r_pc <= r_instr_rdd;
+                    r_pc            <= r_instr_rdd;
+                    int_pending_ack <= 0;
                 end
-                else if (r_pc < (MEM_INSTR_DEPTH-1))
-                    r_pc <= r_pc + 1;
+                else if (r_pc < (MEM_INSTR_DEPTH-1)) begin
+                    r_pc            <= r_pc + 1;
+                    int_pending_ack <= 0;
+                end
 
                 r_state <= STATE_FE;
             end
@@ -1179,7 +1223,6 @@ module vmicro16_core # (
     );
 
     // Instruction decoder
-    
     vmicro16_dec dec (
         // input
         .instr          (r_instr),
@@ -1200,12 +1243,12 @@ module vmicro16_core # (
         .has_mem        (r_instr_has_mem),
         .has_mem_we     (r_instr_has_mem_we),
         .halt           (w_halt),
+        .intr           (w_intr),
         .has_lwex       (r_instr_has_lwex),
         .has_swex       (r_instr_has_swex)
     );
     
     // Software registers
-    
     vmicro16_regs # (
         .CORE_ID    (CORE_ID),
         .CELL_WIDTH (`DATA_WIDTH)
@@ -1214,18 +1257,37 @@ module vmicro16_core # (
         .reset      (reset),
         // async port 0
         .rs1        (r_reg_rs1),
-        .rd1        (r_reg_rd1),
+        .rd1        (r_reg_rd1_s),
         // async port 1
         //.rs2        (),
         //.rd2        (),
         // write port
-        .we         (r_reg_we),
+        .we         (r_reg_we && ~regs_use_int),
+        .ws1        (r_instr_rsd),
+        .wd         (r_reg_wd)
+    );
+
+    // Interrupt replacement registers
+    vmicro16_regs # (
+        .CORE_ID    (CORE_ID),
+        .CELL_WIDTH (`DATA_WIDTH),
+        .NAME       ("REGSINT")
+    ) regs_intr (
+        .clk        (clk),
+        .reset      (reset),
+        // async port 0
+        .rs1        (r_reg_rs1),
+        .rd1        (r_reg_rd1_i),
+        // async port 1
+        //.rs2        (),
+        //.rd2        (),
+        // write port
+        .we         (r_reg_we && regs_use_int),
         .ws1        (r_instr_rsd),
         .wd         (r_reg_wd)
     );
 
     // ALU
-    
     vmicro16_alu # (
         .CORE_ID(CORE_ID)
     ) alu (

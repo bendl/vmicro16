@@ -254,10 +254,10 @@ def cg(xs):
             op |= x.imm8 << 0
             binstr.append(op)
         elif x.op == "halt":
-            op |= 0b01100 << 11
-            op |= x.rs1 << 8
-            op |= x.rs2 << 5
-            op |= x.imm8 << 0
+            op = 0x0001
+            binstr.append(op)
+        elif x.op == "intr":
+            op = 0x0002
             binstr.append(op)
         elif x.op == "lwex":
             op |= 0b01101 << 11

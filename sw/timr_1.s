@@ -12,10 +12,10 @@ entry:
     movi    r7, #0x80
     lw      r7, r7
 
-    // set timr0 address 0x100 into r0
+    // set timr0 address 0x200 into r0
     movi    r0, #0x01
-    // shift left 8 places to get 0x100
-    movi    r1, #0x08
+    // shift left 8 places
+    movi    r1, #0x09
     lshft   r0, r1
 
     // Set load value
@@ -24,14 +24,14 @@ entry:
     // test we the expected value back
     lw      r2, r0
 
-    // Start the timer (write 0x0001 to 0x0101)
+    // Start the timer (write 0x0001 to 0x0201)
     movi    r1, #0x01
     sw      r1, r0 + #0x01
     
     // Read 
     lw      r2, r0
 
-    // Stop the timer (write 0x0002 to 0x0101)
+    // Stop the timer (write 0x0002 to 0x0201)
     movi    r1, #0x02
     sw      r1, r0 + #0x01
 

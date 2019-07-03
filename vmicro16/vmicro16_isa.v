@@ -2,7 +2,7 @@
 `include "vmicro16_soc_config.v"
 
 // TODO: Remove NOP by making a register write/read always 0
-`define VMICRO16_OP_NOP          5'b00000
+`define VMICRO16_OP_SPCL         5'b00000
 `define VMICRO16_OP_LW           5'b00001
 `define VMICRO16_OP_SW           5'b00010
 `define VMICRO16_OP_BIT          5'b00011
@@ -26,9 +26,13 @@
 `define VMICRO16_OP_CMP          5'b01001
 `define VMICRO16_OP_SETC         5'b01010
 `define VMICRO16_OP_MULT         5'b01011
-`define VMICRO16_OP_HALT         5'b01100
 `define VMICRO16_OP_LWEX         5'b01101
 `define VMICRO16_OP_SWEX         5'b01110
+
+// Special opcodes
+`define VMICRO16_OP_SPCL_NOP     11'h000
+`define VMICRO16_OP_SPCL_HALT    11'h001
+`define VMICRO16_OP_SPCL_INTR    11'h002
 
 // TODO: wasted upper nibble bits in BR
 `define VMICRO16_OP_BR_U         8'h00

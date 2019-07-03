@@ -61,8 +61,12 @@ module timer_apb # (
                 ADDR_LOAD: begin
                     r_load          <= S_PWDATA;
                     r_counter       <= S_PWDATA;
+                    $display($time, "\t\ttimr0: WRITE LOAD: %h", S_PWDATA);
                 end
-                ADDR_CTRL: r_ctrl   <= S_PWDATA;
+                ADDR_CTRL: begin
+                    r_ctrl   <= S_PWDATA;
+                    $display($time, "\t\ttimr0: WRITE CTRL: %h", S_PWDATA);
+                end
             endcase
         else
             if (r_ctrl[CTRL_START]) begin

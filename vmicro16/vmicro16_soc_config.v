@@ -18,7 +18,7 @@
 
 // Instruction memory (read only) on each core.
 //   Must be large enough to support software program.
-`define DEF_MEM_INSTR_DEPTH 128
+`define DEF_MEM_INSTR_DEPTH 512
 
 // Scratch memory (read/write) on each core.
 //   See `DEF_MMU_TIM0_* defines for info.

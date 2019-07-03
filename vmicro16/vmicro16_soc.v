@@ -190,28 +190,19 @@ module vmicro16_bram_ex_apb # (
     end
 
     // Exclusive flag for each memory cell
-    
-    vmicro16_regs # (
-        // Each cell is for storing the CORE_ID of the core 
-        // that has exclusive access
-        .CELL_WIDTH (CORE_ID_BITS + 1),
-        // Same number of cells as the memory
-        .CELL_DEPTH (MEM_DEPTH),
-        // register exclusive
-        .DEBUG_NAME ("REX")
-    ) ex_flags (
+    vmicro16_bram # (
+        .MEM_WIDTH  (CORE_ID_BITS + 1),
+        .MEM_DEPTH  (MEM_DEPTH),
+        .USE_INITS  (0),
+        .NAME       ("rexram")
+    ) ram_exflags (
         .clk        (clk),
         .reset      (reset),
-        // async port 0
-        .rs1        (mem_addr),
-        .rd1        (ex_flags_read),
-        // async port 1
-        //.rs2        (),
-        //.rd2        (),
-        // write port
-        .we         (reg_we),
-        .ws1        (mem_addr),
-        .wd         (reg_wd)
+
+        .mem_addr   (mem_addr),
+        .mem_in     (reg_wd),
+        .mem_we     (reg_we),
+        .mem_out    (ex_flags_read)
     );
 
     always @(*)

@@ -12,14 +12,14 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="22620000001fs"></ZoomEndTime>
-      <Cursor1Time time="2000000000fs"></Cursor1Time>
+      <ZoomEndTime time="6680353984fs"></ZoomEndTime>
+      <Cursor1Time time="1130000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="204"></NameColumnWidth>
-      <ValueColumnWidth column_width="127"></ValueColumnWidth>
+      <ValueColumnWidth column_width="119"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="107" />
+   <WVObjectSize size="77" />
    <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -126,94 +126,6 @@
       <obj_property name="label">C2</obj_property>
       <obj_property name="DisplayName">label</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /r_state" type="array">
-      <obj_property name="ElementShortName">r_state[2:0]</obj_property>
-      <obj_property name="ObjectShortName">r_state[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /r_pc" type="array">
-      <obj_property name="ElementShortName">r_pc[15:0]</obj_property>
-      <obj_property name="ObjectShortName">r_pc[15:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /r_instr" type="array">
-      <obj_property name="ElementShortName">r_instr[15:0]</obj_property>
-      <obj_property name="ObjectShortName">r_instr[15:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /r_instr_has_br" type="logic">
-      <obj_property name="ElementShortName">r_instr_has_br</obj_property>
-      <obj_property name="ObjectShortName">r_instr_has_br</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /r_instr_has_cmp" type="logic">
-      <obj_property name="ElementShortName">r_instr_has_cmp</obj_property>
-      <obj_property name="ObjectShortName">r_instr_has_cmp</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /regs/regs" type="array">
-      <obj_property name="ElementShortName">regs[0:7][15:0]</obj_property>
-      <obj_property name="ObjectShortName">regs[0:7][15:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /r_instr_rsd" type="array">
-      <obj_property name="ElementShortName">r_instr_rsd[2:0]</obj_property>
-      <obj_property name="ObjectShortName">r_instr_rsd[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /regs/rs1" type="array">
-      <obj_property name="ElementShortName">rs1[2:0]</obj_property>
-      <obj_property name="ObjectShortName">rs1[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /r_instr_rsa" type="array">
-      <obj_property name="ElementShortName">r_instr_rsa[2:0]</obj_property>
-      <obj_property name="ObjectShortName">r_instr_rsa[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /r_instr_rdd" type="array">
-      <obj_property name="ElementShortName">r_instr_rdd[15:0]</obj_property>
-      <obj_property name="ObjectShortName">r_instr_rdd[15:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /r_instr_rda" type="array">
-      <obj_property name="ElementShortName">r_instr_rda[15:0]</obj_property>
-      <obj_property name="ObjectShortName">r_instr_rda[15:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /alu/op" type="array">
-      <obj_property name="ElementShortName">op[4:0]</obj_property>
-      <obj_property name="ObjectShortName">op[4:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /alu/a" type="array">
-      <obj_property name="ElementShortName">a[15:0]</obj_property>
-      <obj_property name="ObjectShortName">a[15:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /alu/b" type="array">
-      <obj_property name="ElementShortName">b[15:0]</obj_property>
-      <obj_property name="ObjectShortName">b[15:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /alu/c" type="array">
-      <obj_property name="ElementShortName">c[15:0]</obj_property>
-      <obj_property name="ObjectShortName">c[15:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /alu/cmp_tmp" type="array">
-      <obj_property name="ElementShortName">cmp_tmp[16:0]</obj_property>
-      <obj_property name="ObjectShortName">cmp_tmp[16:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /r_cmp_flags" type="array">
-      <obj_property name="ElementShortName">r_cmp_flags[3:0]</obj_property>
-      <obj_property name="ObjectShortName">r_cmp_flags[3:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /branch_check/flags" type="array">
-      <obj_property name="ElementShortName">flags[3:0]</obj_property>
-      <obj_property name="ObjectShortName">flags[3:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /branch_check/cond" type="array">
-      <obj_property name="ElementShortName">cond[7:0]</obj_property>
-      <obj_property name="ObjectShortName">cond[7:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /branch_check/en" type="logic">
-      <obj_property name="ElementShortName">en</obj_property>
-      <obj_property name="ObjectShortName">en</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /w_branch_en" type="logic">
-      <obj_property name="ElementShortName">w_branch_en</obj_property>
-      <obj_property name="ObjectShortName">w_branch_en</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /w_branching" type="logic">
-      <obj_property name="ElementShortName">w_branching</obj_property>
-      <obj_property name="ObjectShortName">w_branching</obj_property>
-   </wvobject>
    <wvobject type="divider" fp_name="divider401">
       <obj_property name="label">MMU</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -302,34 +214,6 @@
       <obj_property name="label">MMU2_OUT</obj_property>
       <obj_property name="DisplayName">label</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /mmu/M_PADDR" type="array">
-      <obj_property name="ElementShortName">M_PADDR[18:0]</obj_property>
-      <obj_property name="ObjectShortName">M_PADDR[18:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /mmu/M_PWRITE" type="logic">
-      <obj_property name="ElementShortName">M_PWRITE</obj_property>
-      <obj_property name="ObjectShortName">M_PWRITE</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /mmu/M_PSELx" type="logic">
-      <obj_property name="ElementShortName">M_PSELx</obj_property>
-      <obj_property name="ObjectShortName">M_PSELx</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /mmu/M_PENABLE" type="logic">
-      <obj_property name="ElementShortName">M_PENABLE</obj_property>
-      <obj_property name="ObjectShortName">M_PENABLE</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /mmu/M_PWDATA" type="array">
-      <obj_property name="ElementShortName">M_PWDATA[15:0]</obj_property>
-      <obj_property name="ObjectShortName">M_PWDATA[15:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /mmu/M_PRDATA" type="array">
-      <obj_property name="ElementShortName">M_PRDATA[15:0]</obj_property>
-      <obj_property name="ObjectShortName">M_PRDATA[15:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /mmu/M_PREADY" type="logic">
-      <obj_property name="ElementShortName">M_PREADY</obj_property>
-      <obj_property name="ObjectShortName">M_PREADY</obj_property>
-   </wvobject>
    <wvobject type="divider" fp_name="divider421">
       <obj_property name="label">BRAM0</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -398,37 +282,33 @@
       <obj_property name="label">BRAM EX</obj_property>
       <obj_property name="DisplayName">label</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/ex_flags/rs1" type="array">
-      <obj_property name="ElementShortName">rs1[5:0]</obj_property>
-      <obj_property name="ObjectShortName">rs1[5:0]</obj_property>
+   <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/ram_exflags/mem_addr" type="array">
+      <obj_property name="ElementShortName">mem_addr[8:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_addr[8:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/ex_flags/rd1" type="array">
-      <obj_property name="ElementShortName">rd1[1:0]</obj_property>
-      <obj_property name="ObjectShortName">rd1[1:0]</obj_property>
+   <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/ram_exflags/mem_in" type="array">
+      <obj_property name="ElementShortName">mem_in[1:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_in[1:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/ex_flags/we" type="logic">
-      <obj_property name="ElementShortName">we</obj_property>
-      <obj_property name="ObjectShortName">we</obj_property>
+   <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/ram_exflags/mem_we" type="logic">
+      <obj_property name="ElementShortName">mem_we</obj_property>
+      <obj_property name="ObjectShortName">mem_we</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/ex_flags/ws1" type="array">
-      <obj_property name="ElementShortName">ws1[5:0]</obj_property>
-      <obj_property name="ObjectShortName">ws1[5:0]</obj_property>
+   <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/ram_exflags/mem_out" type="array">
+      <obj_property name="ElementShortName">mem_out[1:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_out[1:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/ex_flags/wd" type="array">
-      <obj_property name="ElementShortName">wd[1:0]</obj_property>
-      <obj_property name="ObjectShortName">wd[1:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/ex_flags/regs" type="array">
-      <obj_property name="ElementShortName">regs[0:63][1:0]</obj_property>
-      <obj_property name="ObjectShortName">regs[0:63][1:0]</obj_property>
+   <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/ram_exflags/mem" type="array">
+      <obj_property name="ElementShortName">mem[0:511][1:0]</obj_property>
+      <obj_property name="ObjectShortName">mem[0:511][1:0]</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider436">
       <obj_property name="label">BRAM MEM</obj_property>
       <obj_property name="DisplayName">label</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/bram_apb/mem_addr" type="array">
-      <obj_property name="ElementShortName">mem_addr[5:0]</obj_property>
-      <obj_property name="ObjectShortName">mem_addr[5:0]</obj_property>
+      <obj_property name="ElementShortName">mem_addr[8:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_addr[8:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/bram_apb/mem_in" type="array">
       <obj_property name="ElementShortName">mem_in[15:0]</obj_property>
@@ -443,7 +323,7 @@
       <obj_property name="ObjectShortName">mem_out[15:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/bram_apb/mem" type="array">
-      <obj_property name="ElementShortName">mem[0:63][15:0]</obj_property>
-      <obj_property name="ObjectShortName">mem[0:63][15:0]</obj_property>
+      <obj_property name="ElementShortName">mem[0:511][15:0]</obj_property>
+      <obj_property name="ObjectShortName">mem[0:511][15:0]</obj_property>
    </wvobject>
 </wave_config>

@@ -1271,7 +1271,7 @@ module vmicro16_core # (
     vmicro16_regs # (
         .CORE_ID    (CORE_ID),
         .CELL_WIDTH (`DATA_WIDTH),
-        .NAME       ("REGSINT")
+        .DEBUG_NAME ("REGSINT")
     ) regs_intr (
         .clk        (clk),
         .reset      (reset),

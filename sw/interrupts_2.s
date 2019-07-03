@@ -1,11 +1,5 @@
 // interrupts.s
-//   Test global stack variables
-var1:
-    nop     r0, r0
-var2:
-    nop     r0, r0
-var3:
-    nop     r0, r0
+//   Toggle LED in ISR
 
 entry:
     // get core idx 0x80 in r7
@@ -57,8 +51,12 @@ exit:
     halt    r0, r0
 
 isr0:
-    movi    r0, #0xEE
-    movi    r1, #0xDD
-    movi    r2, #0xCC
+    movi    r0, #0x90
+    lw      r1, r0
+    // xor with 1
+    movi    r2, #0x1
+    xor     r1, r2
+    // write back
+    sw      r1, r0
     // return from interrupt
     intr    r0, r0

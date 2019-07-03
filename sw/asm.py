@@ -209,6 +209,12 @@ def cg(xs):
             op |= x.rs2 << 5
             op |= 0b00101
             binstr.append(op)
+        elif x.op == "xor":
+            op |= 0b00011 << 11
+            op |= x.rs1 << 8
+            op |= x.rs2 << 5
+            op |= 0b00001
+            binstr.append(op)
         elif x.op == "nop":
             op = 0x0000
             binstr.append(op)

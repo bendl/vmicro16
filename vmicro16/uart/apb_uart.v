@@ -2,8 +2,8 @@
 
 `include "../vmicro16_soc_config.v"
 
-(*dont_touch="true"*)
-(* keep_hierarchy = "yes" *)
+
+
 module apb_uart_tx # (
     parameter BUS_WIDTH  = 16,
     parameter CELL_DEPTH = 8

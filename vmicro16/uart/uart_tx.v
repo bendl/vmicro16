@@ -1,8 +1,8 @@
 //https://github.com/jamieiles/uart/blob/master/transmitter.v
 
 
-(* keep_hierarchy = "yes" *)
-(* dont_touch = "yes" *)
+
+
 module transmitter(
     input wire clk_50m,
     input wire clken,

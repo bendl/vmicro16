@@ -15,8 +15,8 @@
 
 
 
-(* keep_hierarchy = "yes" *)
-(* dont_touch = "yes" *)
+
+
 module vmicro16_bram_apb # (
     parameter BUS_WIDTH    = 16,
     parameter MEM_WIDTH    = 16,
@@ -69,7 +69,7 @@ endmodule
 //   https://www.xilinx.com/support/documentation/user_guides/ug473_7Series_Memory_Resources.pdf
 //   https://www.xilinx.com/support/documentation/user_guides/ug383.pdf
 //   https://www.xilinx.com/support/documentation/sw_manuals/xilinx2016_4/ug901-vivado-synthesis.pdf
-(* keep_hierarchy = "yes" *)
+
 module vmicro16_bram # (
     parameter MEM_WIDTH     = 16,
     parameter MEM_DEPTH     = 64,
@@ -296,7 +296,7 @@ mem[73] = 16'h6000;
     //       one at a time, mem[i++] <= 0
 endmodule
 
-(* keep_hierarchy = "yes" *)
+
 module vmicro16_core_mmu # (
     parameter MEM_WIDTH     = 16,
     parameter MEM_DEPTH     = 64,
@@ -485,7 +485,7 @@ module vmicro16_core_mmu # (
     );
 
     // Each M core has a TIM0 scratch memory
-    (* keep_hierarchy = "yes" *)
+    
     vmicro16_bram # (
         .MEM_WIDTH  (MEM_WIDTH),
         .MEM_DEPTH  (MEM_DEPTH),
@@ -501,7 +501,7 @@ module vmicro16_core_mmu # (
 endmodule
 
 
-(* keep_hierarchy = "yes" *)
+
 module vmicro16_regs # (
     parameter CELL_WIDTH        = 16,
     parameter CELL_DEPTH        = 8,
@@ -565,8 +565,8 @@ module vmicro16_regs # (
     //assign rd2 = regs[rs2];
 endmodule
 
-(* keep_hierarchy = "yes" *)
-(* dont_touch = "yes" *)
+
+
 module vmicro16_regs_apb # (
     parameter BUS_WIDTH         = 16,
     parameter DATA_WIDTH        = 16,
@@ -621,8 +621,8 @@ module vmicro16_regs_apb # (
 endmodule
 
 
-(*dont_touch="true"*)
-(* keep_hierarchy = "yes" *)
+
+
 module vmicro16_gpio_apb # (
     parameter BUS_WIDTH  = 16,
     parameter DATA_WIDTH = 16,
@@ -656,7 +656,7 @@ module vmicro16_gpio_apb # (
 endmodule
 
 // Decoder is hard to parameterise as it's very closely linked to the ISA.
-(* keep_hierarchy = "yes" *)
+
 module vmicro16_dec # (
     parameter INSTR_WIDTH    = 16,
     parameter INSTR_OP_WIDTH = 5,
@@ -830,7 +830,7 @@ module vmicro16_dec # (
     endcase
 endmodule
 
-(* keep_hierarchy = "yes" *)
+
 module vmicro16_alu # (
     parameter OP_WIDTH   = 5,
     parameter DATA_WIDTH = 16,
@@ -849,7 +849,9 @@ module vmicro16_alu # (
     reg [DATA_WIDTH:0] cmp_tmp = 0; // = {carry, [15:0]}
     wire r_setc;
 
-    always @(*) case (op)
+    always @(*) begin
+			cmp_tmp = 0;
+			case (op)
         // branch/nop, output nothing
         `VMICRO16_ALU_BR,
         `VMICRO16_ALU_NOP:          c = {DATA_WIDTH{1'b0}};
@@ -913,10 +915,11 @@ module vmicro16_alu # (
         // TODO: Parameterise
         default: begin
             $display($time, "\tALU: unknown op: %h", op);
-            c = 16'h0000;
-				cmp_temp = 0;
+            c       = 0;
+            cmp_tmp = 0;
         end
-    endcase
+		endcase
+		end
 
     branch setc_check (
         .flags      (flags),
@@ -947,8 +950,8 @@ module branch (
         endcase
 endmodule
 
-(*dont_touch="true"*)
-(* keep_hierarchy = "yes" *)
+
+
 module vmicro16_core # (
     parameter DATA_WIDTH        = 16,
     parameter MEM_INSTR_DEPTH   = 64,
@@ -1128,7 +1131,7 @@ module vmicro16_core # (
         end
 
     // Instruction ROM
-    (* keep_hierarchy = "yes" *)
+    
     vmicro16_bram # (
         .MEM_WIDTH      (DATA_WIDTH),
         .MEM_DEPTH      (MEM_INSTR_DEPTH),
@@ -1145,7 +1148,7 @@ module vmicro16_core # (
     );
 
     // MMU
-    (* keep_hierarchy = "yes" *)
+    
     vmicro16_core_mmu # (
         .MEM_WIDTH      (DATA_WIDTH),
         .MEM_DEPTH      (MEM_SCRATCH_DEPTH),
@@ -1176,7 +1179,7 @@ module vmicro16_core # (
     );
 
     // Instruction decoder
-    (* keep_hierarchy = "yes" *)
+    
     vmicro16_dec dec (
         // input
         .instr          (r_instr),
@@ -1202,7 +1205,7 @@ module vmicro16_core # (
     );
     
     // Software registers
-    (* keep_hierarchy = "yes" *)
+    
     vmicro16_regs # (
         .CORE_ID    (CORE_ID),
         .CELL_WIDTH (`DATA_WIDTH)
@@ -1222,7 +1225,7 @@ module vmicro16_core # (
     );
 
     // ALU
-    (* keep_hierarchy = "yes" *)
+    
     vmicro16_alu # (
         .CORE_ID(CORE_ID)
     ) alu (

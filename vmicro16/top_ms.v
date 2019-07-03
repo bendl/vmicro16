@@ -76,7 +76,7 @@ module top_ms # (
     wire [15:0] gpio1;
     wire [7:0]  gpio2;
 
-    (* keep_hierarchy = "yes" *)
+    
     vmicro16_soc soc (
         .clk     (CLK50),
         .reset   (por_reset | (~SW[0])),

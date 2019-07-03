@@ -36,6 +36,9 @@ print:
     // write the newest value to gpio
     movi    r1, #0x92
     sw      r5, r1
+    // and to uart0
+    movi    r1, #0xA0
+    sw      r5, r1
 
 exit:
     halt    r0, r0

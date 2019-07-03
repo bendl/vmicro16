@@ -60,21 +60,6 @@ set_global_assignment -name EDA_TEST_BENCH_NAME tb_vmicro16_soc -section_id eda_
 set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id tb_vmicro16_soc
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME tb_vmicro16_soc -section_id tb_vmicro16_soc
 set_global_assignment -name EDA_TEST_BENCH_FILE ../../test/tb_vmicro16_soc.v -section_id tb_vmicro16_soc
-set_global_assignment -name SDC_FILE HardwareTest.sdc
-set_global_assignment -name VERILOG_FILE ../../uart/uart.v
-set_global_assignment -name VERILOG_FILE ../../uart/uart_tx.v
-set_global_assignment -name VERILOG_FILE ../../uart/uart_fifo.v
-set_global_assignment -name VERILOG_FILE ../../uart/uart_baud_gen.v
-set_global_assignment -name VERILOG_FILE ../../uart/fifo.v
-set_global_assignment -name VERILOG_FILE ../../uart/apb_uart.v
-set_global_assignment -name VERILOG_FILE ../../vmicro16_soc_config.v
-set_global_assignment -name VERILOG_FILE ../../vmicro16_soc.v
-set_global_assignment -name VERILOG_FILE ../../vmicro16_isa.v
-set_global_assignment -name VERILOG_FILE ../../vmicro16.v
-set_global_assignment -name VERILOG_FILE ../../top_ms.v
-set_global_assignment -name VERILOG_FILE ../../formal.v
-set_global_assignment -name VERILOG_FILE ../../clog2.v
-set_global_assignment -name VERILOG_FILE ../../apb_intercon.v
 set_location_assignment PIN_AF14 -to CLK50
 set_location_assignment PIN_W20 -to LEDS[7]
 set_location_assignment PIN_V16 -to LEDS[0]
@@ -131,4 +116,20 @@ set_location_assignment PIN_AB28 -to ssd3[4]
 set_location_assignment PIN_AB25 -to ssd3[5]
 set_location_assignment PIN_AB22 -to ssd3[6]
 set_global_assignment -name OPTIMIZATION_MODE BALANCED
+set_global_assignment -name VERILOG_FILE ../../uart/fifo2.v
+set_global_assignment -name SDC_FILE HardwareTest.sdc
+set_global_assignment -name VERILOG_FILE ../../uart/uart.v
+set_global_assignment -name VERILOG_FILE ../../uart/uart_tx.v
+set_global_assignment -name VERILOG_FILE ../../uart/uart_fifo.v
+set_global_assignment -name VERILOG_FILE ../../uart/uart_baud_gen.v
+set_global_assignment -name VERILOG_FILE ../../uart/fifo.v
+set_global_assignment -name VERILOG_FILE ../../uart/apb_uart.v
+set_global_assignment -name VERILOG_FILE ../../vmicro16_soc_config.v
+set_global_assignment -name VERILOG_FILE ../../vmicro16_soc.v
+set_global_assignment -name VERILOG_FILE ../../vmicro16_isa.v
+set_global_assignment -name VERILOG_FILE ../../vmicro16.v
+set_global_assignment -name VERILOG_FILE ../../top_ms.v
+set_global_assignment -name VERILOG_FILE ../../formal.v
+set_global_assignment -name VERILOG_FILE ../../clog2.v
+set_global_assignment -name VERILOG_FILE ../../apb_intercon.v
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

@@ -57,8 +57,8 @@ module addr_dec # (
             seli = 0;
 endmodule
 
-(*dont_touch="true"*)
-(* keep_hierarchy = "yes" *)
+
+
 module apb_intercon_s # (
     parameter BUS_WIDTH    = 16,
     parameter DATA_WIDTH   = 16,

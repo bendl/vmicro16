@@ -80,8 +80,8 @@ module timer_apb # (
 endmodule
 
 // Shared memory with hardware monitor (LWEX/SWEX)
-(* keep_hierarchy = "yes" *)
-(* dont_touch = "yes" *)
+
+
 module vmicro16_bram_ex_apb # (
     parameter BUS_WIDTH    = 16,
     parameter MEM_WIDTH    = 16,
@@ -186,7 +186,7 @@ module vmicro16_bram_ex_apb # (
     end
 
     // Exclusive flag for each memory cell
-    (* keep_hierarchy = "yes" *)
+    
     vmicro16_regs # (
         // Each cell is for storing the CORE_ID of the core 
         // that has exclusive access
@@ -234,8 +234,8 @@ module vmicro16_bram_ex_apb # (
 endmodule
 
 
-(*dont_touch="true"*)
-(* keep_hierarchy = "yes" *)
+
+
 module vmicro16_soc (
     input clk,
     input reset,
@@ -250,28 +250,28 @@ module vmicro16_soc (
     output     [`CORES*8:0]         dbug1
 );
     genvar di;
-    generate for(di = 0; di < 8; di = di + 1) begin : gen_dbug0
+    generate for(di = 0; di < `CORES; di = di + 1) begin : gen_dbug0
         assign dbug0[di] = dbug1[di*8];
     end
     endgenerate
 
     // Peripherals (master to slave)
-    (*dont_touch="true"*) wire [`APB_WIDTH-1:0]          M_PADDR;
-    (*dont_touch="true"*) wire                           M_PWRITE;
-    (*dont_touch="true"*) wire [`SLAVES-1:0]             M_PSELx;  // not shared
-    (*dont_touch="true"*) wire                           M_PENABLE;
-    (*dont_touch="true"*) wire [`DATA_WIDTH-1:0]         M_PWDATA; 
-    (*dont_touch="true"*) wire [`SLAVES*`DATA_WIDTH-1:0] M_PRDATA; // input to intercon
-    (*dont_touch="true"*) wire [`SLAVES-1:0]             M_PREADY; // input
+     wire [`APB_WIDTH-1:0]          M_PADDR;
+     wire                           M_PWRITE;
+     wire [`SLAVES-1:0]             M_PSELx;  // not shared
+     wire                           M_PENABLE;
+     wire [`DATA_WIDTH-1:0]         M_PWDATA; 
+     wire [`SLAVES*`DATA_WIDTH-1:0] M_PRDATA; // input to intercon
+     wire [`SLAVES-1:0]             M_PREADY; // input
 
     // Master apb interfaces
-    (*dont_touch="true"*) wire [`CORES*`APB_WIDTH-1:0]   w_PADDR;
-    (*dont_touch="true"*) wire [`CORES-1:0]              w_PWRITE;
-    (*dont_touch="true"*) wire [`CORES-1:0]              w_PSELx;
-    (*dont_touch="true"*) wire [`CORES-1:0]              w_PENABLE;
-    (*dont_touch="true"*) wire [`CORES*`DATA_WIDTH-1:0]  w_PWDATA;
-    (*dont_touch="true"*) wire [`CORES*`DATA_WIDTH-1:0]  w_PRDATA;
-    (*dont_touch="true"*) wire [`CORES-1:0]              w_PREADY;
+     wire [`CORES*`APB_WIDTH-1:0]   w_PADDR;
+     wire [`CORES-1:0]              w_PWRITE;
+     wire [`CORES-1:0]              w_PSELx;
+     wire [`CORES-1:0]              w_PENABLE;
+     wire [`CORES*`DATA_WIDTH-1:0]  w_PWDATA;
+     wire [`CORES*`DATA_WIDTH-1:0]  w_PRDATA;
+     wire [`CORES-1:0]              w_PREADY;
 
     // Interrupts
     wire [`DEF_NUM_INT-1:0]              ints;
@@ -279,8 +279,8 @@ module vmicro16_soc (
     assign ints[7:1] = 0;
     assign ints_data[`DEF_NUM_INT*`DATA_WIDTH-1:`DATA_WIDTH] = {`DEF_NUM_INT*(`DATA_WIDTH-1){1'b0}};
 
-    (*dont_touch="true"*)
-    (* keep_hierarchy = "yes" *)
+    
+    
     apb_intercon_s # (
         .MASTER_PORTS(`CORES),
         .SLAVE_PORTS (`SLAVES),
@@ -307,8 +307,8 @@ module vmicro16_soc (
         .M_PREADY   (M_PREADY)
     );
 
-    (*dont_touch="true"*)
-    (* keep_hierarchy = "yes" *)
+    
+    
     vmicro16_gpio_apb # (
         .BUS_WIDTH  (`APB_WIDTH),
         .DATA_WIDTH (`DATA_WIDTH),
@@ -329,8 +329,8 @@ module vmicro16_soc (
     );
 
     // GPIO1 for Seven segment displays (16 pin)
-    (*dont_touch="true"*)
-    (* keep_hierarchy = "yes" *)
+    
+    
     vmicro16_gpio_apb # (
         .BUS_WIDTH  (`APB_WIDTH),
         .DATA_WIDTH (`DATA_WIDTH),
@@ -351,8 +351,8 @@ module vmicro16_soc (
     );
 
     // GPI02 for Seven segment displays (8 pin)
-    (*dont_touch="true"*)
-    (* keep_hierarchy = "yes" *)
+    
+    
     vmicro16_gpio_apb # (
         .BUS_WIDTH  (`APB_WIDTH),
         .DATA_WIDTH (`DATA_WIDTH),
@@ -372,8 +372,8 @@ module vmicro16_soc (
         .gpio       (gpio2)
     );
     
-    (*dont_touch="true"*)
-    (* keep_hierarchy = "yes" *)
+    
+    
     apb_uart_tx uart0_apb (
         .clk        (clk),
         .reset      (reset),
@@ -390,8 +390,8 @@ module vmicro16_soc (
         .rx_wire    (uart_rx)
     );
 
-    (*dont_touch="true"*)
-    (* keep_hierarchy = "yes" *)
+    
+    
     timer_apb timr0 (
         .clk        (clk),
         .reset      (reset),
@@ -410,8 +410,8 @@ module vmicro16_soc (
 
     // Shared register set for system-on-chip info
     // R0 = number of cores
-    (*dont_touch="true"*)
-    (* keep_hierarchy = "yes" *)
+    
+    
     vmicro16_regs_apb # (
         .BUS_WIDTH          (`APB_WIDTH),
         .DATA_WIDTH         (`DATA_WIDTH),
@@ -431,8 +431,8 @@ module vmicro16_soc (
         .S_PREADY   (M_PREADY[`APB_PSELX_REGS0])
     );
 
-    (*dont_touch="true"*)
-    (* keep_hierarchy = "yes" *)
+    
+    
     vmicro16_bram_ex_apb # (
         .BUS_WIDTH    (`APB_WIDTH),
         .MEM_WIDTH    (`DATA_WIDTH),
@@ -453,7 +453,7 @@ module vmicro16_soc (
 
     genvar i;
     generate for(i = 0; i < `CORES; i = i + 1) begin : cores
-        (* keep_hierarchy = "yes" *)
+        
         vmicro16_core # (
             .CORE_ID            (i),
             .DATA_WIDTH         (`DATA_WIDTH),

@@ -14,7 +14,8 @@ module timer_apb # (
     
     // 0 16-bit value   R/W
     // 1 16-bit control R    b0 = start, b1 = reset
-    input      [0:0]                S_PADDR,
+    // 2 16-bit prescaler
+    input      [1:0]                S_PADDR,
 
     input                           S_PWRITE,
     input                           S_PSELx,
@@ -34,13 +35,15 @@ module timer_apb # (
 
     reg [`DATA_WIDTH-1:0] r_counter = 0;
     reg [`DATA_WIDTH-1:0] r_load = 0;
+    reg [`DATA_WIDTH-1:0] r_pres = 0;
     reg [`DATA_WIDTH-1:0] r_ctrl = 0;
 
     localparam CTRL_START = 0;
     localparam CTRL_RESET = 1;
 
-    localparam ADDR_LOAD = 1'b0;
-    localparam ADDR_CTRL = 1'b1;
+    localparam ADDR_LOAD = 2'b00;
+    localparam ADDR_CTRL = 2'b01;
+    localparam ADDR_PRES = 2'b10;
     
     always @(*) begin
         S_PRDATA = 0;
@@ -48,9 +51,20 @@ module timer_apb # (
             case(S_PADDR)
                 ADDR_LOAD: S_PRDATA = r_counter;
                 ADDR_CTRL: S_PRDATA = r_ctrl;
+                //ADDR_CTRL: S_PRDATA = r_pres;
                 default:   S_PRDATA = 0;
             endcase
     end
+
+    // prescaler counts from r_pres to 0, emitting a stb signal
+    //   to enable the r_counter step
+    reg [`DATA_WIDTH-1:0] r_pres_counter = 0;
+    wire counter_en = (r_pres_counter == 0);
+    always @(posedge clk)
+        if (r_pres_counter == 0)
+            r_pres_counter <= r_pres;
+        else
+            r_pres_counter <= r_pres_counter - 1;
 
     always @(posedge clk)
         if (we)
@@ -67,12 +81,16 @@ module timer_apb # (
                     r_ctrl   <= S_PWDATA;
                     $display($time, "\t\ttimr0: WRITE CTRL: %h", S_PWDATA);
                 end
+                ADDR_PRES: begin
+                    r_pres   <= S_PWDATA;
+                    $display($time, "\t\ttimr0: WRITE PRES: %h", S_PWDATA);
+                end
             endcase
         else
             if (r_ctrl[CTRL_START]) begin
                 if (r_counter == 0)
                     r_counter <= r_load;
-                else
+                else if(counter_en)
                     r_counter <= r_counter -1;
             end else if (r_ctrl[CTRL_RESET])
                 r_counter <= r_load;

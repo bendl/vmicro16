@@ -37,11 +37,26 @@ timer:
     lshft   r0, r1
 
     // Set load value
-    movi    r1, #0x31
-    sw      r1, r0
+    //movi    r1, #0x31
+    //sw      r1, r0
     // test we the expected value back
-    lw      r2, r0
+    //lw      r2, r0
 
+    // set load = 0x3000
+    movi    r1, #0x3
+    movi    r2, #0x0C
+    lshft   r1, r2
+    sw      r1, r0
+
+    // Set prescale value to 0x1000
+    // 20ns * load * prescaler = nanosecond delay
+    // 20ns * 10000 * 5000     = 1.0s
+    // 20.0 * 0x3000 * 0x1000  = ~1.0s
+    movi    r1, #0x1
+    movi    r2, #0x08
+    lshft   r1, r2
+    sw      r1, r0 + #0x02
+    
     // Start the timer (write 0x0001 to 0x0101)
     movi    r1, #0x01
     sw      r1, r0 + #0x01

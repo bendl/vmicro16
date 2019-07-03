@@ -80,7 +80,7 @@
 `define DEF_MMU_BRAM0_E     16'h1fff
 // TIMR0
 `define DEF_MMU_TIMR0_S     16'h0200
-`define DEF_MMU_TIMR0_E     16'h0201
+`define DEF_MMU_TIMR0_E     16'h0202
 
 //////////////////////////////////////////////////////////
 // Interrupts

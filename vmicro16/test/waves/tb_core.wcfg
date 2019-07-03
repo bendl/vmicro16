@@ -12,14 +12,17 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="6855000001fs"></ZoomEndTime>
-      <Cursor1Time time="6000000000fs"></Cursor1Time>
+      <ZoomEndTime time="137900000000001fs"></ZoomEndTime>
+      <Cursor1Time time="70000000000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="198"></NameColumnWidth>
-      <ValueColumnWidth column_width="102"></ValueColumnWidth>
+      <ValueColumnWidth column_width="94"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="7" />
+   <wave_markers>
+      <marker time="6000000000000" label="" />
+   </wave_markers>
    <wvobject fp_name="group504" type="group">
       <obj_property name="label">C0</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -190,6 +193,14 @@
       <wvobject fp_name="/tb_vmicro16_soc/uut/timr0/r_load" type="array">
          <obj_property name="ElementShortName">r_load[15:0]</obj_property>
          <obj_property name="ObjectShortName">r_load[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/timr0/r_pres" type="array">
+         <obj_property name="ElementShortName">r_pres[15:0]</obj_property>
+         <obj_property name="ObjectShortName">r_pres[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/timr0/r_pres_counter" type="array">
+         <obj_property name="ElementShortName">r_pres_counter[15:0]</obj_property>
+         <obj_property name="ObjectShortName">r_pres_counter[15:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_vmicro16_soc/uut/timr0/r_ctrl" type="array">
          <obj_property name="ElementShortName">r_ctrl[15:0]</obj_property>

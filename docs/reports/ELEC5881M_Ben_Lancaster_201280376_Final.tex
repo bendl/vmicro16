@@ -1,0 +1,784 @@
+\documentclass[10pt,a4paper]{report}
+
+%https://tex.stackexchange.com/questions/134079/font-setup-for-an-academic-thesis-no-computer-modern-wanted
+%\usepackage[libertine,cmintegrals,cmbraces,vvarbb]{newtxmath}
+%\usepackage[scaled=0.95]{inconsolata}
+%\usepackage{classicthesis}
+\usepackage[sc]{mathpazo}
+
+%\usepackage{helvet}
+%\renewcommand{\familydefault}{\sfdefault}
+
+\linespread{1.3}
+\usepackage[margin=1in]{geometry}
+
+\usepackage[sort,numbers,sectionbib]{natbib}
+%\usepackage{natbib}
+%\usepackage{biblatex}
+\bibliographystyle{IEEEtranUrldate}
+\renewcommand{\bibname}{References}
+
+% http://ctan.org/pkg/lipsum
+\usepackage{lipsum}
+
+% https://tex.stackexchange.com/questions/94224/how-to-create-a-list-with-a-fixed-prefix-and-incremental-numbers
+\usepackage{enumitem}
+
+% strikethrough st
+\usepackage{soul}
+
+% https://tex.stackexchange.com/questions/86120/font-size-of-figure-caption-header
+\usepackage[font=scriptsize,labelfont=bf]{caption}
+
+%https://tex.stackexchange.com/questions/3001/list-sections-of-chapter-at-beginning-of-that-chapter
+% !!! NEEDS TO BE ABOVE HYPEREF !!!
+\usepackage{titletoc}
+
+% https://www.sharelatex.com/learn/Hyperlinks
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    %citecolor=gray,
+    citecolor=blue,
+    filecolor=black,
+    linkcolor=blue,
+    urlcolor=blue,
+    linktoc=all
+}
+
+% includegraphics
+\usepackage[]{graphicx}
+\graphicspath{{img/}}
+\usepackage{mwe}
+
+
+\usepackage[outputdir=build]{minted}
+%https://www.sharelatex.com/learn/Code_Highlighting_with_minted#Reference_guide
+\usemintedstyle{vs}
+% https://tex.stackexchange.com/questions/161124/how-to-make-a-minted-code-listing-centered-on-a-page
+%\RecustomVerbatimEnvironment{Verbatim}{BVerbatim}{}
+
+% tables, row colour
+\usepackage{tabularx,colortbl,booktabs}
+% For vertical centering text in X column
+\renewcommand\tabularxcolumn[1]{m{#1}}
+\def\arraystretch{1.3}
+
+\begin{document}
+%TC:ignore
+\pagestyle{headings}
+
+\begin{titlepage}
+\begin{center}
+
+\vspace*{2cm}
+\Large
+
+\textbf{
+%%PRCO304 - Project Initiation Document
+%Highlight Reports
+Multi-core RISC Processor Design and Implementation (Rev. 2.02)
+}
+
+\vspace{0.4cm}
+\large
+%%Space optimised FPGA-based side-microprocessor.
+ELEC5881M - Interim Report
+%%EMBEDDED CPU - FPGA-based RISC microprocessor
+
+\vspace{2cm}
+\textbf{Ben David Lancaster}\\
+Student ID: 201280376
+
+\vspace{2cm}
+Submitted in accordance with the requirements for the degree of\\
+Master of Science (MSc)\\
+in Embedded Systems Engineering\\
+
+\vspace{2cm}
+Supervisor: Dr. David Cowell\\
+Assessor: Mr David Moore
+
+\vspace{2cm}
+\textbf{University of Leeds}\\
+School of Electrical and Electronic Engineering
+
+\vspace{2cm}
+\today
+
+\vspace{2cm}
+Word count: 4689
+\end{center}
+\end{titlepage}
+
+%\newpage
+%\chapter*{Abstract}
+%\lipsum[1-3]
+
+\begin{abstract}
+This interim report details the 4-month progress on a project to design, implement, and verify, a multi-core FPGA RISC processor. The project has been split into two stages: firstly to build a functional single-core RISC processor, and then secondly to add multiprocessor principles and functionality to it.
+
+Current multiprocessor and network-on-chip communication methods have been discussed and how they could be included in this multi-core RISC design. To-date, a 16-bit instruction set architecture has been designed featuring common load/store instructions, comparison, and bitwise operations. A single-core processor has been implemented in Verilog and verified using simulations/test benches running various simple software programs.
+
+Future tasks have been planned and will focus on the second stage of the project. Work will start on designing a loosely coupled multiprocessor communication interface and bringing them to the single-core processor.
+\end{abstract}
+
+\newpage
+\section*{Revision History}
+\begin{table}[h]
+\def\arraystretch{1.3}
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+Date & Version & Changes \\
+%\arrayrulecolor{\color{red}}
+\specialrule{2pt}{-2pt}{0pt}
+10/04/2019 & 2.02 & Update future stages. \\ \hline
+05/04/2019 & 2.01 & Fix processor RTL diagram. \\ \hline
+04/04/2019 & 2.00 & Initial processor RTL diagram. \\ \hline
+01/04/2019 & 1.00 & Initial section outline. \\ \hline
+\end{tabularx}
+\caption*{Document revisions.}
+\end{table}
+
+%\newpage
+%\chapter*{Acknowledgements}
+%I would like to thank my project supervisor Dr David Cowell for their support and guidance throughout this project.
+
+
+\chapter*{Declaration of Academic Integrity}
+%\addcontentsline{toc}{chapter}{Declaration of Academic Integrity}
+
+The candidate confirms that the work submitted is his/her own, except where work which has formed part of jointly-authored publications has been included. The contribution of the candidate and the other authors to this work has been explicitly indicated in the report. The candidate confirms that appropriate credit has been given within the report where reference has been made to the work of others.
+
+This copy has been supplied on the understanding that no quotation from the report may be published without proper acknowledgement. The candidate, however, confirms his/her consent to the University of Leeds copying and distributing all or part of this work in any forms and using third parties, who might be outside the University, to monitor breaches of regulations, to verify whether this work contains plagiarised material, and for quality assurance purposes.
+
+The candidate confirms that the details of any mitigating circumstances have been submitted to the Student Support Office at the School of Electronic and Electrical Engineering, at the University of Leeds.
+\vfill
+
+\noindent 
+Name: Ben David Lancaster \\
+Date: \today
+\newpage
+
+
+\newpage
+\newgeometry{voffset=-4cm,bottom=-4cm}
+\renewcommand*\contentsname{Table of Contents}
+{%\hypersetup{linkcolor=black}
+\tableofcontents
+%\listoffigures
+%\listoftables}
+%TC:endignore
+
+\restoregeometry
+\newpage
+\chapter{Introduction}
+{%\hypersetup{linkcolor=black}
+\startcontents[chapters]
+\printcontents[chapters]{}{1}{}
+}
+
+\noindent\\
+This project will detail the design, implementation, and verification, of a new multi-core RISC processor aimed at FPGA devices. This project was chosen due to my interest in processor design, in which I have only previously designed single-core RISC processors and wish to extend this knowledge to gain a basic understanding of multi-core communication, design considerations, and the limitations of parallelism first hand.
+
+I will use this opportunity to further develop my knowledge of FPGA and processor design by implementing, designing, and verifying, a multi-core RISC processor from scratch, including the design of a communication interface between multiple cores.
+
+\section{Why Multi-core?}
+
+Moore's Law states that the number of transistors in a chip will double every 2 years \cite{}. CPU designers would utilize the  additional transistors to add more pipeline stages in the processor to reduce the propagation delay \cite{} which would allow for higher clock frequencies. 
+
+%This would allow the processor to be run at higher clock frequencies as the logic between pipeline stages is reduced. The faster clock frequency would result in computational performance because more instructions could be executed in a period of time.
+
+The size of transistors have been decreasing \cite{} and today can be manufactured in sub-10 nanometer range. However, the extremely small transistor size increases electrical leakage and other negative effects resulting in unreliability and potential damage to the transistor \cite{}.  The high transistor count produces large amounts of heat and requires increasing power to supply the chip. These trade-offs are currently managed by reducing the input voltage, utilising complex cooling techniques, and reducing clock frequency. These factors limit the performance of the chip significantly.
+These are contributing factors to Moore's Law \textit{slowing} down. 
+The capacity limit of the current-generation planar transistors is approaching and so in order for performance increases to continue, other approaches such as alternate transistor technologies like Multigate transistors \cite{subramanian2010multiple}, software and hardware optimisations, and multi-processor architectures are employed.
+
+This report will focus on the latter: to produce a small multi-core processor that can utilise software-based parallelism to gain performance benefits, compared to a larger single-core design.
+
+\section{Why RISC?}
+RISC architectures feature simpler and fewer instructions compared to CISC, which emphasises instructions that perform larger tasks. A single CISC instruction might be performed with multiple RISC instructions. Because of the fewer and simpler instructions, RISC machines rely heavily on software optimisations for performance. 
+RISC instruction sets are based on load/store architectures, where most instructions are either register-to-register or memory reading and writing \cite{flynn1995computer}. This constraint greatly reduces complexity.
+
+RISC architectures are easier to design implement, especially for beginners, due to their simpler instructions that share the same pipeline, compared to CISC where there may be different pipeline for each instruction, which would greatly consume FPGA resources.
+
+\section{Why FPGA?}
+Field programmable gate arrays (FPGA) are a great choice for prototyping digital logic designs due to their programmable nature and quick development times. 
+
+My previous experience with FPGAs in previous projects will reduce risk and learning times and allow for more time to be spent on adding and extending features (discusses further in section \ref{sect:goals}).
+
+FPGAs, however, may not be suitable for prototyping all register-transistor logic (RTL) projects. Larger RTL projects, such as large commercial processors, may greatly exceed the logic cell resources available in today's high-end FPGA devices and may only be prototyped through silicon fabrication, which can be expensive. This resource limitation will not be problem as the project aims to produce a small and minimal design specifically for learning about multi-core architectures.
+
+\chapter{Background}
+{%\hypersetup{linkcolor=black}
+\startcontents[chapters]
+\printcontents[chapters]{}{1}{}
+}
+
+\section{Amdahl's Law and Parallelism}
+In many applications, not restricted to software, there may exists many opportunities for processes or algorithms to be performed in parallel. These algorithms can be split into two parts: a serial part that cannot be parallised, and a part that can be parallelised. Amdahl's Law defines a formula for calculating the maximum \textit{speedup} of a process with potential parallelism opportunities when ran in parallel with $n$ many processors. Speedup is a term used to describe the potential performance improvements of an algorithm using an enhanced resource (in this case, adding parallel processors) compared to the original algorithm. Amdalh's Law is defined below, where the potential speedup $S_p$ is dependant on the portion of program that can be parallelised $p$ and the number of processing cores $n$:
+
+\begin{equation}
+S_{p} = \frac{1}{(1-p)+\frac{p}{n}}
+\label{eq:amdahl}
+\end{equation}
+
+This formula will be used throughout the project to gauge the the performance of the multi-core design running various software algorithms.
+
+\section{Loosely and Tightly Coupled Processors}
+Multiprocessor systems can be generalised into two architectures: loosely and tightly coupled, and each architecture has advantages and disadvantages. 
+In loosely coupled systems, each processing node is self-contained -- each node has it's own dedicated memory and IO modules. Communication between nodes is performed over a \textit{Message Transfer System (MTS)} \cite{preeti_aritra_2017}  in a master-slave control architecture.
+
+Scalability in loosely coupled systems is generally easier to implement as each node can simply be appended to the shared MTS interface without large modifications to the rest of the system. Scalability is an important concern in this project as I wish to test the developed solution with a range of processing nodes.
+
+As loosely coupled system's nodes feature there own memory and IO modules, they generally perform better in cases where interaction between nodes is not prominent -- each node can store a separate part of the software program in it's memory module allowing simultaneous executing of the program.
+
+In scenarios where inter-node communication is prominent however, access to the MTS interface must be scheduled to avoid access conflicts which introduces delays and idle times in the software programs execution, resulting in lower throughput. Figure \ref{fig:loose} shows a general layout of a loosely coupled multiprocessor system.
+
+Tightly coupled systems feature processing nodes that do not have their own dedicated memory or IO modules -- each node is directly connected to a shared memory module using a dedicated  port. In scenarios where inter-node communication is prominent, tightly coupled systems are generally better suited as nodes are directly connected to a shared memory and do not need to wait to use a shared bus.
+
+\begin{minipage}{0.45\textwidth}
+\begin{figure}[H]
+\centering
+\includegraphics[width=8cm]{../img/loose}
+\caption{A loosely coupled multiprocessor system. Each node features it's own memory and IO modules and uses a Message Transfer System to perform inter-node communication. Image source: \cite{preeti_aritra_2017}.}
+\label{fig:loose}
+\end{figure}
+\end{minipage}
+\begin{minipage}{0.05\textwidth}\hfill\end{minipage}
+\begin{minipage}{0.45\textwidth}
+\begin{figure}[H]
+\centering
+\includegraphics[width=8cm]{../img/tight}
+\caption{A tightly coupled multiprocessor system. Nodes are directly connected to memory and IO modules. Image source: \cite{preeti_aritra_2017}.}
+\label{fig:tight}
+\end{figure}
+\end{minipage}
+\vspace{0.3cm}
+
+This project will utilise a loosely coupled architecture due to it's easier scalability implementation and my previous experience with the design of single-core processors. Although it will require a scheduler to access the MTS, the experience and knowledge gained from this task will be greatly beneficial for future projects.
+
+\section{Network-on-chip Architectures}
+Network-on-chip (NoC) architectures implement on-chip communication mechanisms that are based on network communication  principles, such as routing, switching, and massive scalability \cite{newnoc}. NoC's can generally support hundreds to millions of processing cores.
+Figure \ref{fig:noc} shows an example 16-core network-on-chip architecture. 
+NoC's can scale to very large sizes while not sacrificing performance because each processor core is able to drive the network rather than needing to wait for a shared bus to become free before doing so.
+
+The greater the number of cores in a network-on-chip design, the greater quality of service (QoS) problems arise. As such, network-on-chip architectures suffer the same problems as networks, such as fairness and throughput \cite{nocfairness}.
+
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=6cm]{../img/noc}
+\caption{A multiprocessor network-on-chip architecture with 16 processing nodes. Nodes are connected in a grid formation with routers and links. Image source: \cite{noc}.}
+\label{fig:noc}
+\end{figure}
+
+\chapter{Project Overview}
+{%\hypersetup{linkcolor=black}
+\startcontents[chapters]
+\printcontents[chapters]{}{1}{}
+}
+\noindent\\
+This chapter discusses the the project's requirements, goals, and structure.
+
+\section{Project Deliverables}
+\label{sect:goals}
+The project's deliverables are split into two sections: core deliverables (CD) -- each deliverable must be satisfied for the project to be a minimum viable product (MVP), and extended deliverables (ED) -- deliverables that are not required for a MVP -- features that only improve upon an existing feature.
+
+\subsection{Core Deliverables (CD)}
+The project's core deliverables are described below.
+\begin{enumerate}[leftmargin=2\parindent, label=\bfseries CD\arabic*]
+\item{\textbf{Design a compact 16-bit RISC instruction set architecture.}\\
+The instruction set will be the primary interface to control the processor from software. An instruction set will be required to implement the custom multi-core communication interface.
+
+It was decided to design a new instruction set rather than to extend an existing architecture as this will increase my knowledge of the constraints to consider when designing instruction sets and processors.
+}
+\label{cd:isa}
+
+\item{\textbf{Design and implement a Verilog RISC core that implements the ISA in \ref{cd:isa}.}\\
+The Verilog RISC core will be able to run software program written for the instruction set architecture.
+}\label{cd:core}
+
+\item{\textbf{Design and implement an on-chip interconnect for multi-core processing (2 to 32 cores) using the RISC core from \ref{cd:core}.}\\
+The interconnect will be a chief requirement to enable multi-core communication. The interconnect should support up to 32 cores, however FPGA implementation constraints may limit this due to limited resources.
+
+The interconnect will control communication between the cores to enable software parallelism.
+}\label{cd:interconnect}
+
+\item{\textbf{Analyse performance of serial and parallel software algorithms, such as parallel DFT, on the processor.}\\
+To evaluate the effectiveness of the developed solution, a serial and parallel implementation of a simple computing algorithm (parallel reduction, sorting) will be ran on the processor and it's performance analysed. Effectiveness will be rated on total algorithm run-time and the speed-up gained by adding more cores.
+}\label{cd:software}
+
+\item{\textbf{Allow the RISC core to be easily compiled to multiple FPGA vendors (Xilinx, Altera).}\\
+The developed solution should be generic and portable to allow it to be used across a wide-range of FPGA vendors and devices.
+
+Verilog is a generic implementation-independent hardware-description language and so designing implementation specific modules is recommended.
+
+A key consideration for this requirement is to consider the varying hard IP provided by the FPGA vendors (such as BRAM, ethernet, and PCIe \cite{xilinxbram,alterabram}). To overcome this problem, the developed Verilog code will conditionally compile where vendor specific requirements are present.
+}\label{cd:vendor}
+\end{enumerate}
+
+\subsection{Extended Deliverables (ED)}
+The project's extended deliverables are described below.
+\begin{enumerate}[leftmargin=2\parindent, label=\bfseries ED\arabic*]
+    \item{Design a RISC core with an instructions-per-clock (IPC) rating of at least 1.0 (a single-cycle CPU).}
+\label{ed:ipc}
+    \item{Design a RISC core with a pipe-lined data path to increase the design's clock speed.}\label{ed:pipeline}
+    \item{Design a scalable multi-core interconnect supporting arbitrary (more than 32) RISC core instances (manycore) using Network-on-Chip (NoC) architecture.}\label{ed:scale}
+    \item{Design a compiler-backend for the PRCO304 \cite{prco304} compiler to support the ISA from1 \ref{cd:isa}. This will make it easier to build complex multi-core software for the processor.}\label{ed:compiler}
+    \item{The RISC core can communicate to peripherals via a memory-mapped addresses using the Wishbone bus.}\label{ed:mmu}
+    \item{Implement various memory-mapped peripherals such as UART, GPIO, LCD, to aid visual representation of the processor during the demonstration viva.}\label{ed:peripherals} 
+    \item{Store instruction memory in SPI flash.}\label{ed:flash}
+    \item{Reprogram instruction memory at runtime from host computer.}\label{ed:program}
+    \item{Processor external debugger using host-processor link.}\label{ed:debug}
+\end{enumerate}
+
+\section{Project Timeline}
+\label{sect:timeline}
+\subsection{Project Stages}
+The project is split up into many stages to aid planning and management of the project. There are 8 unique stage areas: 1. Inital project conception; 2 Basic RISC core development; 3. Extended RISC core development; 4. Multi-core development; 5. Processor quality-of-life (QoL) improvements; 6. Compiler development; 7. Demo preparation, and 8. Final report.
+
+The project stages are shown in Table \ref{tb:stages}.
+
+\begin{table}[h]
+    \small
+    \begin{tabularx}{\textwidth}{|l|l|l|l|l|X|}
+    \hline
+    Stage & Title & Start Date & Days & Core & Applicable Deliverables
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    1.0 & Research & Feb 04 & 7 & x & 
+    \\ \hline
+    1.1 & Requirement gathering/review & Feb 11 & 14 & x & 
+	\\ \hline
+    1.1 & Processor specification, architecture, ISA & Feb 18 & 100 & x & \ref{cd:isa}
+	\\ \hline
+    1.2 & Stage/Time Allocation Planning & Feb 25 & 7 & x & 
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    2.1 & Decoder, Register Set, impl \& integration & Feb 25 & 14 & x & \ref{cd:core}
+	\\ \hline
+    2.2 & Register set impl \& integration & Mar 04 & 14 & x & \ref{cd:core}
+	\\ \hline
+    2.3 & Local memory impl \& integration & Mar 11 & 14 & x & \ref{cd:core}
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    3.1 & Memory mapped register layout \& impl & Apr 01 & 21 &  & \ref{ed:mmu}
+	\\ \hline
+    3.2 & Wishbone peripheral bus connected to MMU & Apr 08 & 21 &  & \ref{ed:mmu}
+	\\ \hline
+    3.3 & Pipelined implementation and verification & Apr 15 & 21 &  & \ref{ed:pipeline}
+	\\ \hline
+    3.4 & Cache memory design \& impl & Apr 22 & 28 &  & \ref{ed:pipeline}
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    4.1 & Multi-core communication interface & TBD & TBD & x & \ref{cd:interconnect}
+	\\ \hline
+    4.2 & Shared-memory controller & TBD & TBD & x & \ref{cd:interconnect}
+	\\ \hline
+    4.3 & Scalable multi-core interface (10s of cores) & TBD & TBD & x & \ref{cd:interconnect}
+	\\ \hline
+    4.4 & Multi-core example program (reduction) & TBD & TBD & x & \ref{cd:software}
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    5.1 & SPI-FPGA interface for OTG programming & TBD & TBD &  & \ref{ed:flash}
+	\\ \hline
+    5.2 & FPGA-PC interfacing & TBD & TBD &  & \ref{ed:debug}
+	\\ \hline
+    5.3 & FPGA-PC debugging (instruction breakpoints) & TBD & TBD &  & \ref{ed:debug}
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    6.1 & Compiler backend for vmicro16 & TBD & TBD &  & \ref{ed:compiler}
+	\\ \hline
+    6.2 & Compiler support for multi-core codegen & TBD & TBD &  & \ref{ed:compiler}
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    7.1 & Wishbone peripherals for demo & TBD & TBD & x & \ref{cd:software}
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    8.1 & Final Report & TBD & TBD & x & 
+	\\ \hline
+    \end{tabularx}
+    \caption{Project stages throughout the life cycle of the project.}
+    \label{tb:stages}
+\end{table}
+
+\subsection{Project Stage Detail}
+\subsubsection{Stages 1.0 through 1.2 --  Research and Project Conception}
+These stages cover initial research of existing problems and solutions in the multiprocessor area. 
+The instruction set architecture is also proposed that later stages will implement.
+
+\subsubsection{Stages 2.1 through 2.3 -- Processor module Design, Implementation, and Integration}
+These stages cover the design, implementation, and integration of key processor core modules such as the instruction decoder, register sets and local memory.
+Integration of all the modules is a challenging task because some modules have both asynchronous and synchronous signals that need to be timed correctly in order for other modules to receive valid data. An example of this is the register set which has asynchronous read ports that are later clocked in the instruction decode stage.
+
+\subsubsection{Stages 3.1 through 3.4 -- Advanced Processor Implementation}
+These stages add advanced features to the processor to provide a more functional product. Although these stages are classified as extended, their technical requirement to design and implement is not great and so are have time allocations in the project schedule. The extended features that these stages introduce are: pipelined processor stages -- to drastically increase processor performance; provide a memory-mapped peripheral interface through the MMU; provide a Wishbone master interface to the MMU -- allowing external peripherals such as GPIO and LCD displays to be utilised in a modular fashion; and to implement a cache memory for each processor core.
+
+\subsubsection{Stages 4.1 through 4.4 -- Multiprocessor Functionality}
+These stages are dedicated to adding multiprocessor functionality using a loosely coupled architecture to the processor.
+
+\subsubsection{Stages 5.1 through 5.3 -- Debugging Features}
+These stages cover debugging features and are classified as extended due to the large development time required to implement them as well as not being related to multiprocessor systems.
+
+\subsubsection{Stages 6.1 through 6.2 -- Compiler Backends}
+These stages cover the implementation of a compiler backend to ease software writing and programming of the processor.
+
+\subsubsection{Stage 7.1 -- Wishbone Peripherals}
+Additional Wishbone peripherals, such as SPI and timers will be added to produce a more useful multiprocessor system.
+
+\subsubsection{Stage 8.1 -- Final Report}
+This stage is dedicated to the final report write-up. It is expected to be an iterative task that is active throughout the lifespan of the project.
+
+\subsection{Timeline}
+The project stages from Table \ref{tb:stages} are displayed below in a Gantt chart.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=13cm]{../img/week1_gantt}
+\label{fig:arduino_record}
+\caption{Project stages in a Gantt chart.}
+\end{figure}
+
+
+\section{Resources}
+This section describes the hardware and software resources required to fulfil the project. 
+
+\subsection{Hardware Resources}
+Core deliverable \ref{cd:vendor} requires the designed RISC core to be implemented and demonstrated on multiple FPGA devices.  Although my design should synthesise for physical IC implementation, due to high costs and lengthy production times, it is not a primary development target. 
+Due to having past experience with Xilinx FPGAs from my placement work and experience with Altera from university modules it was decided to target the Xilinx Spartan 6 XC6SLX9 and the Altera Cyclone V.
+
+\subsubsection{Terasic DE1-SoC Development Board}
+The Terasic DE1-SoC development board features a large Cyclone V FPGA and many peripherals, such as seven-segment displays, 64 MB SDRAM, ADCs, and buttons and switches, which will aid demonstration of the project. The development board is available through the university so the cost is negligible. Figure \ref{fig:de1soc} shows the peripherals (green) available to the FPGA.
+
+\begin{figure}[h]
+\centering 
+\includegraphics[width=10cm]{../img/de1soc}
+\caption{Terasic DE1-SoC development board featuring the Altera Cyclone V FPGA and many peripherals. Image source: \cite{de1soc}.}
+\label{fig:de1soc}
+\end{figure}
+
+\subsubsection{Minispartan 6+ FPGA Development Board}
+The Minispartan 6+ is a hobbyist FGPA development board with fewer peripherals than the DE1-SoC. The board features a Xilinx Spartan 6 XC6LX9 which has far fewer resources than the DE1-SoC's Cyclone V however it's simplicity and my familiarity with  Xilinx's software suite will speed up development. The development board is shown in Figure \ref{fig:minispartan}.
+
+\begin{figure}[h]
+\centering 
+\includegraphics[width=10cm]{../img/minispartan}
+\caption{Minispartan-6+ development board featuring the Xilinx Spartan 6 XC6SLX9. Note that the XC6SLX9 and XC6SLX25 FPGAs share the same board. Image source: \cite{scarabhardware}.}
+\label{fig:minispartan}
+\end{figure}
+
+\subsection{Software Resources}
+\subsubsection{Intel Quartus}
+Intel Quartus Prime is a paid-for SoC, CPLD, and FPGA software suite targeting Intel's Stratix, Arria, and Cyclone based FPGAs. The university provides student licences which will be used via VPN.
+
+
+\subsubsection{Xilinx ISE Webpack}
+Xilinx ISE Webkpack is Xilinx's free software suite for FPGA development for Spartan 6 based FPGAs.
+Due to ISE's intuitive and fast work flow, most of the initial simulation and verification processes will be performed using ISE. This will greatly improve development times.
+
+\subsubsection{Verilator}
+Verilator is an open-source Verilog to C++ transpiler which provides a C++ interface to simulate Verilog modules and read/write values similar to a test bench. Verilator will be used for specific modules within the RISC core such as the ALU and decoder as Verilator is useful when performing exhaustive verification.
+
+\section{Legal and Ethical Considerations}
+The RISC core is designed to be used as an academic research and educational tool to aid learning and understanding of RISC and multi-core machines. It should not be use for roles where mission critical or safety is a factor. 
+
+The processor does not provide any memory protection features and any software running on the processor has full access to all memory.
+
+The processor does not store/track/predict software instructions. The processor uses pipelining techniques to improve performance which results in future instructions entering the pipeline even if the software's logical sequence does not include these instructions. This could result in security vulnerabilities similar to Intel's Spectre vulnerability \cite{kocher2018spectre}.
+
+
+\chapter{Current Progress}
+{%\hypersetup{linkcolor=black}
+\startcontents[chapters]
+\printcontents[chapters]{}{1}{}
+}
+\noindent\\
+This chapter discusses the current progress made towards the project, including designs, implementation, and current results.
+
+\section{RISC Core}
+Following the project time line described in section \ref{sect:timeline}, the first couple months have been dedicated to the design and implementation of the instruction set architecture and RISC core with stages 1-3. Good progress has been made in both deliverables, the ISA and the RISC core, and the progress is on-time with the initial project time line. The core has been nicknamed \textit{Vmicro16} -- short for Verilog microprocessor 16-bit.
+
+\subsection{Instruction Set Architecture}
+A 16-bit instruction set architecture (ISA) has been designed using an iterative approach. There currently exists 32 unique instructions covering most generic RISC operations (add, load/store, branch, compare, etc.) and atleast 16 opcodes available to be provide multi-core communication and functionality. This number should be adequate to support these features when the work begins on the multi-core project stages (stages 4-7).
+
+\subsubsection{Design Goals}
+Having past experience designing and implementing ISAs for previous projects, I wanted to use that knowledge to design an even more efficient and compact instruction set that could provide much greater functionality. The technical design goals of the ISA are described below:
+
+\begin{enumerate}[leftmargin=3\parindent, label=\bfseries ISA\arabic*, style=nextline]
+\item{\textbf{Use a fixed width of 16-bits for all instructions.}\\
+This will significantly reduce RTL resources and encourage efficiency by not wasting spare bits. In addition, many SPI flash and RAMs support 16-bit wide data reads which will allow each instruction fetch to only require one clock cycle, thus increasing processor performance.}\label{isa:16}
+
+\item{\textbf{Be able to select at least two registers for common instructions.}\\
+This will reduce the number of required instructions to manipulate register data. A disadvantage of using two instead of three reigster selects is that instructions are always destructive -- they always \textit{destroy} existing data in the destination register (e.g. R0 = ADD R0 R1) unlike constructive instructions that provide a unique register select for the destination (e.g. R2 = ADD R0 R1). }\label{isa:regs}
+
+\item{\textbf{Reduce bit-space for frequently used instructions (MOV, MOVI, ADD).}\\
+Due to the 16-bit limit, two register selects, and immediate values, the opcode bits are reduced resulting in fewer unique instructions. To overcome this constraint, spare bits in other instructions will be appended to the opcode bits to extend the opcode range. This however, will require a more complex decoder that must first switch the opcode, then switch any spare bits to determine the final opcode. This method will significantly increase the number of unique instructions provided by the instruction set.}\label{isa:bits}
+
+\item{\textbf{Provide frequently used actions as options for existing instructions.}\\
+In software, frequently used actions include incrementing/decrementing by 1 and performing logical comparisons which usually take more than one instruction on some RISC architectures. As they are common actions, the instruction overhead and time may be significant and can affect performance. To provide a solution to this problem, in addition to using spare bits to extend the opcode range, spare bits will be used to signify a frequently used action action to be performed by the ALU.
+
+As shown in Figure \ref{fig:isa}, frequently used commands such as incrementing/decrementing and logical comparions are provided by setting spare bits to special values. For example, the instructions \verb|ARITH_UADDI| and \verb|ARITH_SSUBI| extend the \verb|ARITH_U| and \verb|ARITH_S| opcodes by filling the spare bit, 4. If this bit is not set (0), the instruction allows for a 4-bit immediate value to be added in addition to the two register selects. The 4-bit immediate allows adding a small number to the ALU which is useful in the case of software for loops where an increment/decrement of more than 1 is required.
+
+Another example is the \verb|SETC| instruction. Inspired by Intel's x86 \verb|SETCC|, the instructions sets the destination register to zero or one depending on the result of the \verb|CMP| instruction's flags. Without this instruction, multiple branches would be required to convert the comparion's flags to logical zeros and ones.}\label{isa:freq}
+
+
+\item{\textbf{Provide instructions for performing bitwise manipulations.}\\
+RISC processors are commonly used for microprocessing and microcontroller actions which typically includes bit manipulation. The ISA provides bitwise OR, XOR, AND, NOT, and shifting instructions under a single opcode to fill this need.}\label{isa:bitwise}
+
+\item{\textbf{Provide instructions for explicitly performing signed and unsigned arithmetic.}\\
+Performing signed and unsigned arithmetic is a key requirement for RISC applications and so it was decided to provide such instructions. Software programmers can easily switch between signed and unsigned arithmetic by setting bit 11 in the \verb|ARITH| instruction family. Being able to change between signed and unsigned arithmetic instructions by changing a single bit will make the RISC processor's decoder module smaller and less complex.
+
+Without explicit unsigned and signed instructions, extra instructions would be required to perform addition and subtraction. In addition, due to two's complement representation of signed numbers, the highest immediate operand value would be halved, resulting in more instructions to reach the desired value.
+}\label{isa:signed}
+\end{enumerate}
+
+\begin{figure}[h]
+\centering 
+\includegraphics[width=10cm]{../img/isa}
+\caption{Initial Vmicro16 16-bit instruction set architecture. Coloured regions represent instruction families (bitwise, branching, arithmetic, etc.).}
+\label{fig:isa}
+\end{figure}
+The ISA table is shown in Figure \ref{fig:isa}. The top 5 bits (15-11) are dedicated to the opcode resulting in 32 unique values. Currently only the bits 14-11 are used (\verb|NOP| to \verb|SETC|) leaving the top bit spare. Initially, this bit was reserved to indicate an extended immediate instruction, \verb|MOVI12|, supporting a large 12-bit immediate value, however later in the design it was decided that the top bit would indicate special instructions dedicated for multi-core operation. This leaves 16 spare unique opcodes for this purpose.
+
+
+\newpage
+\subsection{Design and Implementation}
+The RISC core design is a traditional 5-stage processor (fetch, decode, execute, memory, write-back).
+
+To satisfy \ref{cd:vendor}, the Verilog code will be self-contained in a single file. This reduces the hierarchical complexity and eases cross-vendor project set-up as only a single file is required to be included. 
+A disadvantage with this single file approach is that some external Verilog verification tools that I plan to use, such as Verilator, do not currently support multiple Verilog modules (due to an unfixed bug) within a single file. 
+
+\begin{figure}[H]
+\centering 
+\includegraphics[width=10cm]{../img/risc}
+\caption{Vmicro16 RISC 5-stage RTL diagram showing: instruction pipelining (data passed forward through clocked register banks at each stage); branch address calculation; ALU operand calculation (rd2 or imm); and program counter incrementing.}
+\label{fig:risc}
+\end{figure}
+
+\subsubsection{Instruction and Data Memory}
+The design uses separate instruction and data memories similar to a Harvard architecture computer. This architecture was chosen due because I find it easier to implement.
+
+\subsubsection{Register File}
+To support design goal \ref{isa:regs}, the register set features a dual-port read and single-port write. This allows instructions to read 2 registers simultaneously for any instruction. The single-port write allows the instruction output to be written to the register file. 
+
+\subsubsection{Pipelining}
+The extended deliverable \ref{ed:ipc}, to provide atleast 1 instructions per clock. Previous processor designs of mine have all required multiple clocks per instruction as it is a lot easier to implement. Modern processors today can output 1 or more instructions per clock through the use of instruction pipelining. This technique increases throughput of the processor by performing each stage in parallel. In this pipeline, instructions still travel through each stage in the same order, the difference is that the  fetch stage does not wait for the final stage to complete and so fetches a new instruction every clock cycle, resulting in each stage operating on new data every clock cycle. To extend my knowledge in CPU pipelining, extended deliverable \ref{ed:ipc} is proposed.
+
+Instruction pipelining is harder to implement as data and control hazards can occur. Data hazards occur when instructions  are dependant on the output of a previous instruction that has not left the pipeline, for example a register dependency. Methods to detect this hazard include checking if the register selects in the decode stage are present in future stages of the pipeline. If this check is true, then the current instruction depends on an instruction in the pipeline, and the processor can  either wait until the dependant instruction has left the pipeline (i.e. has been written back to registers) or insert a \verb|NOP| that will produce a \textit{bubble} in the pipeline allowing the final stage to execute before the dependant instruction continues.
+
+Control hazards occur when conditional or interrupt branching instructions are in the pipeline and their result has not been calculated yet. This results in preceding instructions entering the pipeline when they should not be executed due to the conditional branch. To detect this hazard, for instructions that perform branching or conditional execution, a global flag is set. When the outcome of the conditional check is performed, stages after decode are allowed to commit their results. Fortunately this technique is fairly simple implement.
+
+This project's RISC processor implements these two hazard detectors and solutions to resolve them. The data hazard resolver implements a \verb|valid| signal that is passed forward from stage to stage. This signal is low when a hazard has occured and indicates that receiving stage should not operate on the previous stage's data. Each stage's \verb|valid| signal is dependant on the previous stages \verb|valid| signal. This allows future stages to stall when a hazard is detected in previous stages. A diagram of the implementation of these hazards in the processor is shown in Figure \ref{fig:stall}.
+
+\begin{figure}[h]
+\centering 
+\includegraphics[width=10cm]{../img/stall}
+\caption{Pipeline data hazard detection. The register selects are passed forward through each stage and compared to the IDEX (latest instruction) register selects. If they match, the latest instruction depends on the output of an instruction in the pipeline, the IFID and IDEX stages are stalled to allow the instruction in the pipeline to commit.}
+\label{fig:stall}
+\end{figure}
+
+\subsubsection{Memory Management Unit}
+It was decided to use a memory management unit (MMU) to make it easier and extensible to communicate with external peripherals or additional registers. This method would transparently use the existing \verb|LW|/\verb|SW| instructions which removes the requirement for a unique instruction for each peripheral. 
+
+\subsubsection{Proposed Memory Mapped Addresses}
+The peripheral addresses are currently based on classes. For example, a memory-mapped address may use the upper byte to address a peripheral and the lower byte to address a register/function in that peripheral.
+
+Later in the project, I plan to rewrite the addressing scheme to use a simpler address format which is closer to commonly used peripheral addressing schemes used today.
+The proposed memory mapped addresses for each system and peripheral are listed below.% in Table \ref{tb:mmu}.
+
+\begin{table}[h]
+    \small
+    \begin{tabularx}{\textwidth}{|l|X|}
+    \hline
+    Address (16-bit aligned) & Peripheral Name
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    \verb|0x0000| & NOP (reads returns 0, writes do nothing)
+    \\ \hline 
+    \verb|0x00ZZ| & Per-core scratch RAM (ZZ = 8-bit RAM address)
+    \\ \hline 
+    \verb|0x0100| & Extended Core Registers 1
+    \\ \hline 
+    \verb|0x0200| & Extended Core Registers 2
+    \\ \hline 
+    \verb|0x03ZZ| & Wishbone Master controller select (ZZ contains 8-bit wishbone slave address)
+    \\ \hline 
+    \verb|0x1XYZ| & Master core controller (X = slave select, Y = instruction, Z = data)
+    \\ \hline 
+    \end{tabularx}
+    \caption{Provisional memory-mapped addresses table.}
+    \label{tb:mmu}
+\end{table}
+
+\subsubsection{ALU Design}
+The Vmicro16's ALU is an asynchronous module that has 3 inputs: data a; data b; and opcode op, and outputs data value c.
+The ALU is able to operate on both register data (\verb|rd1| and \verb|rd2|) and immediate values. A switch is used to set the \verb|b| input to either the \verb|rd2| or \verb|imm| value from the previous stage.
+
+Currently, the ALU does not store flags to indicate overflow, equality, or zero values in the module itself. Instead the ALU outputs the result of the \verb|CMP|, which calculates such flags, to be written back to the register set in the write-back stage. This means that in order to perform a conditional operation, such as a branch, the register containing the \verb|CMP| flags must be included in the instruction.
+
+\begin{figure}[H]
+\centering 
+\includegraphics[width=10cm]{../img/alu}
+\caption{Vmicro16 ALU diagram showing clocked inputs from the previous IDEX stage being }
+\label{fig:alu}
+\end{figure}
+
+
+The Verilog implementation of the ALU is shown in Figure \ref{fig:aluv}. The ALU's asynchronous output is clocked with other registers, such as destination register \verb|rs1| and other control signals, in the \verb|EXME| register bank.
+\begin{figure}[H]
+\centering
+\inputminted[fontsize=\footnotesize,firstline=322,lastline=335,linenos]{verilog}{../../vmicro16/vmicro16.v}
+\caption{Vmicro16's ALU implementation named vmicro16\_alu. vmicro16.v}
+\label{fig:aluv}
+\end{figure}
+
+
+
+
+\subsubsection{Decoder Design}
+Instruction decoding occurs in the between the IFID and IDEX stages. 
+The decoder extracts register selects and operands from the input instruction. The decoder outputs are asynchronous which allows the register selects to be passed to the register set and register data to be read asynchronously. The register selects and register read data is then clocked into the IDEX register bank.
+
+\begin{figure}[H]
+\centering
+\inputminted[fontsize=\footnotesize,firstline=224,lastline=245,linenos]{verilog}{../../vmicro16/vmicro16.v}
+\caption{Vmicro16's decoder module code showing nested bit switches to determine the intended opcode. vmicro16.v}
+\label{fig:decoder}
+\end{figure}
+
+In Figure \ref{fig:decoder}, it can be seen that the first 8 opcode cases are represented using the same 15-11 bits, however the \verb|VMICRO16_OP_BIT| instructions require another bit range to be compared to determine the output opcode.
+
+\subsection{Verification}
+Currently, the only verification method used is manual inspection of the output waveforms of a test bench. For now, it is easier and faster to spot erroneous states by hand due to the large complexity of the pipeline. Later in the project, automatic test benches will be utilised. 
+
+\subsubsection{Known Bugs}
+Known bugs exist within the RISC core however none are critical as they can be easily avoided in software.
+
+\begin{enumerate}[leftmargin=3\parindent, label=\bfseries BUG\arabic*, style=nextline]
+\item{\textbf{Stall detection does not consider load/store instructions.}\\
+Due to instruction pipelining techniques used by the processor and lack of address checking in the \verb|EXME| and \verb|MEWB| stages, \verb|LW| instructions immediately after \verb|SW| instructions:\\ \verb|    SW R0 (R2+16)|\\ \verb|    LW R1 (R2+16)|\\
+will not return the previously stored value. In addition, because of the target address is calculated by the ALU (e.g. \verb|R2+16|), detecting matching addresses at IFID and IDEX stage is not trivial, and because of this, a hardware fix is not planned for the final version. It is possible to overcome this problem in software by placing at least 5 \verb|NOP| instructions after each \verb|SW|. 
+}\label{bug:swlw}
+\end{enumerate}
+
+
+\chapter{Future Work}
+
+{%\hypersetup{linkcolor=black}
+\startcontents[chapters]
+\printcontents[chapters]{}{1}{}
+}
+
+\section{Project Status}
+Four months have passed since the start of the project and significant progress has been made to the final deliverable. 
+
+
+\begin{figure}[H]
+\centering 
+\includegraphics[width=15cm]{../img/bram_ex}
+\caption{Caption for BRAMex}
+\label{fig:ex}
+\end{figure}
+
+The current active stage is \textit{3.3 Pipeline Implementation and Verification} where the processor pipeline is being verified against of range of simple software sequences. It is important that this verification is thorough and the output is bug free as future additions to the processor will utilise this foundation.
+
+\subsection{Updated Project Time Line}
+The project table described in section \ref{sect:timeline} did not allocate times for stages 4.1 and later. This was due to expected high demand from other modules and exams in this time period and so it was decided to not allocate times that would later not be followed.
+
+Now that this time period is closer, time allocations have been assigned for stages 4, 7, and 8. The state of stage 5's extended deliverables, to implement debugging interfaces, have changed from \textit{Unknown} to \textit{Cancelled} due to expected high workload from other modules in the next month. The cancellation of these stages will not severely affect the final functionality of the deliverable however it will make debugging the processor slightly more difficult. It was decided to remove these extended features to allow for more time to be spent on core functionality.
+
+The updated project status is shown in Table \ref{tb:future_stages} and in Figure \ref{fig:future_stages}.
+
+
+\subsection{Future Work}
+May and early June are reserved for work on other modules and preparation for exams. From mid-June, work will resume on verifying the end of stage 3 and then work will start on stage 4 (focussed on designing and implementing multiprocessor features). After stage 4, software algorithms will be compiled for the ISA and evaluated against Amdahl's Law.
+
+\begin{table}[h]
+    \small
+    \begin{tabularx}{\textwidth}{|l|l|l|l|X|}
+    \hline
+    Stage & Title & Start Date & Core & Status
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    1.0 & Research & Feb 04 & x & Completed
+    \\ \hline
+    1.1 & Requirement gathering/review & Feb 11 & x & Completed
+	\\ \hline
+    1.1 & Processor specification, architecture, ISA & Feb 18 & x & Completed
+	\\ \hline
+    1.2 & Stage/Time Allocation Planning & Feb 25 & x & Completed
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    2.1 & Decoder, Register Set, impl \& integration & Feb 25 & x & Completed
+	\\ \hline
+    2.2 & Register set impl \& integration & Mar 04 & x & Completed
+	\\ \hline
+    2.3 & Local memory impl \& integration & Mar 11 & x & Completed
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    3.1 & Memory mapped register layout \& impl & Apr 01 &  & On-going
+	\\ \hline
+    3.2 & Wishbone peripheral bus connected to MMU & Apr 08 &  & On-going
+	\\ \hline
+    3.3 & Pipeline implementation and verification & Apr 15 &  & On-going
+	\\ \hline
+    3.4 & Cache memory design \& impl & \st{Apr 22} &  & Cancelled
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    4.1 & Multi-core communication interface & Jun 05 & x & Planned
+	\\ \hline
+    4.2 & Shared-memory controller & Jun 05 & x &Planned
+	\\ \hline
+    4.3 & Scalable multi-core interface (10s of cores) & Jul 01 & x & Planned
+	\\ \hline
+    4.4 & Multi-core example program (reduction) & Jul 10 & x & Planned
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    5.1 & SPI-FPGA interface for OTG programming & \st{TBD} &  & Cancelled
+	\\ \hline
+    5.2 & FPGA-PC interfacing & \st{TBD} &  & Cancelled
+	\\ \hline
+    5.3 & FPGA-PC debugging (instruction breakpoints) & \st{TBD} & & Cancelled
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    6.1 & Compiler backend for vmicro16 & TBD &  & Unknown
+	\\ \hline
+    6.2 & Compiler support for multi-core codegen & TBD &  & Unknown 
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    7.1 & Wishbone peripherals for demo & Aug 01 & x & Planned
+    \\ \specialrule{2pt}{-2pt}{0pt}
+    8.1 & Final Report & Jun 05 & x & Planned
+	\\ \hline    \end{tabularx}
+    \caption{Updated project stages.}
+    \label{tb:future_stages}
+\end{table}
+
+
+\begin{figure}[H]
+\centering 
+\includegraphics[width=12cm]{../img/week2_gantt}
+\caption{Updated project time gantt chart showing time allocations for stage 4.}
+\label{fig:future_stages}
+\end{figure}
+
+\chapter{Conclusion}
+With the end of Moore's Law looming, processor designers must use other strategies to continue improving performance of processors -- multiprocessor and parallelism being a primary strategy. This projects sets out to improve my knowledge on multiprocessor communication by designing, implementing, and verifying a multiprocessor -- and I believe starting from scratch is the best way to accomplish this learning task.
+
+To date, a compact 16-bit RISC instruction set has been designed and implemented in a Verilog single-core processor. Whilst single-core verification is still on-going, good progress has been made and extended deliverables from stage 3, such as instruction pipelining and memory-mapped peripherals via a Wishbone bus, has been implemented successfully.
+
+Stage 5's extended deliverables and the cache memory have been cancelled but they do not effect the core functionality of the processor. 
+The planned project time-line for future stages is  realistic and accomplishing the project's goals appears achievable.
+
+%TC:ignore
+\clearpage
+\bibliography{refs}
+\addcontentsline{toc}{chapter}{References}
+
+%\newgeometry{voffset=-4cm,bottom=-4cm}
+\chapter*{Appendix A - Code Listing}
+
+\markboth{Appendix A - Code Listing}{}
+
+\addcontentsline{toc}{chapter}{Appendix A - Code Listing}
+
+\section*{vmicro16.v}
+
+The single core RISC processor is defined in this file. It contains many submodules such as the decoder and local memory.
+\inputminted[fontsize=\tiny,baselinestretch=1,linenos]{systemverilog}{../../vmicro16/vmicro16.v}
+
+
+\section*{vmicro16\_soc.v}
+\inputminted[fontsize=\tiny,baselinestretch=1,linenos]{systemverilog}{../../vmicro16/vmicro16_soc.v}
+
+\section*{vmicro16\_isa.v}
+\inputminted[fontsize=\tiny,baselinestretch=1,linenos]{systemverilog}{../../vmicro16/vmicro16_isa.v}
+
+
+%TC:endignore
+
+\end{document}

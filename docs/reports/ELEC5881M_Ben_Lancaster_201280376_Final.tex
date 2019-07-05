@@ -231,7 +231,7 @@ The Vmicro16 processor uses a memory-mapping scheme to communicate with peripher
 	
 	\begin{rightwordgroup}{Per-core instances}
 	\memsection{008f}{0080}{3}{16 Special Registers}\\
-	\memsection{007f}{0000}{8}{Scratch Memory \\ \vspace{.5cm} \tiny \vspace{.5cm} \tiny See vmicro16\_soc\_config.v}
+	\memsection{007f}{0000}{8}{Scratch Memory \\ \vspace{.5cm} \tiny See vmicro16\_soc\_config.v}
 	\end{rightwordgroup}\\
 	
 \end{bytefield}
@@ -239,6 +239,7 @@ The Vmicro16 processor uses a memory-mapping scheme to communicate with peripher
 \label{fig:memmap}
 \end{figure}
 
+\newpage
 \section{Special Registers}
 From the software perspective, it is important for both the developer and software algorithms to know the target system's architecture to better utilise
 the resources available to them.
@@ -254,21 +255,78 @@ Software written for one architecture with $N$ cores must also run on an archite
 \begin{rightwordgroup}{0081 R}
 \bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{NUM\_CORES}
 \end{rightwordgroup} \\
-\begin{rightwordgroup}{0081 R}
-\bitbox{16}{SHARED\_MEMORY size in bits}
-\end{rightwordgroup} \\
 \begin{rightwordgroup}{0082 R}
+\bitbox{16}{SHARED\_MEMORY cells \\ \tiny(default 4096)}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0083 R}
 \bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{NUM\_PERIPHERALS}
 \end{rightwordgroup} \\
-\begin{rightwordgroup}{0083 RW}
-\bitbox{16}{Software Defined}
+\begin{rightwordgroup}{0084 RW}
+\bitbox{16}{User defined}
 \end{rightwordgroup} \\
 \bitbox[]{16}{$\vdots$ \\[1ex]} \\
 \begin{rightwordgroup}{008F RW}
-\bitbox{16}{Software Defined}
+\bitbox{16}{User defined}
 \end{rightwordgroup}
 \end{bytefield}
+\caption{Vmicro16 Special Registers layout (0x0080 - 0x008F).}
 \end{figure}
+
+\newpage
+\chapter{Interrupts}
+{%\hypersetup{linkcolor=black}
+\startcontents[chapters]
+\printcontents[chapters]{}{1}{}
+}
+\noindent\\
+This section describes the design, considerations, and implementation, of interrupt functionality within the Vmicro16 processor.
+
+\section{Software Interface}
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
+\bitheader[endianness=big]{0-15} \\
+\begin{rightwordgroup}{0100 RW}
+\bitbox{16}{Interrupt handler $0$}
+\end{rightwordgroup} \\
+
+\bitbox[]{16}{$\vdots$ \\[1ex]} \\
+\begin{rightwordgroup}{0107 RW}
+\bitbox{16}{Interrupt handler $7$}
+\end{rightwordgroup} \\
+
+\begin{rightwordgroup}{0108 RW}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{Interrupt bit mask}
+\end{rightwordgroup}
+\end{bytefield}
+\caption{The interrupt vector consists of eight 16-bit values that point to memory addresses of the instruction memory to jump to.}
+\end{figure}
+
+\newpage
+\subsection{Software Example}
+\begin{minted}[fontsize=\footnotesize,linenos,,baselinestretch=1]{arm}
+entry:
+    // Set interrupt vector at 0x100
+    // Move address of isr0 function to vector[0]
+    movi    r0, isr0
+    // create 0x100 value by left shifting 1 8 bits
+    movi    r1, #0x1
+    movi    r2, #0x8
+    lshft   r1, r2
+    // write isr0 address to vector[0]
+    sw      r0, r1
+    
+    // enable all interrupts by writing 0x0f to 0x108
+    movi    r0, #0x0f
+    sw      r0, r1 + #0x8
+    halt    // enter low power idle state
+    
+isr0: // arbitrary name
+    movi    r0, #0xff
+    intr    // return from interrupt
+
+\end{minted}
+
 
 \newpage
 \chapter{Peripherals}

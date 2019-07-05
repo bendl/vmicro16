@@ -64,6 +64,8 @@
 \def\arraystretch{1.3}
 
 \usepackage{bytefield}
+%\let\bitbox\bitboxt
+%\renewcommand{\bitbox}[2]{\bitboxt{#1}{\texttt{#2}}}
 
 \newcommand{\descbox}[2]{\parbox[c][3.8\baselineskip]{0.95\width}}
 % facilitates the creation of memory maps. Start address at the bottom,
@@ -82,6 +84,7 @@
 }
 \bitbox{16}{#4} % print box with caption
 }
+
 % http://texdoc.net/texmf-dist/doc/latex/bytefield/bytefield.pdf
 \definecolor{lightgray}{gray}{0.8}
 
@@ -207,7 +210,7 @@ The Vmicro16 processor uses a memory-mapping scheme to communicate with peripher
 	\bitbox[]{16}{} & \bitbox[]{16}{$\vdots$ \\[1ex]} \\
 	
 	\begin{rightwordgroup}{Shared peripherals}
-	\memsection{0202}{0200}{3}{TIMR0}
+	\memsection{0202}{0200}{3}{\nameref{sect:timer}}
 	\end{rightwordgroup}\\
 	\bitbox[]{16}{} & \bitbox[]{16}{$\vdots$ \\[1ex]} \\
 	
@@ -243,7 +246,7 @@ The Vmicro16 processor uses a memory-mapping scheme to communicate with peripher
 \section{Special Registers}
 From the software perspective, it is important for both the developer and software algorithms to know the target system's architecture to better utilise
 the resources available to them.
-Software written for one architecture with $N$ cores must also run on an architecture with $M$ cores. To enable such portability, the software must query the system for information such as: number of processor cores and the current core identifier. Without this information, the developer would be required to produce software for each individual architecture (e.g. an Intel i5 with 4 cores or an Intel i7 with 8 cores, or an NVIDIA GTX 970 with 
+Software written for one architecture with $N$ cores must also run on an architecture with $M$ cores. To enable such portability, the software must query the system for information such as: number of processor cores and the current core identifier. Without this information, the developer would be required to produce software for each individual architecture (e.g. an Intel i5 with 4 cores or an Intel i7 with 8 cores, or an NVIDIA GTX 970 with.
 
 \begin{figure}[H]
 \centering
@@ -256,7 +259,7 @@ Software written for one architecture with $N$ cores must also run on an archite
 \bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{NUM\_CORES}
 \end{rightwordgroup} \\
 \begin{rightwordgroup}{0082 R}
-\bitbox{16}{SHARED\_MEMORY cells \\ \tiny(default 4096)}
+\bitbox{16}{SHARED\_MEMORY cells \tiny(default 4096)}
 \end{rightwordgroup} \\
 \begin{rightwordgroup}{0083 R}
 \bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{NUM\_PERIPHERALS}
@@ -293,9 +296,19 @@ Interrupts are commonly used to signal actions from asynchronous sources, for ex
 When acting upon an incoming interrupt the current state the processor must be saved so that changes from the interrupt handler, such as register writes and branches, do not affect the current state. After the interrupt handler function signals it has finished (by using the \textit{Interrupt Return} \verb|intr| instruction) the saved state is restored.
 In the case of the Vmicro16 processor, the program counter \verb|r_pc[15:0]| and register set \verb|regs| instance are the only states that are saved. Going forth, the terms \textit{normal mode} and \textit{interrupt mode} are used to describe what registers the processor should use when executing instructions.
 
-To save the normal mode register set \verb|regs| state, a dedicated register set \verb|regs_isr| is multiplexed with \verb|regs|.
+When saving the state, to avoid clocking 128 bits (8 registers of 16 bits) into another register, which would increase timing delays and logic elements, a dedicated register set for the interrupt mode (\verb|regs_isr|) is multiplexed with the normal mode register set (\verb|regs|). Then depending on the mode (identified by the register \verb|regs_use_int|) the processor can easily switch between the two large states without significantly affecting timing.
+
+The timing diagram in Figure \ref{fig:interrupts} visually describes this process.
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{interrupts}
+\caption{Time diagram showing the TIMR0 peripheral emitting a 1us periodic interrupt signal (out) to the processor. The processor acknowledges the interrupt (int\_pending\_ack) and enters the interrupt mode (regs\_use\_int) for a period of time. When the interrupt handler reaches the Interrupt Return instruction (indicated by w\_intr) the processor returns to normal mode and restores the normal state.}
+\label{fig:interrupts}
+\end{figure}
 
 \section{Software Interface}
+
 \begin{figure}[H]
 \centering
 \begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
@@ -368,7 +381,8 @@ isr0:                     // arbitrary name
 \end{figure}
 
 
-\section{Timer Interrupt}
+\section{Timer with Interrupt}
+\label{sect:timer}
 \begin{figure}[H]
 \centering
 \begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
@@ -377,7 +391,8 @@ isr0:                     // arbitrary name
 \bitbox{16}{Load Value}
 \end{rightwordgroup} \\
 \begin{rightwordgroup}{0201 W}
-\bitbox{14}{\color{lightgray}\rule{\width}{\height}} &
+\bitbox{13}{\color{lightgray}\rule{\width}{\height}} &
+\bitbox{1}{I} &
 \bitbox{1}{R} &
 \bitbox{1}{S}
 \end{rightwordgroup} \\
@@ -413,7 +428,7 @@ isr0:                     // arbitrary name
 }
 The Vmicro16 processor uses 
 
-\begin{figure}
+\begin{figure}[H]
 \centering
 \includegraphics[width=13cm]{soc_layout_schem}
 \caption{•}

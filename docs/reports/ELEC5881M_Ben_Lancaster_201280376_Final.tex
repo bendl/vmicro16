@@ -212,8 +212,8 @@ The Vmicro16 processor uses a memory-mapping scheme to communicate with peripher
 	\bitbox[]{16}{} & \bitbox[]{16}{$\vdots$ \\[1ex]} \\
 	
 	\begin{rightwordgroup}{Per-core instances}
-	\memsection{0108}{}{1}{Interrupt Mask}\\
-	\memsection{0107}{0100}{3}{Interrupt Vector}
+	\memsection{0108}{}{1}{\nameref{sect:interrupts} Mask}\\
+	\memsection{0107}{0100}{3}{\nameref{sect:interrupts} Vector}
 	\end{rightwordgroup}\\
 	
 	\bitbox[]{16}{} & \bitbox[]{16}{$\vdots$ \\[1ex]} \\
@@ -230,8 +230,8 @@ The Vmicro16 processor uses a memory-mapping scheme to communicate with peripher
 	\bitbox[]{16}{} & \bitbox[]{16}{$\vdots$ \\[1ex]} \\
 	
 	\begin{rightwordgroup}{Per-core instances}
-	\memsection{008f}{0080}{3}{16 Special Registers}\\
-	\memsection{007f}{0000}{8}{Scratch Memory \\ \vspace{.5cm} \tiny See vmicro16\_soc\_config.v}
+	\memsection{008F}{0080}{3}{16 Special Registers}\\
+	\memsection{007F}{0000}{8}{Scratch Memory \\ \vspace{.5cm} \tiny See vmicro16\_soc\_config.v}
 	\end{rightwordgroup}\\
 	
 \end{bytefield}
@@ -274,12 +274,26 @@ Software written for one architecture with $N$ cores must also run on an archite
 
 \newpage
 \chapter{Interrupts}
+\label{sect:interrupts}
 {%\hypersetup{linkcolor=black}
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 }
 \noindent\\
 This section describes the design, considerations, and implementation, of interrupt functionality within the Vmicro16 processor.
+
+\section{Why Interrupts?}
+Interrupts are used to enable asynchronous behaviour within a processor.
+
+Interrupts are commonly used to signal actions from asynchronous sources, for example an input button or from a UART receiver signalling that data has been received.
+
+\section{Hardware Implementation}
+
+\subsection{Context Switching}
+When acting upon an incoming interrupt the current state the processor must be saved so that changes from the interrupt handler, such as register writes and branches, do not affect the current state. After the interrupt handler function signals it has finished (by using the \textit{Interrupt Return} \verb|intr| instruction) the saved state is restored.
+In the case of the Vmicro16 processor, the program counter \verb|r_pc[15:0]| and register set \verb|regs| instance are the only states that are saved. Going forth, the terms \textit{normal mode} and \textit{interrupt mode} are used to describe what registers the processor should use when executing instructions.
+
+To save the normal mode register set \verb|regs| state, a dedicated register set \verb|regs_isr| is multiplexed with \verb|regs|.
 
 \section{Software Interface}
 \begin{figure}[H]
@@ -304,7 +318,8 @@ This section describes the design, considerations, and implementation, of interr
 
 \newpage
 \subsection{Software Example}
-\begin{minted}[fontsize=\footnotesize,linenos,,baselinestretch=1]{arm}
+% pip install pygments-arm
+\begin{minted}[fontsize=\footnotesize,linenos,,baselinestretch=0.8]{arm}
 entry:
     // Set interrupt vector at 0x100
     // Move address of isr0 function to vector[0]
@@ -319,11 +334,11 @@ entry:
     // enable all interrupts by writing 0x0f to 0x108
     movi    r0, #0x0f
     sw      r0, r1 + #0x8
-    halt    // enter low power idle state
+    halt                  // enter low power idle state
     
-isr0: // arbitrary name
-    movi    r0, #0xff
-    intr    // return from interrupt
+isr0:                     // arbitrary name
+    movi    r0, #0xff     // do something
+    intr                  // return from interrupt
 
 \end{minted}
 

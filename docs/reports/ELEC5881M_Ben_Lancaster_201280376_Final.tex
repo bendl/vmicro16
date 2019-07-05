@@ -88,6 +88,16 @@
 % http://texdoc.net/texmf-dist/doc/latex/bytefield/bytefield.pdf
 \definecolor{lightgray}{gray}{0.8}
 
+\usepackage{rotating}
+\newcommand{\bitlabel}[2]{%
+\bitbox[]{#1}{%
+\raisebox{0pt}[4ex][0pt]{%
+\turnbox{45}{\fontsize{7}{7}\selectfont#2}%
+}%
+}%
+}
+
+
 \begin{document}
 %TC:ignore
 \pagestyle{headings}
@@ -308,6 +318,7 @@ The timing diagram in Figure \ref{fig:interrupts} visually describes this proces
 \end{figure}
 
 \section{Software Interface}
+To enable software to 
 
 \begin{figure}[H]
 \centering
@@ -327,10 +338,40 @@ The timing diagram in Figure \ref{fig:interrupts} visually describes this proces
 \end{rightwordgroup}
 \end{bytefield}
 \caption{The interrupt vector consists of eight 16-bit values that point to memory addresses of the instruction memory to jump to.}
+\label{fig:r_interrupts}
 \end{figure}
 
-\newpage
+\subsubsection{Interrupt Vector (0x0100-0x0107)}
+The interrupt vector is a per-core register that is used to store the addresses of interrupt handlers. An interrupt handler is simply a software function residing in instruction memory that is branched to when a particular interrupt is received. 
+
+\subsubsection{Interrupt Mask (0x0108)}
+The interrupt mask is a per-core register that is used to mask/listen specific interrupt sources. This enables processing cores to individually select which interrupts they respond to. This allows for multi-processor designs where each core can be used for a particular interrupt source, improving the time response to the interrupt for time critical programs. The Interrupt Mask register is an 8-bit read/write register where each bit corresponds to a particular interrupt source and each bit corresponds with the interrupt handler in the interrupt vector.
+
+\begin{figure}
+\centering
+\begin{bytefield}[bitwidth=4ex]{16}
+& \bitlabel{8}{} &
+& \bitlabel{6}{[7:2] User defined} &
+& \bitlabel{1}{UART0 RX} 
+& \bitlabel{1}{TIMR0} \\
+\bitheader[endianness=big]{0-7,8,15} \\
+  \bitbox{8}{\color{lightgray}\rule{\width}{\height}}
+& \bitbox{1}{0}
+& \bitbox{1}{0}
+& \bitbox{1}{0}
+& \bitbox{1}{0}
+& \bitbox{1}{0}
+& \bitbox{1}{0}
+& \bitbox{1}{0}
+& \bitbox{1}{0}
+\end{bytefield}
+\caption{Interrupt Mask register (0x0108). Each bit corresponds to an interrupt source. 1 signifies the interrupt is enabled for/visible to the core. Bits [7:2] are left to the designer to assign.}
+\label{fig:r_interruptmask}
+\end{figure}
+
 \subsection{Software Example}
+To better understand the usage of the described interrupt registers, a simple software program is described below. The following software program produces a simple and power efficient routine to initialise the interrupt vector and interrupt mask.
+
 % pip install pygments-arm
 \begin{minted}[fontsize=\footnotesize,linenos,,baselinestretch=0.8]{arm}
 entry:
@@ -352,9 +393,14 @@ entry:
 isr0:                     // arbitrary name
     movi    r0, #0xff     // do something
     intr                  // return from interrupt
-
 \end{minted}
 
+A more complex example software program utilising interrupts and the TIMR0 interrupt is described in section \ref{sect:timr0_code}.
+
+\section{Design Improvements}
+The hardware and software interrupt design have changed throughout the projects cycle. In initial versions of the interrupt implementation, the software program, while waiting for an interrupt, would be in a tight infinite loop (branching to the same instruction). This resulted in the processor using all pipeline stages during this time. The pipeline stages produce many logic transitions and memory fetches which raise power consumption and temperatures. This is quite noticeable especially when running on the Spartan-6 LX9 FPGA.
+
+To improve this, it was decided to implement a new state within the processor's state machine that, when entered, did not produce high frequency logic transitions or memory fetches. The \verb|HALT| instruction was modified to enter this state and the only way to leave is from an interrupt or top-level reset. This removes the need for a software infinite loop that produces high frequency logic transitions (decoding, ALU, register reads, etc.) and memory fetches.
 
 \newpage
 \chapter{Peripherals}

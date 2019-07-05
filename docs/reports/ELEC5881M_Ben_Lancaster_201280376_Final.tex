@@ -82,6 +82,8 @@
 }
 \bitbox{16}{#4} % print box with caption
 }
+% http://texdoc.net/texmf-dist/doc/latex/bytefield/bytefield.pdf
+\definecolor{lightgray}{gray}{0.8}
 
 \begin{document}
 %TC:ignore
@@ -197,13 +199,14 @@ Date: \today
 }
 The Vmicro16 processor uses a memory-mapping scheme to communicate with peripherals and other cores.
 
+\section{Memory Map}
 \begin{figure}[H]
 \centering
 \begin{bytefield}{24}
-	\memsection{1FFF}{1000}{8}{Shared Memory with Global Monitor \\ \vspace{.5cm} \tiny APB\_BRAM0\_CELLS}\\
+	\memsection{1FFF}{1000}{8}{Shared Memory with Global Monitor \\ \vspace{.5cm} \tiny See vmicro16\_soc\_config.v}\\
 	\bitbox[]{16}{} & \bitbox[]{16}{$\vdots$ \\[1ex]} \\
 	
-	\begin{rightwordgroup}{Peripherals}
+	\begin{rightwordgroup}{Shared peripherals}
 	\memsection{0202}{0200}{3}{TIMR0}
 	\end{rightwordgroup}\\
 	\bitbox[]{16}{} & \bitbox[]{16}{$\vdots$ \\[1ex]} \\
@@ -215,8 +218,8 @@ The Vmicro16 processor uses a memory-mapping scheme to communicate with peripher
 	
 	\bitbox[]{16}{} & \bitbox[]{16}{$\vdots$ \\[1ex]} \\
 	
-	\begin{rightwordgroup}{Peripherals}
-	\memsection{00B7}{00B0}{4}{REGS0}\\
+	\begin{rightwordgroup}{Shared peripherals}
+	\memsection{00B7}{00B0}{3}{REGS0}\\
 	\bitbox[]{16}{} & \bitbox[]{16}{$\vdots$ \\[1ex]} \\
 	\memsection{00A1}{00A0}{2}{UART0}\\
 	\bitbox[]{16}{} & \bitbox[]{16}{$\vdots$ \\[1ex]} \\
@@ -224,15 +227,47 @@ The Vmicro16 processor uses a memory-mapping scheme to communicate with peripher
 	\memsection{0091}{}{1}{GPIO1}\\
 	\memsection{0090}{}{1}{GPIO0}
 	\end{rightwordgroup}\\
+	\bitbox[]{16}{} & \bitbox[]{16}{$\vdots$ \\[1ex]} \\
 	
 	\begin{rightwordgroup}{Per-core instances}
-	\memsection{008f}{0080}{4}{16 Special Registers}\\
-	\memsection{007f}{0000}{8}{Scratch Memory}
+	\memsection{008f}{0080}{3}{16 Special Registers}\\
+	\memsection{007f}{0000}{8}{Scratch Memory \\ \vspace{.5cm} \tiny \vspace{.5cm} \tiny See vmicro16\_soc\_config.v}
 	\end{rightwordgroup}\\
 	
 \end{bytefield}
 \caption{Memory map showing addresses of various memory sections.}
 \label{fig:memmap}
+\end{figure}
+
+\section{Special Registers}
+From the software perspective, it is important for both the developer and software algorithms to know the target system's architecture to better utilise
+the resources available to them.
+Software written for one architecture with $N$ cores must also run on an architecture with $M$ cores. To enable such portability, the software must query the system for information such as: number of processor cores and the current core identifier. Without this information, the developer would be required to produce software for each individual architecture (e.g. an Intel i5 with 4 cores or an Intel i7 with 8 cores, or an NVIDIA GTX 970 with 
+
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
+\bitheader[endianness=big]{0-15} \\
+\begin{rightwordgroup}{0080 R}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{CORE\_ID}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0081 R}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{NUM\_CORES}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0081 R}
+\bitbox{16}{SHARED\_MEMORY size in bits}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0082 R}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{NUM\_PERIPHERALS}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0083 RW}
+\bitbox{16}{Software Defined}
+\end{rightwordgroup} \\
+\bitbox[]{16}{$\vdots$ \\[1ex]} \\
+\begin{rightwordgroup}{008F RW}
+\bitbox{16}{Software Defined}
+\end{rightwordgroup}
+\end{bytefield}
 \end{figure}
 
 \newpage
@@ -241,6 +276,24 @@ The Vmicro16 processor uses a memory-mapping scheme to communicate with peripher
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 }
+
+\section{GPIO Interface}
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
+\bitheader[endianness=big]{0-15} \\
+\begin{rightwordgroup}{0090 RW}
+\bitbox{16}{GPIO0 Output}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0091 RW}
+\bitbox{16}{GPIO1 Output}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0092 R}
+\bitbox{16}{GPIO1 Input}
+\end{rightwordgroup}
+\end{bytefield}
+\end{figure}
+
 
 \section{Timer Interrupt}
 \begin{figure}[H]
@@ -251,12 +304,30 @@ The Vmicro16 processor uses a memory-mapping scheme to communicate with peripher
 \bitbox{16}{Load Value}
 \end{rightwordgroup} \\
 \begin{rightwordgroup}{0201 W}
-\bitbox{14}{X} &
+\bitbox{14}{\color{lightgray}\rule{\width}{\height}} &
 \bitbox{1}{R} &
 \bitbox{1}{S}
 \end{rightwordgroup} \\
 \begin{rightwordgroup}{0202 W}
 \bitbox{16}{Prescaler}
+\end{rightwordgroup}
+\end{bytefield}
+\end{figure}
+
+
+\section{UART Interface}
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
+\bitheader[endianness=big]{0,1,7,8,15} \\
+\begin{rightwordgroup}{00A0 W}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{Transmit Data}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{00A1 R}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{Receive Data}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{00A2 R/W}
+\bitbox{14}{\color{lightgray}\rule{\width}{\height}} & \bitbox{1}{E} & \bitbox{1}{I}
 \end{rightwordgroup}
 \end{bytefield}
 \end{figure}

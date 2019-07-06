@@ -111,7 +111,7 @@
 \textbf{
 %%PRCO304 - Project Initiation Document
 %Highlight Reports
-Multi-core RISC Processor Design and Implementation (Rev. 2.02)
+Multi-core RISC Processor Design and Implementation \\(Rev. 2.02)
 }
 
 \vspace{0.4cm}
@@ -136,10 +136,10 @@ Assessor: Mr David Moore
 \textbf{University of Leeds}\\
 School of Electrical and Electronic Engineering
 
-\vspace{2cm}
+\vspace{1cm}
 \today
 
-\vspace{2cm}
+\vspace{1cm}
 Word count: 4689
 \end{center}
 \end{titlepage}
@@ -341,10 +341,10 @@ To enable software to
 \label{fig:r_interrupts}
 \end{figure}
 
-\subsubsection{Interrupt Vector (0x0100-0x0107)}
+\subsection{Interrupt Vector (0x0100-0x0107)}
 The interrupt vector is a per-core register that is used to store the addresses of interrupt handlers. An interrupt handler is simply a software function residing in instruction memory that is branched to when a particular interrupt is received. 
 
-\subsubsection{Interrupt Mask (0x0108)}
+\subsection{Interrupt Mask (0x0108)}
 The interrupt mask is a per-core register that is used to mask/listen specific interrupt sources. This enables processing cores to individually select which interrupts they respond to. This allows for multi-processor designs where each core can be used for a particular interrupt source, improving the time response to the interrupt for time critical programs. The Interrupt Mask register is an 8-bit read/write register where each bit corresponds to a particular interrupt source and each bit corresponds with the interrupt handler in the interrupt vector.
 
 \begin{figure}
@@ -487,7 +487,55 @@ The Vmicro16 processor uses
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 }
-The Vmicro16 processor uses 
+
+\section{Overview}
+\begin{figure}[H]
+\centering
+\includegraphics[width=13cm]{interconnold}
+\end{figure}
+\subsection{Design Considerations}
+
+\section{Interconnect Interface}
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=.5em, rightcurly=., rightcurlyspace=0pt]{84}
+\bitheader[endianness=big]{0,20,41,62,83} \\
+\bitbox{21}{Core $N$-$1$} & 
+\bitbox{21}{$\cdots$} & 
+\bitbox{21}{Core 1} & 
+\bitbox{21}{Core 0}
+\end{bytefield}
+\end{figure}
+
+\section{Master to Slave Interface}
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{21}
+\bitheader[endianness=big]{0,15,16-20} \\
+\begin{rightwordgroup}{PADDR[20:0]}
+  \bitbox{1}{\rotatebox{90}{\small LE}}
+  \bitbox{1}{\rotatebox{90}{\small SE}}
+& \bitbox{3}{\small CORE\_ID}
+& \bitbox{16}{Address}
+\end{rightwordgroup}\\
+
+\begin{rightwordgroup}{PWDATA[15:0]}
+\bitbox{5}{\color{lightgray}\rule{\width}{\height}} & \bitbox{16}{Write data}
+\end{rightwordgroup}\\
+
+\begin{rightwordgroup}{PRDATA[15:0]}
+\bitbox{5}{\color{lightgray}\rule{\width}{\height}} & \bitbox{16}{Read Data}
+\end{rightwordgroup}\\
+
+\begin{rightwordgroup}{PWRITE[0:0]}
+\bitbox{20}{\color{lightgray}\rule{\width}{\height}} & \bitbox{1}{\rotatebox{90}{\small WE}}
+\end{rightwordgroup}\\
+
+\begin{rightwordgroup}{PENABLE[0:0]}
+\bitbox{20}{\color{lightgray}\rule{\width}{\height}} & \bitbox{1}{\rotatebox{90}{\small EN}}
+\end{rightwordgroup}
+\end{bytefield}
+\end{figure}
 
 \newpage
 \chapter{Introduction}

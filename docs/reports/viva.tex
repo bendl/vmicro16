@@ -20,6 +20,9 @@
 \setbeamertemplate{itemize items}[circle]
 \setbeamertemplate{section in toc}[circle]
 
+\setbeamertemplate{frametitle}{\vspace{-1cm}{\usebeamercolor[fg]{structure}\bfseries\insertframetitle}}
+
+
 \usepackage{helvet}
 
 \usepackage{listings}
@@ -27,7 +30,7 @@
 
 \title
     [Main Project]
-    {Multi-core RISC Processor Design \& Implementation}
+    {\textbf{Multi-core RISC Processor Design \& Implementation}}
 \subtitle{Demonstration Viva}
 
 \author
@@ -98,8 +101,9 @@ dolore magna aliqua.
 \end{frame}
 
 \begin{frame}{Top Level Hierarchy}
+\vspace{-.3cm}
 \begin{figure}
-\includegraphics[width=7cm]{soc_layout_schem}
+\includegraphics[width=7.5cm]{soc_layout_schem}
 \end{figure}
 \end{frame}
 
@@ -155,6 +159,22 @@ Demo: 2 Core LED toggle (GPIO0) with TIMR0 1s interrupt (interrupts\_2.s)
         \caption{TIMR0 1us interrupt with context switching}
         \label{fig:my_label}
     \end{figure}
+\end{frame}
+
+\begin{frame}{Timer Peripheral Registers}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.9\textwidth]{rtimer}
+        \caption{$t = 20{ns} * {load} * {prescaler}$}
+        \label{fig:my_label}
+    \end{figure}
+    Resolution (32-bit timer): 20ns to 85s.
+    
+    Examples: 
+    \begin{itemize}
+        \item For 1us: Load = 0x32, Prescaler = 0 (20ns * 0x32 = 1000ns)
+        \item For 1s:  Load = 0x1000, Prescaler = 0x3000 (demo)\\(20ns * 0x1000 * 0x3000 = approx. 1s)
+    \end{itemize}
 \end{frame}
 
 \section{Multi-core Functionality}
@@ -224,7 +244,6 @@ exit:
 
 \subsection{Accomplishments}
 \begin{frame}{Accomplishments}
-\vspace{-1cm}
 \begin{itemize}
     \item \textbf{Near complete System-on-Chip design with various peripherals}\\
     Timers, GPIO, UART, Registers, Memory
@@ -251,7 +270,7 @@ exit:
 
 \subsection{Future Improvements}
 \begin{frame}{Future Improvements}
-\vspace{-1cm}
+
 \begin{itemize}
     \item \textbf{Working Global Reset}\\
     Timers, GPIO, UART, Registers, Memory

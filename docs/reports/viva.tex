@@ -4,7 +4,7 @@
 %\AtBeginSection[]{\subsection{}}
 %\beamertemplatenavigationsymbolsempty
 
-%\usetheme{Singapore}
+\usetheme{Singapore}
 %\usetheme{Rochester}
 %\usetheme{JD}
 %\usetheme{PaloAlto}
@@ -14,13 +14,13 @@
 
 %\usecolortheme{Antibes}
 \useoutertheme[hideothersubsections]{sidebar}
-\usetheme{Rochester}
+%\usetheme{Rochester}
 \usecolortheme{orchid}
 \useoutertheme[hideothersubsections]{sidebar}
 \setbeamertemplate{itemize items}[circle]
 \setbeamertemplate{section in toc}[circle]
 
-%\usepackage{helvet}
+\usepackage{helvet}
 
 \usepackage{listings}
 
@@ -52,7 +52,15 @@
 \end{frame}
 
 \begin{frame}
-\tableofcontents
+\vspace{-1cm}
+\begin{columns}[t]
+        \begin{column}{.5\textwidth}
+            \tableofcontents[sections={1-3}]
+        \end{column}
+        \begin{column}{.5\textwidth}
+            \tableofcontents[sections={4-5}]
+        \end{column}
+    \end{columns}
 \end{frame}
 
 \section{Introduction}
@@ -117,12 +125,36 @@ dolore magna aliqua.
 \end{columns}
 \end{frame}
 
-\subsection{Interrupts}
-\begin{frame}{Interrupts}
-\end{frame}
-
 \subsection{Interconnect}
 \begin{frame}{Interconnect}
+
+\end{frame}
+
+\subsection{Interrupts}
+\begin{frame}[t]{Interrupts}
+\begin{columns}[t]
+\column{0.5\textwidth}
+\begin{figure}
+\includegraphics[width=\textwidth]{rinterrupts}\\
+\vspace{.5cm}
+\includegraphics[width=\textwidth]{rinterruptsmask}
+\end{figure}
+\column{0.5\textwidth}
+\begin{figure}
+\includegraphics[width=\textwidth]{vinterrupts}
+\end{figure}
+\end{columns}
+\vspace{1cm}
+Demo: 2 Core LED toggle (GPIO0) with TIMR0 1s interrupt (interrupts\_2.s)
+\end{frame}
+
+\begin{frame}{Timer Interrupt Example}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.9\textwidth]{interrupts}
+        \caption{TIMR0 1us interrupt with context switching}
+        \label{fig:my_label}
+    \end{figure}
 \end{frame}
 
 \section{Multi-core Functionality}
@@ -132,7 +164,7 @@ dolore magna aliqua.
 \begin{columns}[t]
 \column{0.5\textwidth}
 Hardware:
-\begin{itemize}
+\begin{itemize}[<+->]
     \item \textbf{Bus Arbitration}\\ (scheduling: priority, rotating, etc.)
     \item \textbf{Atomic functions}\\ (atomic versions of load/store to prevent race conditions)
     \item Per-core instruction memory
@@ -140,7 +172,7 @@ Hardware:
 \end{itemize}
 \column{0.5\textwidth}
 Software:
-\begin{itemize}
+\begin{itemize}[<+->]
     \item Semaphores/Mutexes\\ (exclusive memory access)
     \item Thread synchronisation\\ (memory barriers)
     \item \textbf{Context identification}\\ What core am I?\\ How many cores?\\ How much memory?
@@ -189,7 +221,59 @@ exit:
 
 \section{Conclusion}
 \frame{\tableofcontents[currentsection, subsectionstyle=show/show/hide]}
-\begin{frame}{Conclusion}
+
+\subsection{Accomplishments}
+\begin{frame}{Accomplishments}
+\vspace{-1cm}
+\begin{itemize}
+    \item \textbf{Near complete System-on-Chip design with various peripherals}\\
+    Timers, GPIO, UART, Registers, Memory
+    
+    \item \textbf{Common multi-thread/core synchronisation primitives}\\
+    Semaphores, Mutexes, Memory Barriers, Atomic Instructions
+    
+    \item \textbf{AMBA APB bus interface with Global Monitor}\\
+    Timers, GPIO, UART, Registers, Memory
+    
+    \item \textbf{Working shared bus arbitration}\\
+    Schedules access to shared resources
+    
+    \item \textbf{Working FPGA implementation for a 96 core design}\\
+    Nearly fills Cyclone V FPGA on the DE1-SoC
+    
+    \item \textbf{Interrupts with hardware context-switching}\\
+    Low latency to react to interrupt
+    
+    \item \textbf{Acknowledges design limitations and attempts to overcome}\\
+    LUT resources, block memories, power and temperature requirements
+\end{itemize}
+\end{frame}
+
+\subsection{Future Improvements}
+\begin{frame}{Future Improvements}
+\vspace{-1cm}
+\begin{itemize}
+    \item \textbf{Working Global Reset}\\
+    Timers, GPIO, UART, Registers, Memory
+    
+    \item \textbf{Common multi-thread/core synchronisation primitives}\\
+    Semaphores, Mutexes, Memory Barriers, Atomic Instructions
+    
+    \item \textbf{AMBA APB bus interface with Global Monitor}\\
+    Timers, GPIO, UART, Registers, Memory
+    
+    \item \textbf{Working shared bus arbitration}\\
+    Schedules access to shared resources
+    
+    \item \textbf{Working FPGA implementation for a 96 core design}\\
+    Nearly fills Cyclone V FPGA on the DE1-SoC
+    
+    \item \textbf{Interrupts with hardware context-switching}\\
+    Low latency to react to interrupt
+    
+    \item \textbf{Acknowledges design limitations and attempts to overcome}\\
+    LUT resources, block memories, power and temperature requirements
+\end{itemize}
 \end{frame}
 
 \end{document}

@@ -55,7 +55,7 @@
 %https://www.sharelatex.com/learn/Code_Highlighting_with_minted#Reference_guide
 \usemintedstyle{vs}
 % https://tex.stackexchange.com/questions/161124/how-to-make-a-minted-code-listing-centered-on-a-page
-%\RecustomVerbatimEnvironment{Verbatim}{BVerbatim}{}
+\RecustomVerbatimEnvironment{Verbatim}{BVerbatim}{}
 
 % tables, row colour
 \usepackage{tabularx,colortbl,booktabs}
@@ -306,11 +306,11 @@ Interrupts are commonly used to signal actions from asynchronous sources, for ex
 When acting upon an incoming interrupt the current state the processor must be saved so that changes from the interrupt handler, such as register writes and branches, do not affect the current state. After the interrupt handler function signals it has finished (by using the \textit{Interrupt Return} \verb|intr| instruction) the saved state is restored.
 In the case of the Vmicro16 processor, the program counter \verb|r_pc[15:0]| and register set \verb|regs| instance are the only states that are saved. Going forth, the terms \textit{normal mode} and \textit{interrupt mode} are used to describe what registers the processor should use when executing instructions.
 
-When saving the state, to avoid clocking 128 bits (8 registers of 16 bits) into another register, which would increase timing delays and logic elements, a dedicated register set for the interrupt mode (\verb|regs_isr|) is multiplexed with the normal mode register set (\verb|regs|). Then depending on the mode (identified by the register \verb|regs_use_int|) the processor can easily switch between the two large states without significantly affecting timing.
+When saving the state, to avoid clocking 128 bits (8 registers of 16 bits) into another register (which would increase timing delays and logic elements), a dedicated register set for the interrupt mode (\verb|regs_isr|) is multiplexed with the normal mode register set (\verb|regs|). Then depending on the mode (identified by the register \verb|regs_use_int|) the processor can easily switch between the two large states without significantly affecting timing.
 
 The timing diagram in Figure \ref{fig:interrupts} visually describes this process.
 
-\begin{figure}
+\begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{interrupts}
 \caption{Time diagram showing the TIMR0 peripheral emitting a 1us periodic interrupt signal (out) to the processor. The processor acknowledges the interrupt (int\_pending\_ack) and enters the interrupt mode (regs\_use\_int) for a period of time. When the interrupt handler reaches the Interrupt Return instruction (indicated by w\_intr) the processor returns to normal mode and restores the normal state.}
@@ -488,6 +488,9 @@ The Vmicro16 processor uses
 \printcontents[chapters]{}{1}{}
 }
 
+\section{Introduction}
+
+
 \section{Overview}
 \begin{figure}[H]
 \centering
@@ -496,18 +499,8 @@ The Vmicro16 processor uses
 \subsection{Design Considerations}
 
 \section{Interconnect Interface}
-\begin{figure}[H]
-\centering
-\begin{bytefield}[bitwidth=.5em, rightcurly=., rightcurlyspace=0pt]{84}
-\bitheader[endianness=big]{0,20,41,62,83} \\
-\bitbox{21}{Core $N$-$1$} & 
-\bitbox{21}{$\cdots$} & 
-\bitbox{21}{Core 1} & 
-\bitbox{21}{Core 0}
-\end{bytefield}
-\end{figure}
 
-\section{Master to Slave Interface}
+\subsection{Master to Slave Interface}
 \begin{figure}[H]
 \centering
 \begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{21}
@@ -536,6 +529,35 @@ The Vmicro16 processor uses
 \end{rightwordgroup}
 \end{bytefield}
 \end{figure}
+
+\subsection{Variable Core Support}
+\begin{figure}[H]
+\centering
+\begin{minted}[fontsize=\footnotesize]{verilog}
+input      [MASTER_PORTS*BUS_WIDTH-1:0]  S_PADDR,
+input      [MASTER_PORTS-1:0]            S_PWRITE,
+input      [MASTER_PORTS-1:0]            S_PSELx,
+input      [MASTER_PORTS-1:0]            S_PENABLE,
+input      [MASTER_PORTS*DATA_WIDTH-1:0] S_PWDATA,
+output reg [MASTER_PORTS*DATA_WIDTH-1:0] S_PRDATA,
+output reg [MASTER_PORTS-1:0]            S_PREADY,
+\end{minted}
+\caption{Variable size inputs and outputs to the interconnect.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=.5em, rightcurly=., rightcurlyspace=0pt]{84}
+\bitheader[endianness=big]{0,20,41,62,83} \\
+\bitbox{21}{Core $N$-$1$} & 
+\bitbox{21}{$\cdots$} & 
+\bitbox{21}{Core 1} & 
+\bitbox{21}{Core 0}
+\end{bytefield}
+\end{figure}
+
+
+\section{Shared Bus Arbitration}
 
 \newpage
 \chapter{Introduction}

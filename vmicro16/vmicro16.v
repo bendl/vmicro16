@@ -77,6 +77,8 @@ module vmicro16_bram # (
     parameter USE_INITS     = 0,
     parameter PARAM_DEFAULTS_R0 = 0,
     parameter PARAM_DEFAULTS_R1 = 0,
+    parameter PARAM_DEFAULTS_R2 = 0,
+    parameter PARAM_DEFAULTS_R3 = 0,
     parameter NAME          = "BRAM"
 ) (
     input clk, 
@@ -96,6 +98,8 @@ module vmicro16_bram # (
         for (i = 0; i < MEM_DEPTH; i = i + 1) mem[i] = 0;
         mem[0] = PARAM_DEFAULTS_R0;
         mem[1] = PARAM_DEFAULTS_R1;
+        mem[2] = PARAM_DEFAULTS_R2;
+        mem[3] = PARAM_DEFAULTS_R3;
 
         if (USE_INITS) begin
             //`define TEST_SW
@@ -474,7 +478,9 @@ module vmicro16_core_mmu # (
         .MEM_DEPTH  (SPECIAL_REGS),
         .USE_INITS  (0),
         .PARAM_DEFAULTS_R0  (CORE_ID),
-        .PARAM_DEFAULTS_R1  (`DEF_INT_MASK),
+        .PARAM_DEFAULTS_R1  (`CORES),
+        .PARAM_DEFAULTS_R2  (`APB_BRAM0_CELLS),
+        .PARAM_DEFAULTS_R3  (`SLAVES),
         .NAME       ("ram_sr")
     ) ram_sr (
         .clk        (clk),

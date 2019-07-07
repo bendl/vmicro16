@@ -282,26 +282,26 @@ exit:
 
 \begin{itemize}
     \item \textbf{Working Global Reset}\\
-    Timers, GPIO, UART, Registers, Memory
+    Global resets are expensive (LUT resources)\\
+    Resetting block memories is not trivial
     
-    \item \textbf{Common multi-thread/core synchronisation primitives}\\
-    Semaphores, Mutexes, Memory Barriers, Atomic Instructions
+    \item \textbf{On-chip Programming}\\
+    Use the UART0 receiver to program each cores flash memory
     
-    \item \textbf{AMBA APB bus interface with Global Monitor}\\
-    Timers, GPIO, UART, Registers, Memory
+    \item \textbf{Per-core gating/enabling}\\
+    Improve power efficiency for ASIC implementation by disabling cores at run-time via software.
     
-    \item \textbf{Working shared bus arbitration}\\
-    Schedules access to shared resources
-    
-    \item \textbf{Working FPGA implementation for a 96 core design}\\
-    Nearly fills Cyclone V FPGA on the DE1-SoC
-    
-    \item \textbf{Interrupts with hardware context-switching}\\
-    Low latency to react to interrupt
-    
-    \item \textbf{Acknowledges design limitations and attempts to overcome}\\
-    LUT resources, block memories, power and temperature requirements
+    \item \textbf{Improve memory bottleneck}\\
+    Each core requires it's own memory - reduce by multiplexing access to a single large memory.
 \end{itemize}
+\end{frame}
+
+\subsection{Q\&A}
+\begin{frame}[c]
+\begin{center}
+\Huge Q\&A
+\end{center}
+
 \end{frame}
 
 \end{document}

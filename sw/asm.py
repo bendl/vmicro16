@@ -224,6 +224,12 @@ def cg(xs):
             op |= x.rs2 << 5
             op |= 0b11111 << 0;
             binstr.append(op)
+        elif x.op == "addi":
+            op |= 0b00110 << 11
+            op |= x.rs1 << 8
+            op |= x.rs2 << 5
+            op |= x.imm8 << 0
+            binstr.append(op)
         elif x.op == "sub":
             op |= 0b00110 << 11
             op |= x.rs1 << 8

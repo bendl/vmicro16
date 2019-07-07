@@ -129,7 +129,6 @@ module vmicro16_bram_ex_apb # (
 );
     // exclusive flag checks
     wire [MEM_WIDTH-1:0] mem_out;
-    wire [MEM_WIDTH-1:0] mem_out_ex;
     reg                  swex_success = 0;
 
     localparam ADDR_BITS = `clog2(MEM_DEPTH);

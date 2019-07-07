@@ -22,6 +22,8 @@
 
 %\usepackage{helvet}
 
+\usepackage{listings}
+
 
 \title
     [Main Project]
@@ -131,24 +133,50 @@ dolore magna aliqua.
 \column{0.5\textwidth}
 Hardware:
 \begin{itemize}
-    \item Bus Arbitration/Scheduling\\ (priority, rotating, etc.)
-    \item Atomic functions\\ (atomic versions of load-
+    \item \textbf{Bus Arbitration}\\ (scheduling: priority, rotating, etc.)
+    \item \textbf{Atomic functions}\\ (atomic versions of load/store to prevent race conditions)
+    \item Per-core instruction memory
+    \item Per-core context-switching for interrupt handling
 \end{itemize}
 \column{0.5\textwidth}
 Software:
 \begin{itemize}
-    \item \textbf{Shared Memory with Global Monitor}
-    \item Timer with Interrupt
-    \item Per-core Interrupt Vector and Mask
-    \item Shared Register Set
-    \item UART Transceiver
-    \item Multiple GPIO ports
-    \item Per-core scratch memory
-    \item \textbf{Per-core Special Registers}
-    \item Customisable by designers
+    \item Semaphores/Mutexes\\ (exclusive memory access)
+    \item Thread synchronisation\\ (memory barriers)
+    \item \textbf{Context identification}\\ What core am I?\\ How many cores?\\ How much memory?
 \end{itemize}
 \end{columns}
+\end{frame}
 
+\subsection{Context Identification}
+\begin{frame}[fragile]{Context Identification}
+\begin{columns}
+\column{0.5\textwidth}
+\begin{figure}
+\includegraphics[width=\textwidth]{sregs}
+\caption{Special Registers 0x0080 to 0x008F}
+\end{figure}
+\column{0.5\textwidth}
+\begin{lstlisting}[basicstyle=\scriptsize]
+entry:
+    // get core idx 0x80 in r7
+    movi    r7, #0x80
+    lw      r7, r7
+
+    // Branch away if not core 0
+    cmp     r7, r0
+    movi    r0, exit
+    br      r0, BR_NE 
+    
+    // Core 0 only instructions
+    nop     r0, r0
+    nop     r0, r0
+    nop     r0, r0
+    
+exit:
+    halt    r0, r0    
+\end{lstlisting}
+\end{columns}
 \end{frame}
 
 \section{Results}

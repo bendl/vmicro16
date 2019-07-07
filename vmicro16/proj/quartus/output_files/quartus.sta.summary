@@ -3,83 +3,83 @@ TimeQuest Timing Analyzer Summary
 ------------------------------------------------------------
 
 Type  : Slow 1100mV 85C Model Setup 'clock50'
-Slack : 5.293
+Slack : 3.709
 TNS   : 0.000
 
 Type  : Slow 1100mV 85C Model Hold 'clock50'
-Slack : 0.220
+Slack : 0.302
 TNS   : 0.000
 
 Type  : Slow 1100mV 85C Model Recovery 'clock50'
-Slack : 14.345
+Slack : 16.640
 TNS   : 0.000
 
 Type  : Slow 1100mV 85C Model Removal 'clock50'
-Slack : 2.735
+Slack : 2.052
 TNS   : 0.000
 
 Type  : Slow 1100mV 85C Model Minimum Pulse Width 'clock50'
-Slack : 8.864
+Slack : 8.868
 TNS   : 0.000
 
 Type  : Slow 1100mV 0C Model Setup 'clock50'
-Slack : 5.382
+Slack : 3.572
 TNS   : 0.000
 
 Type  : Slow 1100mV 0C Model Hold 'clock50'
-Slack : 0.206
+Slack : 0.278
 TNS   : 0.000
 
 Type  : Slow 1100mV 0C Model Recovery 'clock50'
-Slack : 14.561
+Slack : 16.763
 TNS   : 0.000
 
 Type  : Slow 1100mV 0C Model Removal 'clock50'
-Slack : 2.568
+Slack : 1.924
 TNS   : 0.000
 
 Type  : Slow 1100mV 0C Model Minimum Pulse Width 'clock50'
-Slack : 8.830
+Slack : 8.824
 TNS   : 0.000
 
 Type  : Fast 1100mV 85C Model Setup 'clock50'
-Slack : 11.205
+Slack : 10.397
 TNS   : 0.000
 
 Type  : Fast 1100mV 85C Model Hold 'clock50'
-Slack : 0.134
+Slack : 0.180
 TNS   : 0.000
 
 Type  : Fast 1100mV 85C Model Recovery 'clock50'
-Slack : 16.192
+Slack : 17.873
 TNS   : 0.000
 
 Type  : Fast 1100mV 85C Model Removal 'clock50'
-Slack : 1.821
+Slack : 1.211
 TNS   : 0.000
 
 Type  : Fast 1100mV 85C Model Minimum Pulse Width 'clock50'
-Slack : 8.842
+Slack : 8.783
 TNS   : 0.000
 
 Type  : Fast 1100mV 0C Model Setup 'clock50'
-Slack : 11.980
+Slack : 11.252
 TNS   : 0.000
 
 Type  : Fast 1100mV 0C Model Hold 'clock50'
-Slack : 0.123
+Slack : 0.151
 TNS   : 0.000
 
 Type  : Fast 1100mV 0C Model Recovery 'clock50'
-Slack : 16.616
+Slack : 18.097
 TNS   : 0.000
 
 Type  : Fast 1100mV 0C Model Removal 'clock50'
-Slack : 1.605
+Slack : 1.087
 TNS   : 0.000
 
 Type  : Fast 1100mV 0C Model Minimum Pulse Width 'clock50'
-Slack : 8.831
+Slack : 8.777
 TNS   : 0.000
 
 ------------------------------------------------------------

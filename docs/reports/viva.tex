@@ -100,12 +100,15 @@ dolore magna aliqua.
 \begin{itemize}[<+->]\setlength\itemsep{1em}
     \item{\textbf{System-on-Chip with multi-processor functionality}\\
     Tested on FPGA hardware with 1-96 CPU cores.}
+    
     \item{\textbf{Custom 16-bit RISC CPU}\\
     With interrupts and its own Instruction Set Architecture (ISA).}
-    \item{\textbf{Aimed at Design Engineers, not end users}\\
-    Project is provided as source code/design files for Design Engineers to customise and implement in hardware themselves.}
+    
     \item{\textbf{Software/Assembly compiler}\\
     PRCO304 programming language/Intel assembly syntax.}
+    
+    \item{\textbf{Aimed at Design Engineers, not end users}\\
+    Project is provided as source code/design files for Design Engineers to customise and implement in hardware themselves.}
 \end{itemize}
 \end{frame}
 
@@ -175,7 +178,7 @@ Demo: 2 Core LED toggle (GPIO0) with TIMR0 1s interrupt (interrupts\_2.s)
         \centering
         \includegraphics[width=0.9\textwidth]{rtimer}
         \caption{$t = 20{ns} * {load} * {prescaler}$}
-        \label{fig:my_label}
+        \label{}
     \end{figure}
     Resolution (32-bit timer): 20ns to 85s.
     
@@ -202,8 +205,8 @@ Hardware:
 \column{0.5\textwidth}
 Software:
 \begin{itemize}[<+->]
-    \item Semaphores/Mutexes\\ (exclusive memory access)
-    \item Thread synchronisation\\ (memory barriers)
+    \item \textbf{Semaphores/Mutexes}\\ (exclusive memory access)
+    \item \textbf{Thread synchronisation}\\ (memory barriers)
     \item \textbf{Context identification}\\ What core am I?\\ How many cores?\\ How much memory?
 \end{itemize}
 \end{columns}
@@ -240,10 +243,66 @@ exit:
 \end{columns}
 \end{frame}
 
+
+\subsection{Atomics}
+\begin{frame}[fragile]{Atomic Instructions}
+\begin{columns}[t]
+\column{0.5\textwidth}
+\begin{itemize}\setlength{\itemsep 1em}
+    \item Enables semaphores, mutexes, memory barriers
+    \item Prevent race conditions between threads/cores
+    \item LW[EX] and SW[EX]
+\end{itemize}
+\column{0.5\textwidth}
+Example:
+\begin{lstlisting}[basicstyle=\scriptsize]
+try_inc:
+    lwex    r0, r1
+    // increment by 1
+    addi    r0, #0x01
+    // attempt store
+    swex    r0, r1
+    // check success (== 0)
+    cmp     r0, r3
+    // branch if failed
+    movi    r4, try_inc
+    br      r4, BR_NE
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Exclusive Access}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{bram_ex}
+    \caption{"Global Monitor" = track exclusive access to memory locations}
+    \label{}
+\end{figure}
+Demo: 8 core number summation (sum.s)
+\end{frame}
+
 \section{Results}
 \frame{\tableofcontents[currentsection, subsectionstyle=show/show/hide]}
-\begin{frame}{Results}
+
+\begin{frame}{Multi-core vs Single-Core for Summation}
+\begin{columns}[t]
+\column{0.5\textwidth}
+\begin{itemize}\setlength{\itemsep 2em}
+    \item Each core has low work load
+        \begin{itemize}
+            \item Sum subset of numbers in for loop
+        \end{itemize}
+    \item Ideal scenario for parallelism
+    \begin{itemize}
+        \item Highly parallelisable
+        \item Few inter-thread dependencies
+    \end{itemize}
+\end{itemize}
+\column{0.5\textwidth}
+Insert graph showing core count vs total time
+\end{columns}
 \end{frame}
+
 \subsection{Results 1}
 \begin{frame}{Results 1}
 \end{frame}

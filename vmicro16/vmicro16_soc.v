@@ -40,6 +40,7 @@ module timer_apb # (
 
     localparam CTRL_START = 0;
     localparam CTRL_RESET = 1;
+    localparam CTRL_INT   = 2;
 
     localparam ADDR_LOAD = 2'b00;
     localparam ADDR_CTRL = 2'b01;
@@ -97,7 +98,7 @@ module timer_apb # (
             
     // generate the output pulse when r_counter == 0
     //   out = (counter reached zero && counter started)
-    assign out      = (r_counter == 0) && r_ctrl[CTRL_START];
+    assign out      = (r_counter == 0) && r_ctrl[CTRL_START]; // && r_ctrl[CTRL_INT];
     assign int_data = {`DATA_WIDTH{1'b1}};
 endmodule
 

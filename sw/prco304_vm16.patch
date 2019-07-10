@@ -1,24 +1,35 @@
- prco_compiler/cli/main.c                       |  17 +--
+ prco_compiler/CMakeLists.txt                   |   1 +
+ prco_compiler/cli/main.c                       |  23 ++-
  prco_compiler/emu/emu.c                        |   1 -
  prco_compiler/include/libprco/adt/ast.h        |  17 +++
- prco_compiler/include/libprco/arch/prco_impl.h |  30 -----
+ prco_compiler/include/libprco/arch/prco_impl.h |  30 ----
  prco_compiler/include/libprco/arch/target.h    |   3 +
  prco_compiler/include/libprco/module.h         |   3 +-
- prco_compiler/include/libprco/parser.h         |   6 +-
+ prco_compiler/include/libprco/parser.h         |   7 +-
  prco_compiler/libprco/CMakeLists.txt           |  10 +-
- prco_compiler/libprco/adt/ast.c                |  19 +++
- prco_compiler/libprco/arch/prco_impl.c         |  27 -----
+ prco_compiler/libprco/adt/ast.c                |  23 ++-
+ prco_compiler/libprco/arch/prco_impl.c         |  27 ----
  prco_compiler/libprco/arch/target.c            |  10 +-
  prco_compiler/libprco/arch/template_impl.c     |   4 +
  prco_compiler/libprco/dbug.c                   |   1 +
  prco_compiler/libprco/module.c                 |   4 +-
  prco_compiler/libprco/opt.c                    |   3 +
- prco_compiler/libprco/parser.c                 | 155 +++++++++++++++++++++----
- prco_compiler/test/verilog_memh.txt            |  56 +++++++--
- 17 files changed, 264 insertions(+), 102 deletions(-)
+ prco_compiler/libprco/parser.c                 | 193 ++++++++++++++++++++-----
+ prco_compiler/test/verilog_memh.txt            |  56 +++++--
+ 18 files changed, 297 insertions(+), 119 deletions(-)
 
+diff --git a/prco_compiler/CMakeLists.txt b/prco_compiler/CMakeLists.txt
+index 6cf1e9c..6c30856 100644
+--- a/prco_compiler/CMakeLists.txt
++++ b/prco_compiler/CMakeLists.txt
+@@ -5,4 +5,5 @@ include_directories(${CMAKE_SOURCE_DIR})
+ 
+ add_subdirectory(libprco)
+ add_subdirectory(cli)
++add_subdirectory(cliasm)
+ add_subdirectory(emu)
 diff --git a/prco_compiler/cli/main.c b/prco_compiler/cli/main.c
-index e90a8f9..a349935 100644
+index e90a8f9..c18d680 100644
 --- a/prco_compiler/cli/main.c
 +++ b/prco_compiler/cli/main.c
 @@ -35,6 +35,8 @@ SOFTWARE.
@@ -30,7 +41,7 @@ index e90a8f9..a349935 100644
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>
-@@ -49,13 +51,14 @@ main(int argc, char **argv)
+@@ -49,18 +51,20 @@ main(int argc, char **argv)
          struct text_parser      *parser      = NULL;
          FILE                    *file_output = NULL;
  
@@ -43,6 +54,7 @@ index e90a8f9..a349935 100644
 +        int     O = 0;
 +        char    *out_name = "out.s";
 +        target_archs m_arch = target_vm16;
++        int     parse_asm = 0;
  
 -        int parse_result = 0;
 -        int module_dump_output = 0;
@@ -51,7 +63,23 @@ index e90a8f9..a349935 100644
          struct ast_func *function_list = NULL;
  
          // Parse command line
-@@ -123,7 +126,7 @@ main(int argc, char **argv)
+         int opt;
+-        while ((opt = getopt(argc, argv, "i:dD:O:")) != -1) {
++        while ((opt = getopt(argc, argv, "i:dD:O:a")) != -1) {
+                 switch (opt) {
+                 case 'i': src_name = optarg;
+                         break;
+@@ -75,6 +79,9 @@ main(int argc, char **argv)
+                         O = atoi(optarg);
+                         dbprintf(D_INFO, "Setting Optimiser to O%d\r\n", O);
+                         break;
++                case 'a':
++                        parse_asm = 1;
++                        break;
+                 default:
+                         dbprintf(D_ERR, "Unknown arguments.\r\n");
+                         exit(1);
+@@ -123,7 +130,7 @@ main(int argc, char **argv)
                          }
                  }
  
@@ -212,7 +240,7 @@ index 114337b..70be4f3 100644
  extern void module_free(struct module *m);
  
 diff --git a/prco_compiler/include/libprco/parser.h b/prco_compiler/include/libprco/parser.h
-index d122048..044d7be 100644
+index d122048..0654ba9 100644
 --- a/prco_compiler/include/libprco/parser.h
 +++ b/prco_compiler/include/libprco/parser.h
 @@ -66,7 +66,11 @@ extern "C" {
@@ -228,6 +256,14 @@ index d122048..044d7be 100644
  
  /// lexer token types
  typedef enum token_type {
+@@ -90,6 +94,7 @@ struct text_parser {
+         int lexer_char;
+         int lexer_current_token;
+         int lexer_current_number;
++        int type;
+ };
+ 
+ /// Reserved word structure
 diff --git a/prco_compiler/libprco/CMakeLists.txt b/prco_compiler/libprco/CMakeLists.txt
 index 7382a44..113d7ea 100644
 --- a/prco_compiler/libprco/CMakeLists.txt
@@ -258,14 +294,18 @@ index 7382a44..113d7ea 100644
  add_library(${PROJECT_NAME} STATIC ${PRCO_SOURCES} ${PRCO_HEADERS})
  
 diff --git a/prco_compiler/libprco/adt/ast.c b/prco_compiler/libprco/adt/ast.c
-index a982744..2ac4b44 100644
+index a982744..1f276ce 100644
 --- a/prco_compiler/libprco/adt/ast.c
 +++ b/prco_compiler/libprco/adt/ast.c
-@@ -101,6 +101,7 @@ ast_lvar_create(struct ast_var *var)
+@@ -99,8 +99,9 @@ struct ast_lvar *
+ ast_lvar_create(struct ast_var *var)
+ {
          struct ast_lvar *ret = zalloc(ret);
-         ret->var = var;
-         ret->bp_offset = 0;
-+        ret->index = 0;
+-        ret->var = var;
+-        ret->bp_offset = 0;
++        ret->var        = var;
++        ret->bp_offset  = 0;
++        ret->index      = 0;
          return ret;
  }
  
@@ -417,10 +457,15 @@ index 2c0e025..072d773 100644
                                  new_num->val = tmp_bin_lhs->val < tmp_bin_rhs->val;
                                  break;
 diff --git a/prco_compiler/libprco/parser.c b/prco_compiler/libprco/parser.c
-index e4f9d64..5b2b06c 100644
+index e4f9d64..456ddd1 100644
 --- a/prco_compiler/libprco/parser.c
 +++ b/prco_compiler/libprco/parser.c
-@@ -363,6 +363,8 @@ parser_run(_in_ struct text_parser *parser)
+@@ -360,9 +360,13 @@ parser_run(_in_ struct text_parser *parser)
+         parser_add_resv("PORT1", 0, TOK_PORT_PORT1);
+         parser_add_resv("UART1", 0, TOK_PORT_UART1);
+ 
++        parser_add_resv("EQ", 0, TOK_BOOL_EQ);
++        parser_add_resv("NE", 0, TOK_BOOL_NE);
          parser_add_resv("LE", 0, TOK_BOOL_LE);
          parser_add_resv("GE", 0, TOK_BOOL_GE);
  
@@ -429,7 +474,7 @@ index e4f9d64..5b2b06c 100644
  
          // Push new parser to stack
          parse_result = parser_pushp(parser);
-@@ -388,10 +390,18 @@ int
+@@ -388,10 +392,18 @@ int
  lexer_check_single(int c, token_type* tok)
  {
          switch(c) {
@@ -448,7 +493,7 @@ index e4f9d64..5b2b06c 100644
          case '-':
                  lexer_fgetc();
                  *tok = TOK_SUB;
-@@ -404,6 +414,14 @@ lexer_check_single(int c, token_type* tok)
+@@ -404,6 +416,14 @@ lexer_check_single(int c, token_type* tok)
                  lexer_fgetc();
                  *tok = TOK_RBRACE;
                  return 1;
@@ -463,7 +508,7 @@ index e4f9d64..5b2b06c 100644
          case ',':
                  lexer_fgetc();
                  *tok = TOK_COMMA;
-@@ -452,15 +470,20 @@ int
+@@ -452,15 +472,20 @@ int
  lexer_digit(char *buf)
  {
          int buf_i = 0;
@@ -486,23 +531,71 @@ index e4f9d64..5b2b06c 100644
  }
  
  void
-@@ -861,8 +884,9 @@ parse_assignment(char *ident)
+@@ -758,11 +783,11 @@ check_str_in_scope(struct list_item *scope, char *ident)
+ struct ast_lvar *
+ get_var(char *ident)
+ {
+-        struct ast_lvar *v;
++        struct ast_lvar *lv;
+ 
+         // Check if v is a parameter to the function
+-        v = check_str_in_scope(g_params, ident);
+-        if (v) return v;
++        lv = check_str_in_scope(g_params, ident);
++        if (lv) return lv;
+ 
+         // Must be a local variable
+         return check_str_in_scope(g_locals, ident);
+@@ -833,26 +858,22 @@ parse_call(char *ident)
+ }
+ 
+ struct ast_item *
+-parse_assignment(char *ident)
++parse_assignment(struct ast_lvar *lv)
+ {
+-        struct ast_lvar *v;
++        struct ast_lvar *lv_copy;
+         struct ast_item *val;
+         struct ast_assign *a;
+ 
+-        lexer_match_next(TOK_ASSIGNMENT);
+-        v = get_var(ident);
+-        if (!v) {
+-                dbprintf(D_ERR,
+-                        "ERR: Var assignment ident '%s' not found in scope\r\n",
+-                        ident);
+-                return NULL;
+-        }
++        lv_copy = zalloc(lv_copy);
++        memcpy(lv_copy, lv, sizeof(struct ast_lvar));
++        lv = lv_copy;
+ 
++        lexer_match_next(TOK_ASSIGNMENT);
+         val = parse_expr();
+         if (!val) return NULL;
+ 
+         a = zalloc(a);
+-        a->var = v;
++        a->var = lv;
+         a->val = val;
+ 
+         return ast_expr_create(a, AST_ASSIGNMENT);
+@@ -861,8 +882,9 @@ parse_assignment(char *ident)
  struct ast_item *
  parse_ident(void)
  {
 -        struct ast_lvar *v;
 -        char *ident;
-+        struct ast_lvar *lv;
-+        char            *ident;
-+        struct ast_lvar *lv_copy;
++        struct ast_lvar *lv             = NULL;
++        char            *ident          = NULL;
++        struct ast_lvar *lv_copy        = NULL;
  
          ident = LEXER_GET_STR();
          lexer_match_next(TOK_ID);
-@@ -872,20 +896,45 @@ parse_ident(void)
+@@ -872,20 +894,57 @@ parse_ident(void)
                  return parse_call(ident);
          }
  
--        if (lexer_match(TOK_ASSIGNMENT)) {
 +        // a[10] index
 +        else if (lexer_match(TOK_LSBRACE)) {
 +                lv = get_var(ident);
@@ -523,9 +616,18 @@ index e4f9d64..5b2b06c 100644
 +                lexer_match_next(TOK_RSBRACE);
 +        }
 +
-+                // a = <expr>
-+        else if (lexer_match(TOK_ASSIGNMENT)) {
-                 return parse_assignment(ident);
++        // a = <expr>
++        else
+         if (lexer_match(TOK_ASSIGNMENT)) {
+-                return parse_assignment(ident);
++                if (!lv) {
++                        lv = get_var(ident);
++                        if (!lv) {
++                                dbprintf(D_ERR, "lvar '%s' is not in the current scope!\r\n", ident);
++                                return NULL;
++                        }
++                }
++                return parse_assignment(lv);
          }
  
          // else its a variable reference
@@ -538,6 +640,11 @@ index e4f9d64..5b2b06c 100644
 +        else
 +        {
 +                lv = get_var(ident);
++
++                lv_copy = zalloc(lv_copy);
++                memcpy(lv_copy, lv, sizeof(struct ast_lvar));
++                lv = lv_copy;
++
 +                if (!lv) {
 +                        dbprintf(D_ERR,
 +                                 "lvar '%s' is not in the current scope!\r\n",
@@ -547,12 +654,11 @@ index e4f9d64..5b2b06c 100644
          }
  
 -        return ast_expr_create(v, AST_VAR_REF);
-+
 +        return ast_expr_create(lv, AST_VAR_REF);
  }
  
  struct ast_item *
-@@ -923,8 +972,10 @@ struct ast_item *
+@@ -923,8 +982,10 @@ struct ast_item *
  parse_var(void)
  {
          char            *ident  = NULL;
@@ -564,7 +670,7 @@ index e4f9d64..5b2b06c 100644
  
          dbprintf(D_INFO, "Parsing variable\r\n");
  
-@@ -934,28 +985,40 @@ parse_var(void)
+@@ -934,28 +995,40 @@ parse_var(void)
          lexer_match_next(TOK_ID);
  
          // If variable not found, create new local decl
@@ -595,13 +701,13 @@ index e4f9d64..5b2b06c 100644
          if (lexer_match(TOK_ASSIGNMENT)) {
                  if (nvar) {
 -                        nvar->next = parse_assignment(v->var->name);
-+                        nvar->next = parse_assignment(lv->var->name);
++                        nvar->next = parse_assignment(lv);
                          if (nvar->next == NULL)
                                  return NULL;
                          return nvar;
                  } else {
 -                        nvar = parse_assignment(v->var->name);
-+                        nvar = parse_assignment(lv->var->name);
++                        nvar = parse_assignment(lv);
                  }
          }
  
@@ -612,7 +718,7 @@ index e4f9d64..5b2b06c 100644
          }
  
          return nvar;
-@@ -1136,6 +1199,52 @@ parse_port_uart1(void)
+@@ -1136,6 +1209,52 @@ parse_port_uart1(void)
          return ast_expr_create(uart_ast, AST_UART);
  }
  
@@ -665,7 +771,7 @@ index e4f9d64..5b2b06c 100644
  struct ast_item *
  parse_while_expr(void)
  {
-@@ -1178,6 +1287,12 @@ parse_expr(void)
+@@ -1178,6 +1297,12 @@ parse_expr(void)
          if(lexer_match(TOK_PORT_UART1))
                  return parse_port_uart1();
  

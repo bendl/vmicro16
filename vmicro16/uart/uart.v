@@ -35,9 +35,9 @@ module uart(
 	    output 	 recv_error // Indicates error in receiving packet.
 	    );
 
-   //parameter CLOCK_DIVIDE = 1302; // clock rate (50Mhz) / (baud rate (9600) * 4)
-   parameter CLOCK_DIVIDE = 109; // clock rate (50Mhz) / (baud rate (115200) * 4)
-   //parameter CLOCK_DIVIDE = 217; // clock rate (100Mhz) / (baud rate (115200) * 4)
+  //parameter CLOCK_DIVIDE = 1302; // clock rate (50Mhz)  / (baud rate (9600)   * 4)
+  parameter CLOCK_DIVIDE = 109;  // clock rate (50Mhz)  / (baud rate (115200) * 4)
+  //parameter CLOCK_DIVIDE = 217;  // clock rate (100Mhz) / (baud rate (115200) * 4)
 
    // States for the receiving state machine.
    // These are just constants, not parameters to override.

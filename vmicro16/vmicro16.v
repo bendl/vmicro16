@@ -1178,6 +1178,23 @@ module vmicro16_core # (
                 r_state <= STATE_IF;
             end
             else if (r_state == STATE_HALT) begin
+                // Only an interrupt can return from halt
+                // duplicate code form STATE_ME!
+                if (int_pending) begin
+                    $display($time, "\tC%02h: Jumping to ISR: %h", CORE_ID, ints_vector[0 +: `DATA_WIDTH]);
+                    // TODO: check bounds
+                    // Save state
+                    r_pc_saved      <= r_pc;// + 1; HALT = stay with same PC
+                    regs_use_int    <= 1;
+                    int_pending_ack <= 1;
+                    // Jump to ISR
+                    r_pc            <= ints_vector[0 +: `DATA_WIDTH];
+                end else if (w_intr) begin
+                    $display($time, "\tC%02h: Returning from ISR: %h", CORE_ID, r_pc_saved);
+                    r_pc            <= r_pc_saved;
+                    regs_use_int    <= 0;
+                    int_pending_ack <= 0;
+                end
             end
         end
 

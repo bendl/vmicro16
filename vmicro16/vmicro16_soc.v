@@ -3,6 +3,7 @@
 
 `include "vmicro16_soc_config.v"
 `include "clog2.v"
+`include "formal.v"
 
 module timer_apb # (
     parameter CLK_HZ = 50_000_000
@@ -292,7 +293,6 @@ module vmicro16_soc (
     wire [`DEF_NUM_INT*`DATA_WIDTH-1:0]  ints_data;
     assign ints[7:1] = 0;
     assign ints_data[`DEF_NUM_INT*`DATA_WIDTH-1:`DATA_WIDTH] = {`DEF_NUM_INT*(`DATA_WIDTH-1){1'b0}};
-
     
     
     apb_intercon_s # (
@@ -443,9 +443,7 @@ module vmicro16_soc (
         .S_PWDATA   (M_PWDATA),
         .S_PRDATA   (M_PRDATA[`APB_PSELX_REGS0*`DATA_WIDTH +: `DATA_WIDTH]),
         .S_PREADY   (M_PREADY[`APB_PSELX_REGS0])
-    );
-
-    
+    );    
     
     vmicro16_bram_ex_apb # (
         .BUS_WIDTH    (`APB_WIDTH),
@@ -465,6 +463,11 @@ module vmicro16_soc (
         .S_PREADY   (M_PREADY[`APB_PSELX_BRAM0])
     );
 
+    // There must be atleast 1 core
+    `static_assert(`CORES > 0);
+    `static_assert(`DEF_MEM_INSTR_DEPTH > 0);
+    `static_assert(`DEF_MMU_TIM0_CELLS > 0);
+
     genvar i;
     generate for(i = 0; i < `CORES; i = i + 1) begin : cores
         
@@ -482,6 +485,7 @@ module vmicro16_soc (
             .ints       (ints),
             .ints_data  (ints_data),
 
+            // Output master interface
             .w_PADDR    (w_PADDR   [`APB_WIDTH*i +: `APB_WIDTH] ),
             .w_PWRITE   (w_PWRITE  [i]                         ),
             .w_PSELx    (w_PSELx   [i]                         ),

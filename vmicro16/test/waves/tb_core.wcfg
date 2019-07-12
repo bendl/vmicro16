@@ -12,12 +12,12 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="137900000000001fs"></ZoomEndTime>
-      <Cursor1Time time="70000000000000fs"></Cursor1Time>
+      <ZoomEndTime time="778000000001fs"></ZoomEndTime>
+      <Cursor1Time time="272000000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="198"></NameColumnWidth>
-      <ValueColumnWidth column_width="94"></ValueColumnWidth>
+      <NameColumnWidth column_width="232"></NameColumnWidth>
+      <ValueColumnWidth column_width="89"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="7" />
    <wave_markers>
@@ -66,7 +66,6 @@
       <wvobject fp_name="group316" type="group">
          <obj_property name="label">INT</obj_property>
          <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="isExpanded"></obj_property>
          <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /ints" type="array">
             <obj_property name="ElementShortName">ints[7:0]</obj_property>
             <obj_property name="ObjectShortName">ints[7:0]</obj_property>
@@ -165,7 +164,6 @@
    <wvobject fp_name="group519" type="group">
       <obj_property name="label">TIMR0</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/tb_vmicro16_soc/uut/timr0/out" type="logic">
          <obj_property name="ElementShortName">out</obj_property>
          <obj_property name="ObjectShortName">out</obj_property>
@@ -243,15 +241,87 @@
    <wvobject fp_name="group829" type="group">
       <obj_property name="label">UART0</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/tx_wire" type="logic">
-         <obj_property name="ElementShortName">tx_wire</obj_property>
-         <obj_property name="ObjectShortName">tx_wire</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/S_PWRITE" type="logic">
+         <obj_property name="ElementShortName">S_PWRITE</obj_property>
+         <obj_property name="ObjectShortName">S_PWRITE</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/S_PSELx" type="logic">
+         <obj_property name="ElementShortName">S_PSELx</obj_property>
+         <obj_property name="ObjectShortName">S_PSELx</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/S_PENABLE" type="logic">
+         <obj_property name="ElementShortName">S_PENABLE</obj_property>
+         <obj_property name="ObjectShortName">S_PENABLE</obj_property>
+      </wvobject>
+      <wvobject type="divider" fp_name="divider297">
+         <obj_property name="label">UARTOUT</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/uart_fifo/uart_inst/transmit" type="logic">
+         <obj_property name="ElementShortName">transmit</obj_property>
+         <obj_property name="ObjectShortName">transmit</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/uart_fifo/uart_inst/tx_byte" type="array">
+         <obj_property name="ElementShortName">tx_byte[7:0]</obj_property>
+         <obj_property name="ObjectShortName">tx_byte[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/uart_fifo/uart_inst/tx" type="logic">
+         <obj_property name="ElementShortName">tx</obj_property>
+         <obj_property name="ObjectShortName">tx</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/uart_fifo/rising" type="logic">
+         <obj_property name="ElementShortName">rising</obj_property>
+         <obj_property name="ObjectShortName">rising</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/uart_fifo/rising1" type="logic">
+         <obj_property name="ElementShortName">rising1</obj_property>
+         <obj_property name="ObjectShortName">rising1</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/uart_fifo/wrising" type="logic">
+         <obj_property name="ElementShortName">wrising</obj_property>
+         <obj_property name="ObjectShortName">wrising</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/uart_fifo/tx_fifo_pop" type="logic">
+         <obj_property name="ElementShortName">tx_fifo_pop</obj_property>
+         <obj_property name="ObjectShortName">tx_fifo_pop</obj_property>
+      </wvobject>
+      <wvobject type="divider" fp_name="divider298">
+         <obj_property name="label">TXFIFO</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/uart_fifo/tx_fifo_empty" type="logic">
+         <obj_property name="ElementShortName">tx_fifo_empty</obj_property>
+         <obj_property name="ObjectShortName">tx_fifo_empty</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/uart_fifo/tx_fifo_full" type="logic">
+         <obj_property name="ElementShortName">tx_fifo_full</obj_property>
+         <obj_property name="ObjectShortName">tx_fifo_full</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/uart_fifo/tx_fifo_pop" type="logic">
+         <obj_property name="ElementShortName">tx_fifo_pop</obj_property>
+         <obj_property name="ObjectShortName">tx_fifo_pop</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/uart_fifo/is_transmitting" type="logic">
+         <obj_property name="ElementShortName">is_transmitting</obj_property>
+         <obj_property name="ObjectShortName">is_transmitting</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/uart_fifo/tx_fifo_empty" type="logic">
+         <obj_property name="ElementShortName">tx_fifo_empty</obj_property>
+         <obj_property name="ObjectShortName">tx_fifo_empty</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/uart_fifo/tx_fifo_data_out" type="array">
+         <obj_property name="ElementShortName">tx_fifo_data_out[7:0]</obj_property>
+         <obj_property name="ObjectShortName">tx_fifo_data_out[7:0]</obj_property>
+      </wvobject>
+      <wvobject type="divider" fp_name="divider304">
+         <obj_property name="label">MEM</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group290" type="group">
       <obj_property name="label">SRAM</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/S_PSELx" type="logic">
          <obj_property name="ElementShortName">S_PSELx</obj_property>
          <obj_property name="ObjectShortName">S_PSELx</obj_property>

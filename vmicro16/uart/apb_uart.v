@@ -32,25 +32,12 @@ module apb_uart_tx # (
     wire        apb_we  = S_PSELx & S_PENABLE & S_PWRITE;
     wire        apb_sel = S_PSELx & S_PENABLE;
 
+    wire        uart_tx_is_transmitting;
     wire        uart_tx_busy;
-    wire        uart_rx_rdy;
+    wire        uart_rx_rdy = 1;
     wire [7:0]  uart_rx_dout;
     wire        uart_tx_fifo_full;
     reg         uart_rx_rdy_clear;
-
-    // Detect rising edge
-    // TODO: find out why (APB is 2 clocks)
-`ifdef FIX_T3
-    reg edge_write;
-    reg edge_write_2;
-    wire edge_write_rising = (edge_write_2 < edge_write);
-    always @(posedge clk) begin
-        edge_write <= S_PWRITE;
-        edge_write_2 <= edge_write;
-    end
-`else
-    wire edge_write_rising = 1;
-`endif
     
     assign S_PRDATA = (apb_sel) ? 16'hAAAA : 16'h0000;
 
@@ -67,32 +54,11 @@ module apb_uart_tx # (
         else
             uart_rx_rdy_clear <= 0;
 
-    reg disp_once = 0;
     always @(posedge clk)
-        if (apb_we) begin
-            disp_once <= 1;
-            if (disp_once == 0)
-                $display($time, "\t\tUART <= %h", S_PWDATA[7:0]);
-        end
-        else
-            disp_once <= 0;
-    
+        if (apb_we)
+            $display($time, "\t\tUART0 <= %h", S_PWDATA[7:0]);
 
-    //uart uart_blocking (
-    //    .clk_50m    (clk),
-    //
-    //    .din        (S_PWDATA[7:0]),
-    //    .wr_en      (apb_we),
-    //    .tx         (tx_wire),
-    //    .tx_busy    (uart_tx_busy),
-    //
-    //    .rx         (rx_wire),
-    //    .rdy        (uart_rx_rdy),
-    //    .rdy_clr    (uart_rx_rdy_clear),
-    //    .dout       (uart_rx_dout)
-    //);
-
-    wire uart_tx_transmit_en = apb_we && (!uart_tx_fifo_full) && edge_write_rising;
+    wire uart_tx_transmit_en = apb_we && (!uart_tx_fifo_full);
     uart_fifo uart_fifo(
         .clk             (clk),
         .rst             (reset),
@@ -108,7 +74,6 @@ module apb_uart_tx # (
         .tx              (tx_wire),
         .busy            (uart_tx_busy),
         .tx_fifo_full    (uart_tx_fifo_full),
-        //.is_transmitting (is_transmitting),
         .tx_byte         (S_PWDATA[7:0]),
         .transmit        (uart_tx_transmit_en)
     );

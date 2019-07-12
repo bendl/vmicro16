@@ -54,7 +54,7 @@ module fifo (/*AUTOARG*/
    reg 			     FULL;
    // End of automatics
 
-   reg [DATA_WIDTH -1:0]  memory[0:ADDR_DEPTH-1];   // The memory for the FIFO
+   reg [DATA_WIDTH -1:0]     memory[0:ADDR_DEPTH-1];   // The memory for the FIFO
    reg [ADDR_EXP:0] 	     write_ptr;                // Location to write to
    reg [ADDR_EXP:0] 	     read_ptr;                 // Location to read from 
    
@@ -189,9 +189,18 @@ module fifo (/*AUTOARG*/
    
    integer               i;   
    always @(posedge CLK)
-     if (ENABLE) begin
-        if (accept_write) begin
-          memory[write_ptr] <= DATA_IN;           
+     if (RESET) begin
+        for (i=0; i< (ADDR_DEPTH); i=i+1) begin
+           memory[i] <= 'b0;       
+        end
+     end else if (ENABLE) begin
+        if (FLUSH) begin
+           for (i=0; i< (ADDR_DEPTH); i=i+1) begin
+              memory[i] <= 'b0;    
+           end
+        end
+        else if (accept_write) begin
+           memory[write_ptr] <= DATA_IN;           
         end
      end
    

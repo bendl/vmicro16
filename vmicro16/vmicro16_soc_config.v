@@ -4,7 +4,7 @@
 
 `include "clog2.v"
 
-`define CORES           2
+`define CORES           10
 `define SLAVES          7
 
 ///////////////////////////////////////////////////////////

@@ -20,9 +20,7 @@ entry:
     swex    r0, r1
 
 try_inc:
-    // increment by 1
     movi    r2, #0x01
-    
     lwex    r0, r1
     // increment value
     add     r0, r2

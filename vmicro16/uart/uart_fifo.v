@@ -129,7 +129,7 @@ module uart_fifo (/*AUTOARG*/
    // RX FIFO takes data recevied by the UART and holds until outside module
    // requests data
    //
-   fifo #(.DATA_WIDTH(8), .ADDR_EXP(6))
+   fifo #(.DATA_WIDTH(8), .ADDR_EXP(5))
    rx_fifo(
            // Outputs
            .DATA_OUT               (rx_byte),
@@ -149,7 +149,7 @@ module uart_fifo (/*AUTOARG*/
    // TX FIFO takes data from outside module and holds it until the
    // UART is able to transmit it
    //
-   fifo #(.DATA_WIDTH(8), .ADDR_EXP(6))
+   fifo #(.DATA_WIDTH(8), .ADDR_EXP(5))
    tx_fifo(
            // Outputs
            .DATA_OUT               (tx_fifo_data_out),

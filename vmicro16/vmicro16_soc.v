@@ -289,11 +289,12 @@ module vmicro16_soc (
      wire [`CORES-1:0]              w_PREADY;
 
     // Interrupts
+    `ifdef DEF_ENABLE_INT
     wire [`DEF_NUM_INT-1:0]              ints;
     wire [`DEF_NUM_INT*`DATA_WIDTH-1:0]  ints_data;
     assign ints[7:1] = 0;
     assign ints_data[`DEF_NUM_INT*`DATA_WIDTH-1:`DATA_WIDTH] = {`DEF_NUM_INT*(`DATA_WIDTH-1){1'b0}};
-    
+    `endif
     
     apb_intercon_s # (
         .MASTER_PORTS(`CORES),

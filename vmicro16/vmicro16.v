@@ -1069,6 +1069,7 @@ module vmicro16_core # (
             r_reg_rs1 = 3'h0;
     end
 
+    `ifdef DEF_ENABLE_INT
     wire [`DEF_NUM_INT*`DATA_WIDTH-1:0] ints_vector;
     wire [`DEF_NUM_INT-1:0]             ints_mask;
     wire                                has_int = ints & ints_mask;
@@ -1086,6 +1087,7 @@ module vmicro16_core # (
             // Return to Interrupt instruction called, 
             //   so we've finished with the interrupt
             int_pending <= 0;
+    `endif
     
 
     // cpu state machine
@@ -1148,6 +1150,7 @@ module vmicro16_core # (
                     r_cmp_flags <= r_alu_out[3:0];
                 end
                 
+                `ifdef DEF_ENABLE_INT
                 if (int_pending) begin
                     $display($time, "\tC%02h: Jumping to ISR: %h", CORE_ID, ints_vector[0 +: `DATA_WIDTH]);
                     // TODO: check bounds
@@ -1162,7 +1165,10 @@ module vmicro16_core # (
                     r_pc            <= r_pc_saved;
                     regs_use_int    <= 0;
                     int_pending_ack <= 0;
-                end else if (w_branching) begin
+                end else 
+                `endif
+
+                if (w_branching) begin
                     $display($time, "\tC%02h: branching to %h", CORE_ID, r_instr_rdd);
                     r_pc            <= r_instr_rdd;
                     int_pending_ack <= 0;
@@ -1178,6 +1184,7 @@ module vmicro16_core # (
                 r_state <= STATE_IF;
             end
             else if (r_state == STATE_HALT) begin
+                `ifdef DEF_ENABLE_INT
                 // Only an interrupt can return from halt
                 // duplicate code form STATE_ME!
                 if (int_pending) begin
@@ -1195,6 +1202,7 @@ module vmicro16_core # (
                     regs_use_int    <= 0;
                     int_pending_ack <= 0;
                 end
+                `endif
             end
         end
 
@@ -1291,6 +1299,7 @@ module vmicro16_core # (
     );
 
     // Interrupt replacement registers
+    `ifdef DEF_ENABLE_INT
     vmicro16_regs # (
         .CORE_ID    (CORE_ID),
         .CELL_WIDTH (`DATA_WIDTH),
@@ -1309,6 +1318,7 @@ module vmicro16_core # (
         .ws1        (r_instr_rsd),
         .wd         (r_reg_wd)
     );
+    `endif
 
     // ALU
     vmicro16_alu # (

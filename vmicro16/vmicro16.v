@@ -1103,26 +1103,25 @@ module vmicro16_core # (
         else begin
 
             if (r_state == STATE_IF) begin
-                if (w_halt) begin
-                    $display("");
-                    $display("");
-                    $display($time, "\tC%02h: PC: %h HALT", CORE_ID, r_pc);
-                    r_state <= STATE_HALT;
-                end else begin
                     r_instr <= w_mem_instr_out;
 
                     $display("");
                     $display($time, "\tC%02h: PC: %h",    CORE_ID, r_pc);
                     $display($time, "\tC%02h: INSTR: %h", CORE_ID, w_mem_instr_out);
                     
-    
                     r_state <= STATE_R1;
-                end
             end
             else if (r_state == STATE_R1) begin
-                // primary operand
-                r_instr_rdd <= r_reg_rd1;
-                r_state     <= STATE_R2;
+                if (w_halt) begin
+                    $display("");
+                    $display("");
+                    $display($time, "\tC%02h: PC: %h HALT", CORE_ID, r_pc);
+                    r_state <= STATE_HALT;
+                end else begin
+                    // primary operand
+                    r_instr_rdd <= r_reg_rd1;
+                    r_state     <= STATE_R2;
+                end
             end
             else if (r_state == STATE_R2) begin
                 // Choose secondary operand (register or immediate)
@@ -1196,6 +1195,7 @@ module vmicro16_core # (
                     int_pending_ack <= 1;
                     // Jump to ISR
                     r_pc            <= ints_vector[0 +: `DATA_WIDTH];
+                    r_state         <= STATE_FE;
                 end else if (w_intr) begin
                     $display($time, "\tC%02h: Returning from ISR: %h", CORE_ID, r_pc_saved);
                     r_pc            <= r_pc_saved;

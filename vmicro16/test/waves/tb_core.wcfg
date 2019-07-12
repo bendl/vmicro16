@@ -12,14 +12,14 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="778000000001fs"></ZoomEndTime>
-      <Cursor1Time time="272000000000fs"></Cursor1Time>
+      <ZoomEndTime time="26550000000001fs"></ZoomEndTime>
+      <Cursor1Time time="2000000000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="232"></NameColumnWidth>
-      <ValueColumnWidth column_width="89"></ValueColumnWidth>
+      <ValueColumnWidth column_width="84"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="7" />
+   <WVObjectSize size="8" />
    <wave_markers>
       <marker time="6000000000000" label="" />
    </wave_markers>
@@ -161,6 +161,18 @@
          <obj_property name="isExpanded"></obj_property>
       </wvobject>
    </wvobject>
+   <wvobject fp_name="group523" type="group">
+      <obj_property name="label">SOC</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/ints" type="array">
+         <obj_property name="ElementShortName">ints[7:0]</obj_property>
+         <obj_property name="ObjectShortName">ints[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/ints_data" type="array">
+         <obj_property name="ElementShortName">ints_data[127:0]</obj_property>
+         <obj_property name="ObjectShortName">ints_data[127:0]</obj_property>
+      </wvobject>
+   </wvobject>
    <wvobject fp_name="group519" type="group">
       <obj_property name="label">TIMR0</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -209,17 +221,21 @@
          <obj_property name="ObjectShortName">int_data[15:0]</obj_property>
       </wvobject>
    </wvobject>
-   <wvobject fp_name="group523" type="group">
-      <obj_property name="label">SOC</obj_property>
+   <wvobject fp_name="group307" type="group">
+      <obj_property name="label">GPIO0</obj_property>
       <obj_property name="DisplayName">label</obj_property>
       <obj_property name="isExpanded"></obj_property>
-      <wvobject fp_name="/tb_vmicro16_soc/uut/ints" type="array">
-         <obj_property name="ElementShortName">ints[7:0]</obj_property>
-         <obj_property name="ObjectShortName">ints[7:0]</obj_property>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/gpio0_apb/S_PSELx" type="logic">
+         <obj_property name="ElementShortName">S_PSELx</obj_property>
+         <obj_property name="ObjectShortName">S_PSELx</obj_property>
       </wvobject>
-      <wvobject fp_name="/tb_vmicro16_soc/uut/ints_data" type="array">
-         <obj_property name="ElementShortName">ints_data[127:0]</obj_property>
-         <obj_property name="ObjectShortName">ints_data[127:0]</obj_property>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/gpio0_apb/gpio" type="array">
+         <obj_property name="ElementShortName">gpio[7:0]</obj_property>
+         <obj_property name="ObjectShortName">gpio[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/gpio0_apb/ports_we" type="logic">
+         <obj_property name="ElementShortName">ports_we</obj_property>
+         <obj_property name="ObjectShortName">ports_we</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group541" type="group">
@@ -241,7 +257,6 @@
    <wvobject fp_name="group829" type="group">
       <obj_property name="label">UART0</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/S_PWRITE" type="logic">
          <obj_property name="ElementShortName">S_PWRITE</obj_property>
          <obj_property name="ObjectShortName">S_PWRITE</obj_property>

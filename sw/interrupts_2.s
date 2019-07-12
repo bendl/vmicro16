@@ -22,12 +22,9 @@ entry:
     // enable all interrupts
     movi    r0, #0x0f
     sw      r0, r1 + #0x8
-    
-    // enter inf loop
-    movi    r0, loop
-loop:
-    br      r0, BR_U
-    br      r0, BR_U
+
+    // enter idle state
+    halt    r0, r0
 
 timer:
     // set timr0 address 0x200 into r0
@@ -53,7 +50,7 @@ timer:
     // 20ns * 10000 * 5000     = 1.0s
     // 20.0 * 0x3000 * 0x1000  = ~1.0s
     movi    r1, #0x1
-    movi    r2, #0x08
+    movi    r2, #0x0C
     lshft   r1, r2
     sw      r1, r0 + #0x02
     
@@ -62,7 +59,7 @@ timer:
     sw      r1, r0 + #0x01
 
 exit:
-    // Halt processor
+    // enter idle state
     halt    r0, r0
 
 isr0:

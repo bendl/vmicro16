@@ -1069,13 +1069,13 @@ module vmicro16_core # (
             r_reg_rs1 = 3'h0;
     end
 
+    reg regs_use_int = 0;
     `ifdef DEF_ENABLE_INT
     wire [`DEF_NUM_INT*`DATA_WIDTH-1:0] ints_vector;
     wire [`DEF_NUM_INT-1:0]             ints_mask;
     wire                                has_int = ints & ints_mask;
     reg int_pending = 0;
     reg int_pending_ack = 0;
-    reg regs_use_int = 0;
     always @(posedge clk)
         if (int_pending_ack)
             // We've now branched to the isr
@@ -1150,31 +1150,37 @@ module vmicro16_core # (
                 end
                 
                 `ifdef DEF_ENABLE_INT
-                if (int_pending) begin
-                    $display($time, "\tC%02h: Jumping to ISR: %h", CORE_ID, ints_vector[0 +: `DATA_WIDTH]);
-                    // TODO: check bounds
-                    // Save state
-                    r_pc_saved      <= r_pc + 1;
-                    regs_use_int    <= 1;
-                    int_pending_ack <= 1;
-                    // Jump to ISR
-                    r_pc            <= ints_vector[0 +: `DATA_WIDTH];
-                end else if (w_intr) begin
-                    $display($time, "\tC%02h: Returning from ISR: %h", CORE_ID, r_pc_saved);
-                    r_pc            <= r_pc_saved;
-                    regs_use_int    <= 0;
-                    int_pending_ack <= 0;
-                end else 
+                    if (int_pending) begin
+                        $display($time, "\tC%02h: Jumping to ISR: %h", CORE_ID, ints_vector[0 +: `DATA_WIDTH]);
+                        // TODO: check bounds
+                        // Save state
+                        r_pc_saved      <= r_pc + 1;
+                        regs_use_int    <= 1;
+                        int_pending_ack <= 1;
+                        // Jump to ISR
+                        r_pc            <= ints_vector[0 +: `DATA_WIDTH];
+                    end else if (w_intr) begin
+                        $display($time, "\tC%02h: Returning from ISR: %h", CORE_ID, r_pc_saved);
+                        r_pc            <= r_pc_saved;
+                        regs_use_int    <= 0;
+                        int_pending_ack <= 0;
+                    end else 
                 `endif
 
                 if (w_branching) begin
                     $display($time, "\tC%02h: branching to %h", CORE_ID, r_instr_rdd);
                     r_pc            <= r_instr_rdd;
-                    int_pending_ack <= 0;
+
+                    `ifdef DEF_ENABLE_INT
+                        int_pending_ack <= 0;
+                    `endif
                 end
                 else if (r_pc < (MEM_INSTR_DEPTH-1)) begin
                     r_pc            <= r_pc + 1;
-                    int_pending_ack <= 0;
+
+                    `ifdef DEF_ENABLE_INT
+                        int_pending_ack <= 0;
+                    `endif
                 end
 
                 r_state <= STATE_FE;
@@ -1184,24 +1190,24 @@ module vmicro16_core # (
             end
             else if (r_state == STATE_HALT) begin
                 `ifdef DEF_ENABLE_INT
-                // Only an interrupt can return from halt
-                // duplicate code form STATE_ME!
-                if (int_pending) begin
-                    $display($time, "\tC%02h: Jumping to ISR: %h", CORE_ID, ints_vector[0 +: `DATA_WIDTH]);
-                    // TODO: check bounds
-                    // Save state
-                    r_pc_saved      <= r_pc;// + 1; HALT = stay with same PC
-                    regs_use_int    <= 1;
-                    int_pending_ack <= 1;
-                    // Jump to ISR
-                    r_pc            <= ints_vector[0 +: `DATA_WIDTH];
-                    r_state         <= STATE_FE;
-                end else if (w_intr) begin
-                    $display($time, "\tC%02h: Returning from ISR: %h", CORE_ID, r_pc_saved);
-                    r_pc            <= r_pc_saved;
-                    regs_use_int    <= 0;
-                    int_pending_ack <= 0;
-                end
+                    // Only an interrupt can return from halt
+                    // duplicate code form STATE_ME!
+                    if (int_pending) begin
+                        $display($time, "\tC%02h: Jumping to ISR: %h", CORE_ID, ints_vector[0 +: `DATA_WIDTH]);
+                        // TODO: check bounds
+                        // Save state
+                        r_pc_saved      <= r_pc;// + 1; HALT = stay with same PC
+                        regs_use_int    <= 1;
+                        int_pending_ack <= 1;
+                        // Jump to ISR
+                        r_pc            <= ints_vector[0 +: `DATA_WIDTH];
+                        r_state         <= STATE_FE;
+                    end else if (w_intr) begin
+                        $display($time, "\tC%02h: Returning from ISR: %h", CORE_ID, r_pc_saved);
+                        r_pc            <= r_pc_saved;
+                        regs_use_int    <= 0;
+                        int_pending_ack <= 0;
+                    end
                 `endif
             end
         end

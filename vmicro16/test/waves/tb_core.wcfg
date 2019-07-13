@@ -11,22 +11,34 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="26550000000001fs"></ZoomEndTime>
-      <Cursor1Time time="2000000000000fs"></Cursor1Time>
+      <ZoomStartTime time="336000000fs"></ZoomStartTime>
+      <ZoomEndTime time="4576000001fs"></ZoomEndTime>
+      <Cursor1Time time="2336000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="232"></NameColumnWidth>
-      <ValueColumnWidth column_width="84"></ValueColumnWidth>
+      <ValueColumnWidth column_width="79"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="8" />
+   <WVObjectSize size="9" />
    <wave_markers>
       <marker time="6000000000000" label="" />
    </wave_markers>
+   <wvobject fp_name="group324" type="group">
+      <obj_property name="label">r_pc</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /r_pc" type="array">
+         <obj_property name="ElementShortName">r_pc[15:0]</obj_property>
+         <obj_property name="ObjectShortName">r_pc[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /r_pc" type="array">
+         <obj_property name="ElementShortName">r_pc[15:0]</obj_property>
+         <obj_property name="ObjectShortName">r_pc[15:0]</obj_property>
+      </wvobject>
+   </wvobject>
    <wvobject fp_name="group504" type="group">
       <obj_property name="label">C0</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /r_state" type="array">
          <obj_property name="ElementShortName">r_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">r_state[2:0]</obj_property>
@@ -81,18 +93,6 @@
          <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /w_intr" type="logic">
             <obj_property name="ElementShortName">w_intr</obj_property>
             <obj_property name="ObjectShortName">w_intr</obj_property>
-         </wvobject>
-         <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /has_int" type="logic">
-            <obj_property name="ElementShortName">has_int</obj_property>
-            <obj_property name="ObjectShortName">has_int</obj_property>
-         </wvobject>
-         <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /int_pending" type="logic">
-            <obj_property name="ElementShortName">int_pending</obj_property>
-            <obj_property name="ObjectShortName">int_pending</obj_property>
-         </wvobject>
-         <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /int_pending_ack" type="logic">
-            <obj_property name="ElementShortName">int_pending_ack</obj_property>
-            <obj_property name="ObjectShortName">int_pending_ack</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /regs_use_int" type="logic">
             <obj_property name="ElementShortName">regs_use_int</obj_property>
@@ -160,18 +160,18 @@
          <obj_property name="DisplayName">label</obj_property>
          <obj_property name="isExpanded"></obj_property>
       </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /r_pc" type="array">
+         <obj_property name="ElementShortName">r_pc[15:0]</obj_property>
+         <obj_property name="ObjectShortName">r_pc[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[1].c1 /regs/regs" type="array">
+         <obj_property name="ElementShortName">regs[0:7][15:0]</obj_property>
+         <obj_property name="ObjectShortName">regs[0:7][15:0]</obj_property>
+      </wvobject>
    </wvobject>
    <wvobject fp_name="group523" type="group">
       <obj_property name="label">SOC</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject fp_name="/tb_vmicro16_soc/uut/ints" type="array">
-         <obj_property name="ElementShortName">ints[7:0]</obj_property>
-         <obj_property name="ObjectShortName">ints[7:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/tb_vmicro16_soc/uut/ints_data" type="array">
-         <obj_property name="ElementShortName">ints_data[127:0]</obj_property>
-         <obj_property name="ObjectShortName">ints_data[127:0]</obj_property>
-      </wvobject>
    </wvobject>
    <wvobject fp_name="group519" type="group">
       <obj_property name="label">TIMR0</obj_property>
@@ -337,29 +337,50 @@
    <wvobject fp_name="group290" type="group">
       <obj_property name="label">SRAM</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/S_PSELx" type="logic">
-         <obj_property name="ElementShortName">S_PSELx</obj_property>
-         <obj_property name="ObjectShortName">S_PSELx</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/S_PADDR" type="array">
+         <obj_property name="ElementShortName">S_PADDR[18:0]</obj_property>
+         <obj_property name="ObjectShortName">S_PADDR[18:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/S_PWRITE" type="logic">
          <obj_property name="ElementShortName">S_PWRITE</obj_property>
          <obj_property name="ObjectShortName">S_PWRITE</obj_property>
       </wvobject>
-      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/S_PENABLE" type="logic">
-         <obj_property name="ElementShortName">S_PENABLE</obj_property>
-         <obj_property name="ObjectShortName">S_PENABLE</obj_property>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/S_PSELx" type="logic">
+         <obj_property name="ElementShortName">S_PSELx</obj_property>
+         <obj_property name="ObjectShortName">S_PSELx</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/lwex" type="logic">
+         <obj_property name="ElementShortName">lwex</obj_property>
+         <obj_property name="ObjectShortName">lwex</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/swex" type="logic">
+         <obj_property name="ElementShortName">swex</obj_property>
+         <obj_property name="ObjectShortName">swex</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/swex_success" type="logic">
+         <obj_property name="ElementShortName">swex_success</obj_property>
+         <obj_property name="ObjectShortName">swex_success</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/core_id" type="array">
+         <obj_property name="ElementShortName">core_id[0:0]</obj_property>
+         <obj_property name="ObjectShortName">core_id[0:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/mem_addr" type="array">
+         <obj_property name="ElementShortName">mem_addr[11:0]</obj_property>
+         <obj_property name="ObjectShortName">mem_addr[11:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/S_PWDATA" type="array">
          <obj_property name="ElementShortName">S_PWDATA[15:0]</obj_property>
          <obj_property name="ObjectShortName">S_PWDATA[15:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/we" type="logic">
-         <obj_property name="ElementShortName">we</obj_property>
-         <obj_property name="ObjectShortName">we</obj_property>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/bram_apb/mem" type="array">
+         <obj_property name="ElementShortName">mem[0:4095][15:0]</obj_property>
+         <obj_property name="ObjectShortName">mem[0:4095][15:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/swex_success" type="logic">
-         <obj_property name="ElementShortName">swex_success</obj_property>
-         <obj_property name="ObjectShortName">swex_success</obj_property>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/ram_exflags/mem" type="array">
+         <obj_property name="ElementShortName">mem[0:4095][1:0]</obj_property>
+         <obj_property name="ObjectShortName">mem[0:4095][1:0]</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>

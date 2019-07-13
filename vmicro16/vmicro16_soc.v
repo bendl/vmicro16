@@ -172,7 +172,9 @@ module vmicro16_bram_ex_apb # (
     always @(*) begin
         swex_success = 0;
         if (en)
-            if (swex)
+            if (!swex && !lwex)
+                swex_success = 1;
+            else if (swex)
                 if (is_locked && !is_locked_self)
                     // someone else has locked it
                     swex_success = 0;
@@ -405,8 +407,6 @@ module vmicro16_soc (
         .rx_wire    (uart_rx)
     );
 
-    
-    
     timer_apb timr0 (
         .clk        (clk),
         .reset      (reset),
@@ -417,10 +417,12 @@ module vmicro16_soc (
         .S_PENABLE  (M_PENABLE),
         .S_PWDATA   (M_PWDATA),
         .S_PRDATA   (M_PRDATA[`APB_PSELX_TIMR0*`DATA_WIDTH +: `DATA_WIDTH]),
-        .S_PREADY   (M_PREADY[`APB_PSELX_TIMR0]),
+        .S_PREADY   (M_PREADY[`APB_PSELX_TIMR0])
         //
-        .out        (ints     [`DEF_INT_TIMR0]),
-        .int_data   (ints_data[`DEF_INT_TIMR0*`DATA_WIDTH +: `DATA_WIDTH])
+        `ifdef DEF_ENABLE_INT
+        ,.out       (ints     [`DEF_INT_TIMR0]),
+         .int_data  (ints_data[`DEF_INT_TIMR0*`DATA_WIDTH +: `DATA_WIDTH])
+        `endif
     );
 
     // Shared register set for system-on-chip info

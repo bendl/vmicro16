@@ -22,6 +22,8 @@ r_instr_lw  = re.compile("\s+(\w+)\s+r(\d),\s+r(\d) \+ #0x([A-Fa-f0-9]+)")
 all_instr  = []
 all_labels = []
 
+num_errors = 0
+
 class Comment:
     pass
 
@@ -103,6 +105,8 @@ def parse_line(l):
         r.linestr = l
         return r
 
+    print("Ignored!: {:s}".format(l))
+
 
 def calc_offset(ls):
     lsi = iter(ls)
@@ -130,6 +134,7 @@ def find_str_label(s):
     return None
 
 def cg_replace_labels(xs):
+    global num_errors
     # assert all items are of type Instr
     assert(all(isinstance(x, Instr) for x in xs))
 
@@ -150,6 +155,7 @@ def cg_replace_labels(xs):
                     x.imm8 = label
                 else:
                     sys.stderr.write("Unknown label '{:s}'".format(x.ref))
+                    num_errors += 1
         try:
             i += 1
             x = xs[i]
@@ -157,6 +163,7 @@ def cg_replace_labels(xs):
             break
 
 def cg_str_to_imm(str):
+    global num_errors
     if str == "BR_U":
         return 0
     elif str == "BR_E":
@@ -177,15 +184,17 @@ def cg_str_to_imm(str):
         return 8
     else:
         sys.stderr.write("cg_str_to_imm for {:s} not implemented!".format(str))
+        num_errors += 1
         return None
 
 def cg(xs):
+    global num_errors
     # assert all items are of type Instr
     assert(all(isinstance(x, Instr) for x in xs))
 
     binstr = []
     for x in xs:
-        print("Cg for {:s}".format(x.op))
+        #print("Cg for {:s}".format(x.op))
         op = 0
         if x.op == "movi":
             op |= 0b00101 << 11
@@ -194,6 +203,11 @@ def cg(xs):
             binstr.append(op)
         elif x.op == "mov":
             op |= 0b00100 << 11
+            op |= x.rs1 << 8
+            op |= x.rs2 << 5
+            binstr.append(op)
+        elif x.op == "mult":
+            op |= 0b01011 << 11
             op |= x.rs1 << 8
             op |= x.rs2 << 5
             binstr.append(op)
@@ -226,6 +240,12 @@ def cg(xs):
             binstr.append(op)
         elif x.op == "addi":
             op |= 0b00110 << 11
+            op |= x.rs1 << 8
+            op |= x.rs2 << 5
+            op |= x.imm8 << 0
+            binstr.append(op)
+        elif x.op == "subi":
+            op |= 0b00111 << 11
             op |= x.rs1 << 8
             op |= x.rs2 << 5
             op |= x.imm8 << 0
@@ -287,6 +307,7 @@ def cg(xs):
             binstr.append(op)
         else:
             sys.stderr.write("Cg for '{:s}' not implemented!".format(x.op))
+            num_errors += 1
 
         # check op fits within 16-bits
         assert((op >= 0x0000) and (op <= 0xFFFF))
@@ -297,7 +318,8 @@ with open(args.fname, "r") as f:
     # Apply a structure to each line
     lines = list(map(parse_line, f.readlines()))
     for i, k in enumerate(lines):
-        print(i+1, k)
+        #print(i+1, k)
+        pass
 
     # Removes empty information
     lines = list(filter(lambda x: x != None, lines))
@@ -308,13 +330,14 @@ with open(args.fname, "r") as f:
     all_instr  = list(filter(lambda x: isinstance(x, Instr), lines))
     all_labels = list(filter(lambda x: isinstance(x, Label), lines))
 
-    print("Found {:d} LABELS".format(len(all_labels)))
+    print("\nFound {:d} LABELS".format(len(all_labels)))
     print("Found {:d} INSTR".format(len(all_instr)))
 
-    print("Replacing labels...")
+    print("\nReplacing labels...")
     cg_replace_labels(all_instr)
     for i, k in enumerate(all_instr):
-        print(i, k)
+        #print(i, k)
+        pass
 
     # Write hex words to verilog memh file
     binstr = cg(all_instr)
@@ -329,4 +352,7 @@ with open(args.fname, "r") as f:
             print("")
             out.write("{:04x}\n".format(b))
         print("\nWritten asm.s.hex file!")
+
+    if num_errors:
+        print("\nERRORS {:d}".format(num_errors))
 

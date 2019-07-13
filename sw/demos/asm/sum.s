@@ -35,12 +35,14 @@ entry:
     
     // ROOT
     //   calculates nsamples_per_thread
-    //     ns = 100
-    //     nst = ns / (num_threads)
-    //     nst = ns >> (num_threads - 1)
+    //      ns = 100
+    //      nst = ns / (num_threads)
+    //      nst = ns >> (num_threads - 1)
+    //      r0 = (num_threads -1)
+    mov     r0, r7
+    subi    r0, r3 + #0x01
     movi    r4, #0x64
-    subi    r7, r3 + #0x01
-    rshft   r4, r7
+    rshft   r4, r0
     
     // ROOT
     //   write nsamples_per_thread to shared bram (broadcast)

@@ -465,9 +465,9 @@ module vmicro16_soc (
     );
 
     // There must be atleast 1 core
-    `static_assert(`CORES > 0);
-    `static_assert(`DEF_MEM_INSTR_DEPTH > 0);
-    `static_assert(`DEF_MMU_TIM0_CELLS > 0);
+    `static_assert(`CORES > 0)
+    `static_assert(`DEF_MEM_INSTR_DEPTH > 0)
+    `static_assert(`DEF_MMU_TIM0_CELLS > 0)
 
     genvar i;
     generate for(i = 0; i < `CORES; i = i + 1) begin : cores

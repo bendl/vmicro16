@@ -9,6 +9,10 @@
 //6 core id
 //7 num threads
 
+// update:
+//   assume 8 cores
+//     = rshft by 3
+
 entry:
     // Core id in r6
     movi    r0, #0x80
@@ -39,10 +43,24 @@ entry:
     //      nst = ns / (num_threads)
     //      nst = ns >> (num_threads - 1)
     //      r0 = (num_threads -1) WRONG!!!
-    mov     r0, r7
-    subi    r0, r3 + #0x01
-    movi    r4, #0x0a
-    rshft   r4, r0
+    //mov     r0, r7
+    //subi    r0, r3 + #0x01
+    //movi    r4, #0x80
+    //rshft   r4, r0
+    
+    // update: hex(240 // 8)
+    // 2 cores
+    //movi    r4, #0x78
+    // 3 cores
+    //movi    r4, #0x50
+    // 4 cores
+    //movi    r4, #0x3c
+    // 8 cores
+    //movi    r4, #0x1e
+    // 12 cores
+    //movi    r4, #0x14
+    // 16 cores
+    movi    r4, #0x0f
     
     // ROOT
     //   write nsamples_per_thread to shared bram (broadcast)

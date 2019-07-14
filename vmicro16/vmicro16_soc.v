@@ -324,8 +324,6 @@ module vmicro16_soc (
         .M_PREADY   (M_PREADY)
     );
 
-    
-    
     vmicro16_gpio_apb # (
         .BUS_WIDTH  (`APB_WIDTH),
         .DATA_WIDTH (`DATA_WIDTH),

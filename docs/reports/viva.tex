@@ -24,10 +24,54 @@
 
 
 \usepackage{helvet}
+\usepackage{hyperref}
+\definecolor{eclipseBlue}{RGB}{42,0.0,255}
+\definecolor{eclipseGreen}{RGB}{63,127,95}
+\definecolor{eclipsePurple}{RGB}{127,0,85}
 
 \usepackage{listings}
+\lstset{basicstyle=\scriptsize\ttfamily}
+\lstset{escapeinside={<@}{@>}}
+\lstdefinelanguage{myLang}
+{
+  % list of keywords
+  keywords = {},
+  keywords = [1]{
+    movi,
+    lw,
+    cmp,
+    addi,
+    mov, jmp, br,
+    nop, halt, intr,
+  },
+  keywords = [2]{
+    r0, r1, r2, r3, r4, r5, r6, r7
+  },
+  keywords = [3]{
+    BR_E, BR_NE, BR_L, BR_G, BR_U
+  },
+  keywords = [4]{
+    lwex, swex,
+  },
+  keywordstyle=[1]\color{eclipsePurple},
+  keywordstyle=[4]\bfseries\color{eclipsePurple},
+  keywordstyle=[2]\color{eclipseBlue},
+  keywordstyle=[3]\color{red},
+  sensitive=false,
+  morecomment=[l]{//}, % l is for line comment
+  morestring=[b]",
+  otherkeywords={
+    movi
+  },
+}
 
-\usepackage{hyperref}
+
+\lstset{
+    language=myLang,
+    commentstyle=\color{eclipseGreen},
+    %keywordstyle=\color{eclipseBlue},
+    %stringstyle=\color{eclipsePurple},
+}
 
 
 \title
@@ -77,6 +121,17 @@
 
 \section{Introduction}
 \frame{\tableofcontents[currentsection, subsectionstyle=show/show/hide]}
+
+\begin{frame}{Why a project on CPUs?}
+\begin{itemize}\setlength\itemsep{1em}
+    \item{\textbf{CPUs will be used for the rest of humanity}\\
+    1000s of years}
+    \item{\textbf{Understand constrains and considerations}\\
+    1000s of years}
+    \item{\textbf{Prepare myself for future employment/work}\\
+    Graduate Design Engineer at ARM}
+\end{itemize}
+\end{frame}
 
 \subsection{Why Multi-core?}
 \begin{frame}{Why Multi-core?}
@@ -221,7 +276,7 @@ Software:
 \caption{Special Registers 0x0080 to 0x008F}
 \end{figure}
 \column{0.5\textwidth}
-\begin{lstlisting}[basicstyle=\scriptsize]
+\begin{lstlisting}
 entry:
     // get core idx 0x80 in r7
     movi    r7, #0x80
@@ -233,12 +288,12 @@ entry:
     br      r0, BR_NE 
     
     // Core 0 only instructions
-    nop     r0, r0
-    nop     r0, r0
-    nop     r0, r0
+    nop
+    nop
+    nop
     
 exit:
-    halt    r0, r0    
+    halt  
 \end{lstlisting}
 \end{columns}
 \end{frame}
@@ -252,32 +307,86 @@ exit:
     \item Enables semaphores, mutexes, memory barriers
     \item Prevent race conditions between threads/cores
     \item LW[EX] and SW[EX]
+    \item Implementation in next slide
 \end{itemize}
 \column{0.5\textwidth}
 Example:
-\begin{lstlisting}[basicstyle=\scriptsize]
+\begin{lstlisting}[basicstyle=\tiny\ttfamily]
 try_inc:
+    // load and lock (if not already locked)
     lwex    r0, r1
-    // increment by 1
+    // do something (i.e. add 1 (semaphore))
     addi    r0, #0x01
     // attempt store
     swex    r0, r1
+    
     // check success (== 0)
     cmp     r0, r3
-    // branch if failed
+    
+    // if not equal (NE), retry
     movi    r4, try_inc
     br      r4, BR_NE
+    
+critical:
+    // r0 is latest value
 \end{lstlisting}
 \end{columns}
 \end{frame}
 
+\begin{frame}{Exclusive Access Flow Chart}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.6\textwidth]{semaphore}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{HW - How do I know which core this lwex/swex is from?}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.8\textwidth]{coreid}
+    \end{figure}
+    The Core Idx is sent with each MMU request to the shared bus.\\
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.8\textwidth]{apb_paddr}
+    \end{figure}
+    PADDR*NUMCORES-1:0 interconnect input.
+\end{frame}
+
 \begin{frame}[fragile]{Exclusive Access}
+
+\begin{columns}[t]
+\column{0.5\textwidth}
+\begin{lstlisting}[basicstyle=\tiny\ttfamily]
+mutex_claim:
+    // load and lock (if not already locked)
+    lwex    r0, r1
+    // do something (i.e. add 1 (semaphore))
+    addi    r0, #0x01
+    // attempt store
+    swex    r0, r1
+    
+    // check success (== 0)
+    cmp     r0, r3
+    
+    // if not equal (NE), retry
+    movi    r4, mutex_claim
+    br      r4, BR_NE
+    
+critical:
+    
+\end{lstlisting}
+\begin{enumerate}
+    \item 
+\end{enumerate}
+\column{0.5\textwidth}
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\textwidth]{bram_ex}
-    \caption{"Global Monitor" = track exclusive access to memory locations}
+    \includegraphics[width=\textwidth]{bram_ex}
+    \caption{HW impl}
     \label{}
 \end{figure}
+\end{columns}
 Demo: 8 core number summation (sum.s)
 \end{frame}
 

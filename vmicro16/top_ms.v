@@ -49,21 +49,6 @@ module top_ms # (
     output [6:0] ssd4,
     output [6:0] ssd5
 );
-    localparam POR_CLKS  = 8;
-    reg [3:0]  por_timer = 0;
-    reg        por_done  = 0;
-    reg        por_reset = 1;
-    always @(posedge CLK50)
-        if (!por_done) begin
-            por_reset <= 1;
-            if (por_timer < POR_CLKS)
-                por_timer <= por_timer + 1;
-            else
-                por_done <= 1;
-        end
-        else
-            por_reset <= 0;
-
     //wire [15:0]         M_PADDR;
     //wire                M_PWRITE;
     //wire [5-1:0]        M_PSELx;  // not shared
@@ -79,7 +64,12 @@ module top_ms # (
     
     vmicro16_soc soc (
         .clk     (CLK50),
-        .reset   (por_reset | (~SW[0])),
+        
+        `ifdef DEF_GLOBAL_RESET
+        .reset   ((~SW[0])),
+        `else
+        .reset   (0),
+        `endif
 
         //.M_PADDR    (M_PADDR),
         //.M_PWRITE   (M_PWRITE),

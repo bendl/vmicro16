@@ -12,11 +12,6 @@
 `include "clog2.v"
 `include "formal.v"
 
-
-
-
-
-
 module vmicro16_bram_apb # (
     parameter BUS_WIDTH    = 16,
     parameter MEM_WIDTH    = 16,
@@ -90,6 +85,7 @@ module vmicro16_bram # (
     output reg [MEM_WIDTH-1:0]         mem_out
 );
     // memory vector
+    (* ram_style = "block" *)
     reg [MEM_WIDTH-1:0] mem [0:MEM_DEPTH-1];
 
     // not synthesizable
@@ -353,14 +349,19 @@ module vmicro16_core_mmu # (
     assign busy = req || (mmu_state == MMU_STATE_T2);
 
     // tightly integrated memory usage
-    wire tim0_en = (mmu_addr >= `DEF_MMU_TIM0_S) 
-                && (mmu_addr <= `DEF_MMU_TIM0_E);
-    wire sreg_en = (mmu_addr >= `DEF_MMU_SREG_S) 
-                && (mmu_addr <= `DEF_MMU_SREG_E);
-    wire intv_en = (mmu_addr >= `DEF_MMU_INTSV_S) 
-                && (mmu_addr <= `DEF_MMU_INTSV_E);
-    wire intm_en = (mmu_addr >= `DEF_MMU_INTSM_S) 
-                && (mmu_addr <= `DEF_MMU_INTSM_E);
+    //wire tim0_en = (mmu_addr >= `DEF_MMU_TIM0_S) 
+    //            && (mmu_addr <= `DEF_MMU_TIM0_E);
+    //wire sreg_en = (mmu_addr >= `DEF_MMU_SREG_S) 
+    //            && (mmu_addr <= `DEF_MMU_SREG_E);
+    //wire intv_en = (mmu_addr >= `DEF_MMU_INTSV_S) 
+    //            && (mmu_addr <= `DEF_MMU_INTSV_E);
+    //wire intm_en = (mmu_addr >= `DEF_MMU_INTSM_S) 
+    //            && (mmu_addr <= `DEF_MMU_INTSM_E);
+
+    wire tim0_en = ~mmu_addr[12] && ~mmu_addr[9] && ~mmu_addr[7];
+    wire sreg_en = mmu_addr[7] && ~mmu_addr[4] && ~mmu_addr[5];
+    wire intv_en = mmu_addr[8] && ~mmu_addr[3];
+    wire intm_en = mmu_addr[8] && mmu_addr[3];
     
     wire apb_en    = !(|{tim0_en, sreg_en, intv_en, intm_en});
     wire tim0_we   = (tim0_en && mmu_we);
@@ -473,6 +474,7 @@ module vmicro16_core_mmu # (
                 `endif
             endcase
 
+    (* ram_style = "block" *)
     vmicro16_bram # (
         .MEM_WIDTH  (MEM_WIDTH),
         .MEM_DEPTH  (SPECIAL_REGS),
@@ -492,6 +494,7 @@ module vmicro16_core_mmu # (
     );
 
     // Each M core has a TIM0 scratch memory
+    (* ram_style = "block" *)
     vmicro16_bram # (
         .MEM_WIDTH  (MEM_WIDTH),
         .MEM_DEPTH  (MEM_DEPTH),
@@ -530,7 +533,8 @@ module vmicro16_regs # (
     input                           we,
     input [CELL_SEL_BITS-1:0]       ws1,
     input [CELL_WIDTH-1:0]          wd
-);
+); 
+    (* ram_style = "distributed" *)
     reg [CELL_WIDTH-1:0] regs [0:CELL_DEPTH-1] /*verilator public_flat*/;
     
     // Initialise registers with default values
@@ -1099,9 +1103,8 @@ module vmicro16_core # (
             r_mem_scratch_req <= 0;
             r_instr_rdd       <= 0;
             r_instr_rda       <= 0;
-        end 
+        end
         else begin
-
             if (r_state == STATE_IF) begin
                     r_instr <= w_mem_instr_out;
 
@@ -1213,6 +1216,7 @@ module vmicro16_core # (
         end
 
     // Instruction ROM
+    (* rom_style = "distributed" *)
     vmicro16_bram # (
         .MEM_WIDTH      (DATA_WIDTH),
         .MEM_DEPTH      (MEM_INSTR_DEPTH),

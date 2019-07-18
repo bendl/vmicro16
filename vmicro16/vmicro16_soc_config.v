@@ -18,7 +18,7 @@
 
 // Instruction memory (read only) on each core.
 //   Must be large enough to support software program.
-`define DEF_MEM_INSTR_DEPTH 512
+`define DEF_MEM_INSTR_DEPTH 64
 
 // Scratch memory (read/write) on each core.
 //   See `DEF_MMU_TIM0_* defines for info.
@@ -27,6 +27,8 @@
 // Enables hardware multiplier and mult rr instruction
 `define DEF_ALU_HW_MULT 1
 
+// Enables global reset (requires more luts)
+//`define DEF_GLOBAL_RESET
 
 //////////////////////////////////////////////////////////
 // Memory mapping

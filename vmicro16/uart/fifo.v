@@ -54,9 +54,11 @@ module fifo (/*AUTOARG*/
    reg 			     FULL;
    // End of automatics
 
-   reg [DATA_WIDTH -1:0]     memory[0:ADDR_DEPTH-1];   // The memory for the FIFO
-   reg [ADDR_EXP:0] 	     write_ptr;                // Location to write to
-   reg [ADDR_EXP:0] 	     read_ptr;                 // Location to read from 
+   
+   (* ram_style = "block" *)
+   reg [DATA_WIDTH -1:0] memory [0:ADDR_DEPTH-1]; // The memory for the FIFO
+   reg [ADDR_EXP:0] 	    write_ptr;               // Location to write to
+   reg [ADDR_EXP:0] 	    read_ptr;                // Location to read from 
    
    //---------------------------------------------------------------------------
    //

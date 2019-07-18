@@ -168,9 +168,9 @@ module apb_intercon_s # (
     parameter DATA_WIDTH   = 16,
     parameter MASTER_PORTS = 1,
     parameter SLAVE_PORTS  = 4,
-    parameter ARBITER_ROTATE_INC  = 0,
+    parameter ARBITER_ROTATE_INC  = 1,
     parameter ARBITER_ROTATE_NEXT = 0,
-    parameter ARBITER_HIGHBIT     = 1
+    parameter ARBITER_HIGHBIT     = 0
 ) (
     input clk,
     input reset,

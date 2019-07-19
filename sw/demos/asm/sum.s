@@ -49,6 +49,8 @@ entry:
     //rshft   r4, r0
     
     // update: hex(240 // 8)
+    // 1 cores
+    //movi    r4, #0xf0
     // 2 cores
     //movi    r4, #0x78
     // 3 cores
@@ -56,11 +58,11 @@ entry:
     // 4 cores
     //movi    r4, #0x3c
     // 8 cores
-    //movi    r4, #0x1e
+    movi    r4, #0x1e
     // 12 cores
     //movi    r4, #0x14
     // 16 cores
-    movi    r4, #0x0f
+    //movi    r4, #0x0f
     
     // ROOT
     //   write nsamples_per_thread to shared bram (broadcast)

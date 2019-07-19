@@ -108,84 +108,6 @@ module vmicro16_bram # (
             $readmemh("E:\\Projects\\uni\\vmicro16\\sw\\asm.s.hex", mem);
             `endif
             
-            //`define TEST_COMPILER
-            `ifdef TEST_COMPILER
-    mem[0] = 16'h2f3f;
-    mem[1] = 16'h2903;
-    mem[2] = 16'h4100;
-    mem[3] = 16'h3fa1;
-    mem[4] = 16'h16e0;
-    mem[5] = 16'h26e0;
-    mem[6] = 16'h3fa1;
-    mem[7] = 16'h2890;
-    mem[8] = 16'h10d8;
-    mem[9] = 16'h3fa1;
-    mem[10] = 16'h2891;
-    mem[11] = 16'h10d9;
-    mem[12] = 16'h3fa1;
-    mem[13] = 16'h2892;
-    mem[14] = 16'h10da;
-    mem[15] = 16'h3fa1;
-    mem[16] = 16'h28a0;
-    mem[17] = 16'h10db;
-    mem[18] = 16'h3fa1;
-    mem[19] = 16'h2880;
-    mem[20] = 16'h10dc;
-    mem[21] = 16'h3fa1;
-    mem[22] = 16'h28b0;
-    mem[23] = 16'h10dd;
-    mem[24] = 16'h3fa1;
-    mem[25] = 16'h28b1;
-    mem[26] = 16'h10de;
-    mem[27] = 16'h3fa1;
-    mem[28] = 16'h08dc;
-    mem[29] = 16'h0800;
-    mem[30] = 16'h3fa1;
-    mem[31] = 16'h10e0;
-    mem[32] = 16'h2801;
-    mem[33] = 16'h0be0;
-    mem[34] = 16'h37a1;
-    mem[35] = 16'h4b00;
-    mem[36] = 16'h5001;
-    mem[37] = 16'h2b00;
-    mem[38] = 16'h4860;
-    mem[39] = 16'h292c;
-    mem[40] = 16'h4101;
-    mem[41] = 16'h2864;
-    mem[42] = 16'h292e;
-    mem[43] = 16'h4100;
-    mem[44] = 16'h0000;
-    mem[45] = 16'h28c8;
-    mem[46] = 16'h0000;
-    mem[47] = 16'h08dc;
-    mem[48] = 16'h0800;
-    mem[49] = 16'h3fa1;
-    mem[50] = 16'h10e0;
-    mem[51] = 16'h2805;
-    mem[52] = 16'h0be0;
-    mem[53] = 16'h37a1;
-    mem[54] = 16'h5860;
-    mem[55] = 16'h10df;
-    mem[56] = 16'h08df;
-    mem[57] = 16'h3fa1;
-    mem[58] = 16'h10e0;
-    mem[59] = 16'h2830;
-    mem[60] = 16'h0be0;
-    mem[61] = 16'h37a1;
-    mem[62] = 16'h307f;
-    mem[63] = 16'h3fa1;
-    mem[64] = 16'h10e0;
-    mem[65] = 16'h08db;
-    mem[66] = 16'h0be0;
-    mem[67] = 16'h37a1;
-    mem[68] = 16'h1300;
-    mem[69] = 16'h2832;
-    mem[70] = 16'h27c0;
-    mem[71] = 16'h0ee0;
-    mem[72] = 16'h37a1;
-    mem[73] = 16'h6000;
-            `endif
-
             //`define TEST_COND
             `ifdef TEST_COND
             mem[0] = {`VMICRO16_OP_MOVI,    3'h7, 8'hC0}; // lock
@@ -551,11 +473,13 @@ module vmicro16_regs # (
             regs[1] = PARAM_DEFAULTS_R1;
             end
 
-    always @(regs)
-        $display($time, "\tC%02h\t\t| %h %h %h %h | %h %h %h %h |", 
-            CORE_ID, 
-            regs[0], regs[1], regs[2], regs[3], 
-            regs[4], regs[5], regs[6], regs[7]);
+    `ifdef ICARUS
+        always @(regs)
+            $display($time, "\tC%02h\t\t| %h %h %h %h | %h %h %h %h |", 
+                CORE_ID, 
+                regs[0], regs[1], regs[2], regs[3], 
+                regs[4], regs[5], regs[6], regs[7]);
+    `endif
 
     always @(posedge clk) 
         if (reset) begin
@@ -984,6 +908,8 @@ module vmicro16_core # (
 
     output [7:0] dbug,
 
+    output       halt,
+
     // interrupt sources
     input  [`DEF_NUM_INT-1:0]             ints,
     input  [`DEF_NUM_INT*`DATA_WIDTH-1:0] ints_data,
@@ -1015,6 +941,7 @@ module vmicro16_core # (
     wire                  w_halt;
 
     assign dbug = {7'h00, w_halt};
+    assign halt = w_halt;
 
     wire [4:0]            r_instr_opcode;
     wire [4:0]            r_instr_alu_op;

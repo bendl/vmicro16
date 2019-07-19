@@ -263,14 +263,19 @@ module vmicro16_soc (
     output [`APB_GPIO1_PINS-1:0]    gpio1,
     output [`APB_GPIO2_PINS-1:0]    gpio2,
 
-    output     [7:0]                dbug0,
-    output     [`CORES*8:0]         dbug1
+    output                          halt,
+
+    output     [`CORES-1:0]         dbug0,
+    output     [`CORES*8-1:0]       dbug1
 );
     genvar di;
     generate for(di = 0; di < `CORES; di = di + 1) begin : gen_dbug0
         assign dbug0[di] = dbug1[di*8];
     end
     endgenerate
+
+    wire [`CORES-1:0] w_halt;
+    assign halt = &w_halt;
 
     // Peripherals (master to slave)
      wire [`APB_WIDTH-1:0]          M_PADDR;
@@ -483,20 +488,90 @@ module vmicro16_soc (
             .reset      (reset),
             .dbug       (dbug1[i*8 +: 8]),
 
+            .halt       (w_halt[i]),
+
             .ints       (ints),
             .ints_data  (ints_data),
 
             // Output master interface
-            .w_PADDR    (w_PADDR   [`APB_WIDTH*i +: `APB_WIDTH] ),
-            .w_PWRITE   (w_PWRITE  [i]                         ),
-            .w_PSELx    (w_PSELx   [i]                         ),
-            .w_PENABLE  (w_PENABLE [i]                         ),
-            .w_PWDATA   (w_PWDATA  [`DATA_WIDTH*i +: `DATA_WIDTH] ),
-            .w_PRDATA   (w_PRDATA  [`DATA_WIDTH*i +: `DATA_WIDTH] ),
-            .w_PREADY   (w_PREADY  [i]                         )
+            .w_PADDR    (w_PADDR   [`APB_WIDTH*i +: `APB_WIDTH]  ),
+            .w_PWRITE   (w_PWRITE  [i]                           ),
+            .w_PSELx    (w_PSELx   [i]                           ),
+            .w_PENABLE  (w_PENABLE [i]                           ),
+            .w_PWDATA   (w_PWDATA  [`DATA_WIDTH*i +: `DATA_WIDTH]),
+            .w_PRDATA   (w_PRDATA  [`DATA_WIDTH*i +: `DATA_WIDTH]),
+            .w_PREADY   (w_PREADY  [i]                           )
         );
     end
     endgenerate
 
+    `ifdef FORMAL
+    wire all_halted = &w_halt;
+
+    /////////////////////////////////////////////////////
+    // Count number of clocks each core is spending on
+    //   bus transactions
+    /////////////////////////////////////////////////////
+    reg [15:0] bus_core_times [0:`CORES-1];
+    integer i2;
+    initial 
+        for(i2 = 0; i2 < `CORES; i2 = i2 + 1)
+            bus_core_times[i2] = 0;
+
+    // total bus time
+
+    generate
+        genvar g2;
+        for (g2 = 0; g2 < `CORES; g2 = g2 + 1)
+        always @(posedge clk)
+            if (w_PSELx[g2])
+                bus_core_times[g2] <= bus_core_times[g2] + 1;
+    endgenerate
+
+    reg [15:0] bus_time_average = 0;
+    reg [15:0] bus_reqs_average = 0;
+    //
+    always @(all_halted) begin
+        for (i2 = 0; i2 < `CORES; i2 = i2 + 1) begin
+            bus_time_average = bus_time_average + bus_core_times[i2];
+            bus_reqs_average = bus_reqs_average + bus_core_reqs_count[i2];
+        end
+
+        bus_time_average = bus_time_average / `CORES;
+        bus_reqs_average = bus_reqs_average / `CORES;
+    end
+
+    ////////////////////////////////////////////////////
+    // Count number of bus requests per core
+    ////////////////////////////////////////////////////
+    // 1 clock delay of w_PSELx
+    reg [`CORES-1:0] bus_core_reqs_last;
+    // rising edges of each 
+    wire [`CORES-1:0] bus_core_reqs_real;
+    // storage for counters for each core
+    reg [15:0] bus_core_reqs_count [0:`CORES-1];
+    initial 
+        for(i2 = 0; i2 < `CORES; i2 = i2 + 1)
+            bus_core_reqs_count[i2] = 0;
+
+    // 1 clk delay to detect rising edge
+    always @(posedge clk)
+        bus_core_reqs_last <= w_PSELx;
+    
+    generate
+        genvar g3;
+        for (g3 = 0; g3 < `CORES; g3 = g3 + 1) begin
+        // Detect new reqs for each core
+        assign bus_core_reqs_real[g3] = w_PSELx[g3] > 
+                                       bus_core_reqs_last[g3];
+        
+        always @(posedge clk)
+            if (bus_core_reqs_real[g3])
+                bus_core_reqs_count[g3] <= bus_core_reqs_count[g3] + 1;
+
+    end
+    endgenerate
+    
+    `endif // end FORMAL
 
 endmodule

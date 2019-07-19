@@ -8,7 +8,7 @@
 
 module addr_dec # (
     parameter BUS_WIDTH   = 16,
-    parameter SLAVE_PORTS = 4
+    parameter SLAVE_PORTS = 10
 ) (
     input      [BUS_WIDTH-1:0]           addr,
     output     [SLAVE_PORTS-1:0]         sel,
@@ -167,7 +167,7 @@ module apb_intercon_s # (
     parameter BUS_WIDTH    = 16,
     parameter DATA_WIDTH   = 16,
     parameter MASTER_PORTS = 1,
-    parameter SLAVE_PORTS  = 4,
+    parameter SLAVE_PORTS  = 16,
     parameter ARBITER_ROTATE_INC  = 1,
     parameter ARBITER_ROTATE_NEXT = 0,
     parameter ARBITER_HIGHBIT     = 0

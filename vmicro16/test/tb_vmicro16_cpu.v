@@ -1,5 +1,7 @@
 `timescale 1ns / 1ps
 
+`define FORMAL
+
 module tb_vmicro16_core;
 
     // Inputs

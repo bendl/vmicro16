@@ -172,6 +172,7 @@ module vmicro16_bram_ex_apb # (
     always @(*) begin
         swex_success = 0;
         if (en)
+            // bug!
             if (!swex && !lwex)
                 swex_success = 1;
             else if (swex)

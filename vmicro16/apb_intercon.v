@@ -201,11 +201,6 @@ module apb_intercon_s # (
     localparam STATE_T2   = 2;
     reg [1:0] state = STATE_IDLE;
 
-    reg S_PENABLE_gate = 0;
-    always @(posedge clk)
-        S_PENABLE_gate <= ((|a_S_PSELx));
-
-    wire active_ended = !a_S_PSELx;
 
     reg  [`clog2(MASTER_PORTS)-1:0] active      = 0;
     wire [`clog2(MASTER_PORTS)-1:0] active_w;
@@ -264,6 +259,12 @@ module apb_intercon_s # (
     wire  [DATA_WIDTH-1:0]  a_S_PWDATA  = S_PWDATA [active*DATA_WIDTH +: DATA_WIDTH];
     wire  [DATA_WIDTH-1:0]  a_S_PRDATA  = S_PRDATA [active*DATA_WIDTH +: DATA_WIDTH];
     wire                    a_S_PREADY  = S_PREADY [active];
+
+    reg S_PENABLE_gate = 0;
+    always @(posedge clk)
+        S_PENABLE_gate <= ((|a_S_PSELx));
+
+    wire active_ended = !a_S_PSELx;
 
     wire [`clog2(SLAVE_PORTS)-1:0] M_PSELx_int;
     addr_dec # (

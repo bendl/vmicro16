@@ -5,6 +5,54 @@
 `include "clog2.v"
 `include "formal.v"
 
+// APB wrapped vmicro16_bram
+module vmicro16_bram_apb # (
+    parameter BUS_WIDTH    = 16,
+    parameter MEM_WIDTH    = 16,
+    parameter MEM_DEPTH    = 64,
+    parameter APB_PADDR    = 0
+) (
+    input clk,
+    input reset,
+    // APB Slave to master interface
+    input  [`clog2(MEM_DEPTH)-1:0]  S_PADDR,
+    input                           S_PWRITE,
+    input                           S_PSELx,
+    input                           S_PENABLE,
+    input  [BUS_WIDTH-1:0]          S_PWDATA,
+    
+    output [BUS_WIDTH-1:0]          S_PRDATA,
+    output                          S_PREADY
+);
+    wire [MEM_WIDTH-1:0] mem_out;
+
+    assign S_PRDATA = (S_PSELx & S_PENABLE) ? mem_out : 16'h0000;
+    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1    : 1'b0;
+    assign we       = (S_PSELx & S_PENABLE & S_PWRITE);
+
+    always @(*)
+        if (S_PSELx && S_PENABLE)
+            $display($time, "\t\tMEM => %h", mem_out);
+
+    always @(posedge clk)
+        if (we)
+            $display($time, "\t\tBRAM[%h] <= %h", S_PADDR, S_PWDATA);
+
+    vmicro16_bram # (
+        .MEM_WIDTH  (MEM_WIDTH),
+        .MEM_DEPTH  (MEM_DEPTH),
+        .NAME       ("BRAM")
+    ) bram_apb (
+        .clk        (clk),
+        .reset      (reset),
+
+        .mem_addr   (S_PADDR),
+        .mem_in     (S_PWDATA),
+        .mem_we     (we),
+        .mem_out    (mem_out)
+    );
+endmodule
+
 module timer_apb # (
     parameter CLK_HZ = 50_000_000
 ) (
@@ -252,8 +300,6 @@ module vmicro16_bram_ex_apb # (
 endmodule
 
 
-
-
 module vmicro16_soc (
     input clk,
     input reset,
@@ -393,8 +439,6 @@ module vmicro16_soc (
         .gpio       (gpio2)
     );
     
-    
-    
     apb_uart_tx uart0_apb (
         .clk        (clk),
         .reset      (reset),
@@ -450,7 +494,7 @@ module vmicro16_soc (
         .S_PWDATA   (M_PWDATA),
         .S_PRDATA   (M_PRDATA[`APB_PSELX_REGS0*`DATA_WIDTH +: `DATA_WIDTH]),
         .S_PREADY   (M_PREADY[`APB_PSELX_REGS0])
-    );    
+    );
     
     vmicro16_bram_ex_apb # (
         .BUS_WIDTH    (`APB_WIDTH),
@@ -475,6 +519,70 @@ module vmicro16_soc (
     `static_assert(`DEF_MEM_INSTR_DEPTH > 0)
     `static_assert(`DEF_MMU_TIM0_CELLS > 0)
 
+
+    // Single instruction memory
+`ifndef DEF_CORE_HAS_INSTR_MEM
+    // Active master to instr memory
+    wire [`APB_WIDTH-1:0]          instr_M_PADDR;
+    wire                           instr_M_PWRITE;
+    wire [1-1:0]                   instr_M_PSELx;  // not shared
+    wire                           instr_M_PENABLE;
+    wire [`DATA_WIDTH-1:0]         instr_M_PWDATA; 
+    wire [1*`DATA_WIDTH-1:0]       instr_M_PRDATA; // input to intercon
+    wire [1-1:0]                   instr_M_PREADY; // input
+
+    // Master apb interfaces
+    wire [`CORES*`APB_WIDTH-1:0]   instr_w_PADDR;
+    wire [`CORES-1:0]              instr_w_PWRITE;
+    wire [`CORES-1:0]              instr_w_PSELx;
+    wire [`CORES-1:0]              instr_w_PENABLE;
+    wire [`CORES*`DATA_WIDTH-1:0]  instr_w_PWDATA;
+    wire [`CORES*`DATA_WIDTH-1:0]  instr_w_PRDATA;
+    wire [`CORES-1:0]              instr_w_PREADY;
+
+    vmicro16_bram_apb # (
+        .BUS_WIDTH      (`APB_WIDTH),
+        .MEM_WIDTH      (`DATA_WIDTH),
+        .MEM_DEPTH      (`DEF_MEM_INSTR_DEPTH)
+    ) instr_rom_apb (
+        .clk            (clk),
+        .reset          (reset),
+        .S_PADDR        (instr_M_PADDR),
+        .S_PWRITE       (),
+        .S_PSELx        (instr_M_PSELx),
+        .S_PENABLE      (instr_M_PENABLE),
+        .S_PWDATA       (),
+        .S_PRDATA       (instr_M_PRDATA),
+        .S_PREADY       (instr_M_PREADY)
+    );
+     
+    apb_intercon_s # (
+        .MASTER_PORTS(`CORES),
+        .SLAVE_PORTS (1),
+        .BUS_WIDTH   (`APB_WIDTH),
+        .DATA_WIDTH  (`DATA_WIDTH)
+    ) apb_instr_intercon (
+        .clk        (clk),
+        .reset      (reset),
+        // APB master from cores
+        .S_PADDR    (instr_w_PADDR),
+        .S_PWRITE   (instr_w_PWRITE),
+        .S_PSELx    (instr_w_PSELx),
+        .S_PENABLE  (instr_w_PENABLE),
+        .S_PWDATA   (instr_w_PWDATA),
+        .S_PRDATA   (instr_w_PRDATA),
+        .S_PREADY   (instr_w_PREADY),
+        // shared bus slaves
+        .M_PADDR    (instr_M_PADDR),
+        .M_PWRITE   (instr_M_PWRITE),
+        .M_PSELx    (instr_M_PSELx),
+        .M_PENABLE  (instr_M_PENABLE),
+        .M_PWDATA   (instr_M_PWDATA),
+        .M_PRDATA   (instr_M_PRDATA),
+        .M_PREADY   (instr_M_PREADY)
+    );
+`endif
+
     genvar i;
     generate for(i = 0; i < `CORES; i = i + 1) begin : cores
         
@@ -487,14 +595,15 @@ module vmicro16_soc (
         ) c1 (
             .clk        (clk),
             .reset      (reset),
-            .dbug       (dbug1[i*8 +: 8]),
 
+            // debug
             .halt       (w_halt[i]),
 
+            // interrupts
             .ints       (ints),
             .ints_data  (ints_data),
 
-            // Output master interface
+            // Output master port 1
             .w_PADDR    (w_PADDR   [`APB_WIDTH*i +: `APB_WIDTH]  ),
             .w_PWRITE   (w_PWRITE  [i]                           ),
             .w_PSELx    (w_PSELx   [i]                           ),
@@ -502,6 +611,18 @@ module vmicro16_soc (
             .w_PWDATA   (w_PWDATA  [`DATA_WIDTH*i +: `DATA_WIDTH]),
             .w_PRDATA   (w_PRDATA  [`DATA_WIDTH*i +: `DATA_WIDTH]),
             .w_PREADY   (w_PREADY  [i]                           )
+
+`ifndef DEF_CORE_HAS_INSTR_MEM
+            // APB instruction rom
+            , // Output master port 2
+            .w2_PADDR   (instr_w_PADDR   [`APB_WIDTH*i +: `APB_WIDTH]  ),
+            .w2_PWRITE  (instr_w_PWRITE  [i]                           ),
+            .w2_PSELx   (instr_w_PSELx   [i]                           ),
+            .w2_PENABLE (instr_w_PENABLE [i]                           ),
+            .w2_PWDATA  (instr_w_PWDATA  [`DATA_WIDTH*i +: `DATA_WIDTH]),
+            .w2_PRDATA  (instr_w_PRDATA  [`DATA_WIDTH*i +: `DATA_WIDTH]),
+            .w2_PREADY  (instr_w_PREADY  [i]                           )
+`endif
         );
     end
     endgenerate

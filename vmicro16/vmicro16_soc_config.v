@@ -6,12 +6,16 @@
 
 `define FORMAL
 
-`define CORES           8
+`define CORES           4
 `define SLAVES          7
 
 ///////////////////////////////////////////////////////////
 // Core parameters
 //////////////////////////////////////////////////////////
+// Per core instruction memory
+//  Set this to give each core its own instruction memory cache
+//`define DEF_CORE_HAS_INSTR_MEM
+
 // Top level data width for registers, memory cells, bus widths
 `define DATA_WIDTH      16
 

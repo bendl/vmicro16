@@ -12,52 +12,6 @@
 `include "clog2.v"
 `include "formal.v"
 
-module vmicro16_bram_apb # (
-    parameter BUS_WIDTH    = 16,
-    parameter MEM_WIDTH    = 16,
-    parameter MEM_DEPTH    = 64,
-    parameter APB_PADDR    = 0
-) (
-    input clk,
-    input reset,
-    // APB Slave to master interface
-    input  [`clog2(MEM_DEPTH)-1:0]  S_PADDR,
-    input                           S_PWRITE,
-    input                           S_PSELx,
-    input                           S_PENABLE,
-    input  [BUS_WIDTH-1:0]          S_PWDATA,
-    
-    output [BUS_WIDTH-1:0]          S_PRDATA,
-    output                          S_PREADY
-);
-    wire [MEM_WIDTH-1:0] mem_out;
-
-    assign S_PRDATA = (S_PSELx & S_PENABLE) ? mem_out : 16'h0000;
-    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1    : 1'b0;
-    assign we       = (S_PSELx & S_PENABLE & S_PWRITE);
-
-    always @(*)
-        if (S_PSELx && S_PENABLE)
-            $display($time, "\t\tMEM => %h", mem_out);
-
-    always @(posedge clk)
-        if (we)
-            $display($time, "\t\tBRAM[%h] <= %h", S_PADDR, S_PWDATA);
-
-    vmicro16_bram # (
-        .MEM_WIDTH  (MEM_WIDTH),
-        .MEM_DEPTH  (MEM_DEPTH),
-        .NAME       ("BRAM")
-    ) bram_apb (
-        .clk        (clk),
-        .reset      (reset),
-
-        .mem_addr   (S_PADDR),
-        .mem_in     (S_PWDATA),
-        .mem_we     (we),
-        .mem_out    (mem_out)
-    );
-endmodule
 
 
 // This module aims to be a SYNCHRONOUS, WRITE_FIRST BLOCK RAM
@@ -923,6 +877,17 @@ module vmicro16_core # (
     output  [DATA_WIDTH-1:0]    w_PWDATA,
     input   [DATA_WIDTH-1:0]    w_PRDATA,
     input                       w_PREADY
+
+`ifndef DEF_CORE_HAS_INSTR_MEM
+    , // APB master interface to slave instruction memory
+    output reg [`APB_WIDTH-1:0]    w2_PADDR,
+    output reg                     w2_PWRITE,
+    output reg                     w2_PSELx,
+    output reg                     w2_PENABLE,
+    output reg [DATA_WIDTH-1:0]    w2_PWDATA,
+    input      [DATA_WIDTH-1:0]    w2_PRDATA,
+    input                          w2_PREADY
+`endif
 );
     localparam STATE_IF = 0;
     localparam STATE_R1 = 1;
@@ -1032,6 +997,8 @@ module vmicro16_core # (
             r_instr_rda       <= 0;
         end
         else begin
+
+`ifdef DEF_CORE_HAS_INSTR_MEM
             if (r_state == STATE_IF) begin
                     r_instr <= w_mem_instr_out;
 
@@ -1041,6 +1008,33 @@ module vmicro16_core # (
                     
                     r_state <= STATE_R1;
             end
+`else
+            // wait for global instruction rom to give us our instruction
+            if (r_state == STATE_IF) begin
+                // wait for ready signal
+                if (!w2_PREADY) begin
+                    w2_PSELx   <= 1;
+                    w2_PWRITE  <= 0;
+                    w2_PENABLE <= 1;
+                    w2_PWDATA  <= 0;
+                    w2_PADDR   <= r_pc;
+                end else begin
+                    w2_PSELx   <= 0;
+                    w2_PWRITE  <= 0;
+                    w2_PENABLE <= 0;
+                    w2_PWDATA  <= 0;
+
+                    r_instr <= w2_PRDATA;
+
+                    $display("");
+                    $display($time, "\tC%02h: PC: %h",    CORE_ID, r_pc);
+                    $display($time, "\tC%02h: INSTR: %h", CORE_ID, w_mem_instr_out);
+                    
+                    r_state <= STATE_R1;
+                end
+            end
+`endif
+
             else if (r_state == STATE_R1) begin
                 if (w_halt) begin
                     $display("");
@@ -1089,11 +1083,20 @@ module vmicro16_core # (
                         int_pending_ack <= 1;
                         // Jump to ISR
                         r_pc            <= ints_vector[0 +: `DATA_WIDTH];
+                        
+                        `ifndef DEF_CORE_HAS_INSTR_MEM
+                            w2_PADDR <= r_pc + 1;
+                        `endif
+
                     end else if (w_intr) begin
                         $display($time, "\tC%02h: Returning from ISR: %h", CORE_ID, r_pc_saved);
                         r_pc            <= r_pc_saved;
                         regs_use_int    <= 0;
                         int_pending_ack <= 0;
+
+                        `ifndef DEF_CORE_HAS_INSTR_MEM
+                            w2_PADDR <= r_pc_saved;
+                        `endif
                     end else 
                 `endif
 
@@ -1101,12 +1104,21 @@ module vmicro16_core # (
                     $display($time, "\tC%02h: branching to %h", CORE_ID, r_instr_rdd);
                     r_pc            <= r_instr_rdd;
 
+                    `ifndef DEF_CORE_HAS_INSTR_MEM
+                        w2_PADDR <= r_instr_rdd;
+                    `endif
+
                     `ifdef DEF_ENABLE_INT
                         int_pending_ack <= 0;
                     `endif
                 end
                 else if (r_pc < (MEM_INSTR_DEPTH-1)) begin
                     r_pc            <= r_pc + 1;
+
+                    `ifndef DEF_CORE_HAS_INSTR_MEM
+                        // setup t1, t2 of apb
+                        w2_PADDR <= r_pc + 1;
+                    `endif
 
                     `ifdef DEF_ENABLE_INT
                         int_pending_ack <= 0;
@@ -1142,6 +1154,7 @@ module vmicro16_core # (
             end
         end
 
+`ifdef DEF_CORE_HAS_INSTR_MEM
     // Instruction ROM
     (* rom_style = "distributed" *)
     vmicro16_bram # (
@@ -1159,6 +1172,7 @@ module vmicro16_core # (
         .mem_we         (1'b0),  // ROM
         .mem_out        (w_mem_instr_out)
     );
+`endif
 
     // MMU
     vmicro16_core_mmu # (

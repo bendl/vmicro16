@@ -570,26 +570,24 @@ output reg [MASTER_PORTS-1:0]            S_PREADY,
 \begin{appendices}
 
 \chapter{Configuration Options}
+The following configuration options are defined in \verb|vmicro16_soc_config.v|.
 \section{SoC Options}
 \begin{table}[H]
 \centering
-\captionsetup{labelformat=empty}
-\caption{SoC Configuration Options}
 \label{tab:isa}
-\begin{tabular}{l|l|l}
+\begin{tabularx}{\textwidth}{l|l|l}
 Macro      & Default & Purpose                         \\ 
 \hline
-\`{}CORES  & 4       & Number of CPU cores in the SoC  \\
-\`{}SLAVES & 7       & Number of peripherals          
-\end{tabular}
+CORES  & 4       & Number of CPU cores in the SoC  \\
+SLAVES & 7       & Number of peripherals          
+\end{tabularx}
+\captionsetup{labelformat=empty}
+\caption{SoC Configuration Options}
 \end{table}
 
 \section{Core Options}
 \begin{table}[H]
 \centering
-\captionsetup{labelformat=empty}
-\caption{labelformat=empty}
-\label{tab:isa}
 \begin{tabular}{l|l|l}
 Macro                      & Default & Purpose                                     \\ 
 \hline
@@ -600,14 +598,14 @@ DEF\_MEM\_SCRATCH\_DEPTH   & 64      & RW RAM per core                          
 ̀DEF\_ALU\_HW\_MULT        & 1       & Enable/disable HW multiply (1 clock)        \\
 FIX\_T3                    & //      & Enable a T3 state for the APB transaction  
 \end{tabular}
+\captionsetup{labelformat=empty}
+\caption{Core Options}
+\label{tab:isa}
 \end{table}
 
 \section{Peripheral Options}
 \begin{table}[H]
 \centering
-\captionsetup{labelformat=empty}
-\caption{labelformat=empty}
-\label{tab:isa}
 \begin{tabular}{l|l|l}
 Macro              & Default  & Purpose                                              \\ 
 \hline
@@ -639,6 +637,9 @@ DEF\_MMU\_BRAM0\_E & 16'h1FFF & "                                               
 DEF\_MMU\_TIMR0\_S & 16'h0200 & Shared timer peripheral start/end address            \\
 DEF\_MMU\_TIMR0\_E & 16'h0202 & "                                                   
 \end{tabular}
+\captionsetup{labelformat=empty}
+\caption{Peripheral Options}
+\label{tab:isa}
 \end{table}
 
 \chapter{Code Listing}

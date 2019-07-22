@@ -92,7 +92,8 @@
 \date
     {\today}
 
-
+\newcommand\pro{\item[$+$]}
+\newcommand\con{\item[$-$]}
 
 \begin{document}
 
@@ -124,12 +125,13 @@
 \section{Introduction}
 \frame{\vspace{-1cm}\tableofcontents[currentsection, subsectionstyle=show/show/hide]}
 
+\subsection{Why a project on CPUs?}
 \begin{frame}{Why a project on CPUs?}
 \begin{itemize}\setlength\itemsep{1em}
     \item{\textbf{CPUs will be used for the rest of humanity}\\
     1000s of years}
-    \item{\textbf{Understand constrains and considerations}\\
-    1000s of years}
+    \item{\textbf{Understand design constraints and considerations}\\
+    Be a better engineer}
     \item{\textbf{Prepare myself for future employment/work}}
 \end{itemize}
 \end{frame}
@@ -139,7 +141,7 @@
 
 \begin{itemize}\setlength\itemsep{1em}
     \item{\textbf{Rate of single-core speed improvements slowing}\\
-    Pipelining, register renaming, branch predictions, clock speeds
+    Pipelining, register renaming, branch predictions, OoOE, clock speeds
     }
     \item{\textbf{Future of computing = parallel}\\
     \begin{itemize}\setlength\itemsep{1em}
@@ -154,11 +156,11 @@
 \subsection{Why RISC?}
 \begin{frame}{Why RISC?}
 \begin{itemize}\setlength\itemsep{1em}
-    \item FPGA size limitations
     \item Easier design \& impl
     \item Smaller = fit more cores on a chip
+    \item FPGA size limitations
     \item Previous experience + future work
-    \item RISC purist
+    \item I'm a RISC purist
 \end{itemize}
 \end{frame}
 
@@ -215,10 +217,65 @@
 
 \subsection{Interconnect}
 \begin{frame}{Interconnect}
+\begin{columns}[t]
+\column{0.5\textwidth}
+\begin{itemize}
+    \item AMBA APB Bus
+    \item Tristate \& Non-tristate (mux) impl
+    \item Originally Wishbone, now APB
+    \item AHB too complex (limited time)
+    \item Various schedulers
+\end{itemize}
+\column{0.5\textwidth}
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{interconnold}
+    \caption{Vmicro16 interconnect}
+    \label{fig:my_label}
+\end{figure}
+\end{columns}
+\end{frame}
 
+\begin{frame}{Interconnect Schematic}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.6\textwidth]{ahb}
+        \caption{Source: ARM AHB-Lite Protocol Specification Figure 4-2.}
+        \label{fig:my_label}
+    \end{figure}
+\end{frame}
+
+\subsection{ISA}
+\begin{frame}{Instruction Set Architecture}
+    
+\begin{columns}[t]
+\column{0.5\textwidth}
+\begin{itemize}
+    \pro 16-bits, 38 instructions
+    \pro Simple load/store arch
+    \pro (Un)signed instructions
+    \pro Compact
+    \pro Optional hardware multiply instruction\\
+    
+    \con Only 8 registers
+    \con No good compiler support
+\end{itemize}
+\column{0.5\textwidth}
+\vspace{-2cm}
+\begin{figure}
+    \centering
+    \includegraphics[width=5.5cm]{isa2}
+\end{figure}
+\end{columns}
 \end{frame}
 
 \subsection{Interrupts}
+\begin{frame}[c]
+\begin{center}
+\Huge SW Example
+\end{center}
+\end{frame}
+
 \begin{frame}[t]{Interrupts}
 \begin{columns}[t]
 \column{0.5\textwidth}
@@ -327,12 +384,13 @@ exit:
     \item Implementation in next slide
 \end{itemize}
 \column{0.5\textwidth}
-Example:
-\begin{lstlisting}[basicstyle=\tiny\ttfamily]
+\begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
 try_inc:
-    // load and lock (if not already locked)
+    // load and lock
+    // (if not already locked)
     lwex    r0, r1
-    // do something (i.e. add 1 (semaphore))
+    // do something
+    // (i.e. add 1 (semaphore))
     addi    r0, #0x01
     // attempt store
     swex    r0, r1
@@ -353,7 +411,7 @@ critical:
 \begin{frame}{Exclusive Access Flow Chart}
     \begin{figure}
         \centering
-        \includegraphics[width=0.6\textwidth]{semaphore}
+        \includegraphics[width=0.7\textwidth]{semaphore}
     \end{figure}
 \end{frame}
 
@@ -373,12 +431,14 @@ critical:
 \begin{frame}[fragile]{Exclusive Access}
 
 \begin{columns}[t]
-\column{0.5\textwidth}
+\column{0.3\textwidth}
 \begin{lstlisting}[basicstyle=\tiny\ttfamily]
 mutex_claim:
-    // load and lock (if not already locked)
+    // load and lock
+    // (if not already locked)
     lwex    r0, r1
-    // do something (i.e. add 1 (semaphore))
+    // do something
+    // (i.e. add 1 (semaphore))
     addi    r0, #0x01
     // attempt store
     swex    r0, r1
@@ -391,12 +451,12 @@ mutex_claim:
     br      r4, BR_NE
     
 critical:
+    nop
     
 \end{lstlisting}
-\begin{enumerate}
-    \item 
-\end{enumerate}
-\column{0.5\textwidth}
+
+\column{0.7\textwidth}
+\vspace{-1cm}
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{bram_ex}
@@ -407,12 +467,60 @@ critical:
 Demo: 8 core number summation (sum.s)
 \end{frame}
 
+\subsection{Design Challenges}
+\begin{frame}[fragile,t]{Design Challenges}
+\begin{columns}[t]
+\column{0.5\textwidth}
+\textbf{Memory Limitations}\\
+\vspace{0.5cm}
+Each core has it's own instruction memory
+\begin{itemize}
+    \pro Fast fetching and branching
+    \con Requires a dedicated BRAM (FPGA) per core
+    \con Limited BRAM blocks available
+    \begin{itemize}
+        \con Low consumption (\verb|DEF_MEM_INSTR_DEPTH|)
+        \con More cores = some implemented in LUT/regs (distributed)
+    \end{itemize}
+    \con \textbf{Reduces maximum core count}
+\end{itemize}
+\column{0.5\textwidth}
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{bram_limit}
+\end{figure}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile,t]{Design Challenges}
+\begin{columns}[t]
+\column{0.5\textwidth}
+\textbf{Memory Limitations - Solution}\\
+\vspace{0.5cm}
+Global instruction ROM
+\begin{itemize}
+    \pro Reduce duplicate ROMs
+    \pro Single BRAM requirement (expandable)
+    \pro Smaller core size
+    \con \textbf{Slow access times} (exponential)
+    \begin{itemize}
+        \con Requires another interconnect/arbiter/scheduler = logic
+    \end{itemize}
+    \pro \textbf{Increases maximum core count}
+\end{itemize}
+\column{0.5\textwidth}
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{bram_limit_sol}
+\end{figure}
+\end{columns}
+\end{frame}
+
 \section{Results}
 \frame{\tableofcontents[currentsection, subsectionstyle=show/show/hide]}
 
-\begin{frame}{Multi-core vs Single-Core for Summation}
-\begin{columns}[t]
-\column{0.5\textwidth}
+\subsection{Summation}
+\begin{frame}{Summation - Multi-core vs Single-Core}
 \begin{itemize}\setlength{\itemsep 2em}
     \item Each core has low work load
         \begin{itemize}
@@ -424,14 +532,25 @@ Demo: 8 core number summation (sum.s)
         \item Few inter-thread dependencies
     \end{itemize}
 \end{itemize}
-\column{0.5\textwidth}
-Insert graph showing core count vs total time
-\end{columns}
 \end{frame}
 
-\subsection{Results 1}
-\begin{frame}{Results 1}
+\begin{frame}{Summation - Multi-core vs Single-Core}
+240 samples (@30 cores = 8 samples per core)
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{alg_time}
+\end{figure}
 \end{frame}
+
+\subsection{Per-core Memory VS Global Memory for instructions}
+\begin{frame}{Multi-core vs Single-Core for Summation}
+240 samples (@30 cores = 8 samples per core)
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{alg_time}
+\end{figure}
+\end{frame}
+
 
 \section{Conclusion}
 \frame{\tableofcontents[currentsection, subsectionstyle=show/show/hide]}

@@ -988,7 +988,9 @@ module vmicro16_core # (
     // Next program counter logic
     reg [`DATA_WIDTH-1:0] next_pc = 0;
     always @(posedge clk)
-        if (r_state == STATE_WB) begin
+        if (reset)
+            r_pc <= 0;
+        else if (r_state == STATE_WB) begin
             `ifdef DEF_ENABLE_INT
             if (int_pending) begin
                 $display($time, "\tC%02h: Jumping to ISR: %h", 
@@ -1064,11 +1066,15 @@ module vmicro16_core # (
             `endif
         end
     
-    
+`ifndef DEF_CORE_HAS_INSTR_MEM
+    initial w2_PSELx   = 0;
+    initial w2_PENABLE = 0;
+    initial w2_PADDR   = 0;
+`endif
+
     // cpu state machine
     always @(posedge clk)
         if (reset) begin
-            r_pc              <= 0;
             r_state           <= STATE_IF;
             r_instr           <= 0;
             r_mem_scratch_req <= 0;
@@ -1107,7 +1113,7 @@ module vmicro16_core # (
 
                     $display("");
                     $display($time, "\tC%02h: PC: %h",    CORE_ID, r_pc);
-                    $display($time, "\tC%02h: INSTR: %h", CORE_ID, w_mem_instr_out);
+                    $display($time, "\tC%02h: INSTR: %h", CORE_ID, w2_PRDATA);
                     
                     r_state <= STATE_R1;
                 end

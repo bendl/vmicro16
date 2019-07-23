@@ -4,6 +4,7 @@
 
 `include "vmicro16_soc_config.v"
 `include "clog2.v"
+`include "formal.v"
 
 
 module addr_dec # (
@@ -170,7 +171,8 @@ module apb_intercon_s # (
     parameter SLAVE_PORTS  = 16,
     parameter ARBITER_ROTATE_INC  = 1,
     parameter ARBITER_ROTATE_NEXT = 0,
-    parameter ARBITER_HIGHBIT     = 0
+    parameter ARBITER_HIGHBIT     = 0,
+    parameter HAS_PSELX_ADDR = 1
 ) (
     input clk,
     input reset,
@@ -240,16 +242,17 @@ module apb_intercon_s # (
 
     generate if (ARBITER_ROTATE_INC) begin : gen_arbiter_rotate_inc
         always @(posedge clk)
-            if (|S_PSELx && active_ended)
-                if (active == (MASTER_PORTS-1))
-                    active <= 0;
-                else
-                    active <= active + 1;
+            if (|S_PSELx)
+                if (active_ended)
+                    if (active == (MASTER_PORTS-1))
+                        active <= 0;
+                    else
+                        active <= active + 1;
     end
     endgenerate
 
     always @(active)
-        $display("active core: %h", active);
+        $display($time, "\tactive core: %h", active);
 
     // wires for current active master
     wire  [BUS_WIDTH-1:0]   a_S_PADDR   = S_PADDR  [active*BUS_WIDTH +: BUS_WIDTH];
@@ -267,12 +270,24 @@ module apb_intercon_s # (
     wire active_ended = !a_S_PSELx;
 
     wire [`clog2(SLAVE_PORTS)-1:0] M_PSELx_int;
-    addr_dec # (
-        .SLAVE_PORTS    (SLAVE_PORTS)
-    ) paddr_dec (
-        .addr           (a_S_PADDR),
-        .sel            (M_PSELx),
-        .seli           (M_PSELx_int));
+    generate if (HAS_PSELX_ADDR) begin : gen_pselx_dec
+        // if there are more than 1 slave ports,
+        // we need to decode the PADDR to determine which
+        // slave the address is for
+        addr_dec # (
+            .SLAVE_PORTS    (SLAVE_PORTS)
+        ) paddr_dec (
+            .addr           (a_S_PADDR),
+            .sel            (M_PSELx),
+            .seli           (M_PSELx_int));
+    end else begin
+        // if only 1 SLAVE_PORTS, 
+        //   its always active.
+        `static_assert_ng(SLAVE_PORTS == 1)
+        assign M_PSELx_int = 0;
+        assign M_PSELx     = a_S_PSELx;
+    end
+    endgenerate
 
     // Pass through
     assign M_PADDR   = a_S_PADDR;

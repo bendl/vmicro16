@@ -7,6 +7,10 @@
 `define static_assert(c) \
     generate if (!(c)) bad_assertion bad_assertion(); endgenerate
 
+// No generate version of static_assert
+`define static_assert_ng(c) \
+    if (!(c)) bad_assertion bad_assertion();
+
 // Runtime assertion
 `define rassert(c)                  \
     if (!(c)) begin                 \

@@ -10,7 +10,10 @@ module vmicro16_bram_apb # (
     parameter BUS_WIDTH    = 16,
     parameter MEM_WIDTH    = 16,
     parameter MEM_DEPTH    = 64,
-    parameter APB_PADDR    = 0
+    parameter APB_PADDR    = 0,
+    parameter USE_INITS    = 0,
+    parameter NAME         = "BRAM",
+    parameter CORE_ID      = 0
 ) (
     input clk,
     input reset,
@@ -32,16 +35,19 @@ module vmicro16_bram_apb # (
 
     always @(*)
         if (S_PSELx && S_PENABLE)
-            $display($time, "\t\tMEM => %h", mem_out);
+            $display($time, "\t\t%s => %h", NAME, mem_out);
 
     always @(posedge clk)
         if (we)
-            $display($time, "\t\tBRAM[%h] <= %h", S_PADDR, S_PWDATA);
+            $display($time, "\t\t%s[%h] <= %h", NAME, 
+                S_PADDR, S_PWDATA);
 
     vmicro16_bram # (
         .MEM_WIDTH  (MEM_WIDTH),
         .MEM_DEPTH  (MEM_DEPTH),
-        .NAME       ("BRAM")
+        .NAME       (NAME),
+        .USE_INITS  (1),
+        .CORE_ID    (-1)
     ) bram_apb (
         .clk        (clk),
         .reset      (reset),
@@ -351,10 +357,11 @@ module vmicro16_soc (
     `endif
     
     apb_intercon_s # (
-        .MASTER_PORTS(`CORES),
-        .SLAVE_PORTS (`SLAVES),
-        .BUS_WIDTH   (`APB_WIDTH),
-        .DATA_WIDTH  (`DATA_WIDTH)
+        .MASTER_PORTS   (`CORES),
+        .SLAVE_PORTS    (`SLAVES),
+        .BUS_WIDTH      (`APB_WIDTH),
+        .DATA_WIDTH     (`DATA_WIDTH),
+        .HAS_PSELX_ADDR (1)
     ) apb (
         .clk        (clk),
         .reset      (reset),
@@ -522,14 +529,14 @@ module vmicro16_soc (
 
     // Single instruction memory
 `ifndef DEF_CORE_HAS_INSTR_MEM
-    // Active master to instr memory
+    // slave input/outputs from interconnect
     wire [`APB_WIDTH-1:0]          instr_M_PADDR;
     wire                           instr_M_PWRITE;
     wire [1-1:0]                   instr_M_PSELx;  // not shared
     wire                           instr_M_PENABLE;
     wire [`DATA_WIDTH-1:0]         instr_M_PWDATA; 
-    wire [1*`DATA_WIDTH-1:0]       instr_M_PRDATA; // input to intercon
-    wire [1-1:0]                   instr_M_PREADY; // input
+    wire [1*`DATA_WIDTH-1:0]       instr_M_PRDATA; // slave response
+    wire [1-1:0]                   instr_M_PREADY; // slave response
 
     // Master apb interfaces
     wire [`CORES*`APB_WIDTH-1:0]   instr_w_PADDR;
@@ -543,7 +550,9 @@ module vmicro16_soc (
     vmicro16_bram_apb # (
         .BUS_WIDTH      (`APB_WIDTH),
         .MEM_WIDTH      (`DATA_WIDTH),
-        .MEM_DEPTH      (`DEF_MEM_INSTR_DEPTH)
+        .MEM_DEPTH      (`DEF_MEM_INSTR_DEPTH),
+        .USE_INITS      (1),
+        .NAME           ("INSTR_ROM_G")
     ) instr_rom_apb (
         .clk            (clk),
         .reset          (reset),
@@ -557,14 +566,16 @@ module vmicro16_soc (
     );
      
     apb_intercon_s # (
-        .MASTER_PORTS(`CORES),
-        .SLAVE_PORTS (1),
-        .BUS_WIDTH   (`APB_WIDTH),
-        .DATA_WIDTH  (`DATA_WIDTH)
+        .MASTER_PORTS   (`CORES),
+        .SLAVE_PORTS    (1),
+        .BUS_WIDTH      (`APB_WIDTH),
+        .DATA_WIDTH     (`DATA_WIDTH),
+        .HAS_PSELX_ADDR (0)
     ) apb_instr_intercon (
         .clk        (clk),
         .reset      (reset),
         // APB master from cores
+        // master
         .S_PADDR    (instr_w_PADDR),
         .S_PWRITE   (instr_w_PWRITE),
         .S_PSELx    (instr_w_PSELx),
@@ -573,6 +584,7 @@ module vmicro16_soc (
         .S_PRDATA   (instr_w_PRDATA),
         .S_PREADY   (instr_w_PREADY),
         // shared bus slaves
+        // slave outputs
         .M_PADDR    (instr_M_PADDR),
         .M_PWRITE   (instr_M_PWRITE),
         .M_PSELx    (instr_M_PSELx),
@@ -616,10 +628,10 @@ module vmicro16_soc (
             // APB instruction rom
             , // Output master port 2
             .w2_PADDR   (instr_w_PADDR   [`APB_WIDTH*i +: `APB_WIDTH]  ),
-            .w2_PWRITE  (instr_w_PWRITE  [i]                           ),
+            //.w2_PWRITE  (instr_w_PWRITE  [i]                           ),
             .w2_PSELx   (instr_w_PSELx   [i]                           ),
             .w2_PENABLE (instr_w_PENABLE [i]                           ),
-            .w2_PWDATA  (instr_w_PWDATA  [`DATA_WIDTH*i +: `DATA_WIDTH]),
+            //.w2_PWDATA  (instr_w_PWDATA  [`DATA_WIDTH*i +: `DATA_WIDTH]),
             .w2_PRDATA  (instr_w_PRDATA  [`DATA_WIDTH*i +: `DATA_WIDTH]),
             .w2_PREADY  (instr_w_PREADY  [i]                           )
 `endif

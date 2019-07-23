@@ -9,7 +9,10 @@
 // Status          : Unknown, Use with caution!
 
 
-module uart_fifo (/*AUTOARG*/
+module uart_fifo # (
+   parameter ADDR_EXP   = 5,
+   parameter DATA_WIDTH = 8
+) (/*AUTOARG*/
    // Outputs
    rx_byte, tx, irq, busy, tx_fifo_full, rx_fifo_empty,
    // Inputs
@@ -129,7 +132,7 @@ module uart_fifo (/*AUTOARG*/
    // RX FIFO takes data recevied by the UART and holds until outside module
    // requests data
    //
-   fifo #(.DATA_WIDTH(8), .ADDR_EXP(5))
+   fifo #(.DATA_WIDTH(DATA_WIDTH), .ADDR_EXP(ADDR_EXP))
    rx_fifo(
            // Outputs
            .DATA_OUT               (rx_byte),
@@ -149,7 +152,7 @@ module uart_fifo (/*AUTOARG*/
    // TX FIFO takes data from outside module and holds it until the
    // UART is able to transmit it
    //
-   fifo #(.DATA_WIDTH(8), .ADDR_EXP(5))
+   fifo #(.DATA_WIDTH(DATA_WIDTH), .ADDR_EXP(ADDR_EXP))
    tx_fifo(
            // Outputs
            .DATA_OUT               (tx_fifo_data_out),

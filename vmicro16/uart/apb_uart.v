@@ -2,7 +2,10 @@
 
 module apb_uart_tx # (
     parameter BUS_WIDTH  = 16,
-    parameter CELL_DEPTH = 8
+    parameter CELL_DEPTH = 8,
+
+    parameter DATA_WIDTH = 8,
+    parameter ADDR_EXP   = 5
 ) (
     input clk,
     input reset,
@@ -55,7 +58,10 @@ module apb_uart_tx # (
             $display($time, "\t\tUART0 <= %h", S_PWDATA[7:0]);
 
     wire uart_tx_transmit_en = apb_we && (!uart_tx_fifo_full);
-    uart_fifo uart_fifo(
+    uart_fifo # (
+        .DATA_WIDTH (DATA_WIDTH),
+        .ADDR_EXP   (ADDR_EXP)
+    ) uart_fifo(
         .clk             (clk),
         .rst             (reset),
 

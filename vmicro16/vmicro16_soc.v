@@ -446,7 +446,10 @@ module vmicro16_soc (
         .gpio       (gpio2)
     );
     
-    apb_uart_tx uart0_apb (
+    apb_uart_tx # (
+        .DATA_WIDTH (8),
+        .ADDR_EXP   (4) //2^^4 = 16 FIFO words
+    ) uart0_apb (
         .clk        (clk),
         .reset      (reset),
         // apb slave to master interface
@@ -639,9 +642,12 @@ module vmicro16_soc (
     end
     endgenerate
 
+    
+    /////////////////////////////////////////////////////
+    // Formal Verification
+    /////////////////////////////////////////////////////
     `ifdef FORMAL
     wire all_halted = &w_halt;
-
     /////////////////////////////////////////////////////
     // Count number of clocks each core is spending on
     //   bus transactions
@@ -653,7 +659,6 @@ module vmicro16_soc (
             bus_core_times[i2] = 0;
 
     // total bus time
-
     generate
         genvar g2;
         for (g2 = 0; g2 < `CORES; g2 = g2 + 1)
@@ -664,15 +669,18 @@ module vmicro16_soc (
 
     reg [15:0] bus_time_average = 0;
     reg [15:0] bus_reqs_average = 0;
+    reg [15:0] fetch_time_average = 0;
     //
     always @(all_halted) begin
         for (i2 = 0; i2 < `CORES; i2 = i2 + 1) begin
-            bus_time_average = bus_time_average + bus_core_times[i2];
-            bus_reqs_average = bus_reqs_average + bus_core_reqs_count[i2];
+            bus_time_average   = bus_time_average + bus_core_times[i2];
+            bus_reqs_average   = bus_reqs_average + bus_core_reqs_count[i2];
+            fetch_time_average = fetch_time_average + instr_fetch_times[i2];
         end
 
-        bus_time_average = bus_time_average / `CORES;
-        bus_reqs_average = bus_reqs_average / `CORES;
+        bus_time_average   = bus_time_average   / `CORES;
+        bus_reqs_average   = bus_reqs_average   / `CORES;
+        fetch_time_average = fetch_time_average / `CORES;
     end
 
     ////////////////////////////////////////////////////
@@ -706,6 +714,28 @@ module vmicro16_soc (
     end
     endgenerate
     
+
+    ////////////////////////////////////////////////////
+    // Time waiting for instruction fetches 
+    //   from global  memory
+    ////////////////////////////////////////////////////
+    reg [15:0] instr_fetch_times [0:`CORES-1];
+    integer i3;
+    initial 
+        for(i3 = 0; i3 < `CORES; i3 = i3 + 1)
+            instr_fetch_times[i3] = 0;
+
+    // total bus time
+    // Instruction fetches occur on the w2 master port
+    generate
+        genvar g4;
+        for (g4 = 0; g4 < `CORES; g4 = g4 + 1)
+            always @(posedge clk)
+                if (instr_w_PSELx[g4])
+                    instr_fetch_times[g4] <= instr_fetch_times[g4] + 1;
+    endgenerate
+
+
     `endif // end FORMAL
 
 endmodule

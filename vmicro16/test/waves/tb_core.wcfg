@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="207000000001fs"></ZoomEndTime>
-      <Cursor1Time time="42000000000fs"></Cursor1Time>
+      <ZoomStartTime time="149371666666fs"></ZoomStartTime>
+      <ZoomEndTime time="150125666667fs"></ZoomEndTime>
+      <Cursor1Time time="150000000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="260"></NameColumnWidth>
-      <ValueColumnWidth column_width="173"></ValueColumnWidth>
+      <NameColumnWidth column_width="225"></NameColumnWidth>
+      <ValueColumnWidth column_width="139"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="13" />
+   <WVObjectSize size="14" />
    <wave_markers>
       <marker time="6000000000000" label="" />
    </wave_markers>
@@ -63,9 +63,14 @@
    <wvobject fp_name="group504" type="group">
       <obj_property name="label">C0</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /r_state" type="array">
          <obj_property name="ElementShortName">r_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">r_state[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /w2_PSELx" type="logic">
+         <obj_property name="ElementShortName">w2_PSELx</obj_property>
+         <obj_property name="ObjectShortName">w2_PSELx</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /r_pc" type="array">
          <obj_property name="ElementShortName">r_pc[15:0]</obj_property>
@@ -126,6 +131,7 @@
       <wvobject fp_name="group529" type="group">
          <obj_property name="label">MMU</obj_property>
          <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
          <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /mmu/req" type="logic">
             <obj_property name="ElementShortName">req</obj_property>
             <obj_property name="ObjectShortName">req</obj_property>
@@ -176,10 +182,13 @@
          </wvobject>
       </wvobject>
    </wvobject>
+   <wvobject fp_name="/tb_vmicro16_soc/uut/\cores[0].c1 /w2_PSELx" type="logic">
+      <obj_property name="ElementShortName">w2_PSELx</obj_property>
+      <obj_property name="ObjectShortName">w2_PSELx</obj_property>
+   </wvobject>
    <wvobject fp_name="group323" type="group">
       <obj_property name="label">APB_INSTR</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="group424" type="group">
          <obj_property name="label">C0</obj_property>
          <obj_property name="DisplayName">label</obj_property>
@@ -345,8 +354,8 @@
          <obj_property name="DisplayName">label</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_vmicro16_soc/uut/uart0_apb/uart_fifo/tx_fifo/memory" type="array">
-         <obj_property name="ElementShortName">memory[0:31][7:0]</obj_property>
-         <obj_property name="ObjectShortName">memory[0:31][7:0]</obj_property>
+         <obj_property name="ElementShortName">memory[0:15][7:0]</obj_property>
+         <obj_property name="ObjectShortName">memory[0:15][7:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group290" type="group">
@@ -408,6 +417,7 @@
    <wvobject fp_name="group322" type="group">
       <obj_property name="label">FORMAL</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/tb_vmicro16_soc/uut/w_halt" type="array">
          <obj_property name="ElementShortName">w_halt[7:0]</obj_property>
          <obj_property name="ObjectShortName">w_halt[7:0]</obj_property>
@@ -426,6 +436,10 @@
          <obj_property name="ObjectShortName">bus_reqs_average[15:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/fetch_time_average" type="array">
+         <obj_property name="ElementShortName">fetch_time_average[15:0]</obj_property>
+         <obj_property name="ObjectShortName">fetch_time_average[15:0]</obj_property>
+      </wvobject>
       <wvobject type="divider" fp_name="divider340">
       </wvobject>
       <wvobject type="divider" fp_name="divider336">
@@ -441,6 +455,10 @@
          <obj_property name="ElementShortName">bus_core_reqs_count[0:7][15:0]</obj_property>
          <obj_property name="ObjectShortName">bus_core_reqs_count[0:7][15:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/instr_fetch_times" type="array">
+         <obj_property name="ElementShortName">instr_fetch_times[0:7][15:0]</obj_property>
+         <obj_property name="ObjectShortName">instr_fetch_times[0:7][15:0]</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>

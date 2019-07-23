@@ -41,7 +41,8 @@ timer:
 
     // set load = 0x3000
     movi    r1, #0x3
-    movi    r2, #0x0C
+    //movi    r2, #0x0C
+    movi    r2, #0x04
     lshft   r1, r2
     sw      r1, r0
 
@@ -50,8 +51,8 @@ timer:
     // 20ns * 10000 * 5000     = 1.0s
     // 20.0 * 0x3000 * 0x1000  = ~1.0s
     movi    r1, #0x1
-    movi    r2, #0x0C
-    lshft   r1, r2
+    //movi    r2, #0x0C
+    //lshft   r1, r2
     sw      r1, r0 + #0x02
     
     // Start the timer (write 0x0001 to 0x0101)

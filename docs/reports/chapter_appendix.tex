@@ -1,0 +1,91 @@
+\begin{appendices}
+\startcontents[chapters]
+
+\chapter{Configuration Options}
+\startcontents[chapters]
+\printcontents[chapters]{}{1}{}
+
+\noindent\\
+The following configuration options are defined in \verb|vmicro16_soc_config.v|.
+
+\section{SoC Options}
+\begin{table}[H]
+\centering
+\label{tab:isa}
+\begin{tabularx}{\textwidth}{l|l|l}
+Macro      & Default & Purpose                         \\ 
+\hline
+CORES  & 4       & Number of CPU cores in the SoC  \\
+SLAVES & 7       & Number of peripherals          
+\end{tabularx}
+\caption{SoC Configuration Options}
+\end{table}
+
+\section{Core Options}
+\begin{table}[H]
+\centering
+\begin{tabular}{l|l|l}
+Macro                      & Default & Purpose                                     \\ 
+\hline
+DATA\_WIDTH                & 16      & Width of CPU registers in bits              \\
+DEF\_CORE\_HAS\_INSTR\_MEM & //      & Enable a per core instruction memory cache  \\
+DEF\_MEM\_INSTR\_DEPTH     & 64      & Instruction memory cache per core           \\
+DEF\_MEM\_SCRATCH\_DEPTH   & 64      & RW RAM per core                             \\
+̀DEF\_ALU\_HW\_MULT        & 1       & Enable/disable HW multiply (1 clock)        \\
+FIX\_T3                    & //      & Enable a T3 state for the APB transaction  
+\end{tabular}
+\caption{Core Options}
+\label{tab:isa}
+\end{table}
+
+\section{Peripheral Options}
+\begin{table}[H]
+\centering
+\begin{tabular}{l|l|l}
+Macro              & Default  & Purpose                                              \\ 
+\hline
+APB\_WIDTH         &          & AMBA APB PADDR signal width                          \\
+APB\_PSELX\_GPIO0  & 0        & GPIO0 index                                          \\
+APB\_PSELX\_UART0  & 1        & UART0 index                                          \\
+APB\_PSELX\_REGS0  & 2        & REGS0 index                                          \\
+APB\_PSELX\_BRAM0  & 3        & BRAM0 index                                          \\
+APB\_PSELX\_GPIO1  & 4        & GPIO1 index                                          \\
+APB\_PSELX\_GPIO2  & 5        & GPIO2 index                                          \\
+APB\_PSELX\_TIMR0  & 6        & TIMR0 index                                          \\
+APB\_BRAM0\_CELLS  & 4096     & Shared memory words                                  \\
+DEF\_MMU\_TIM0\_S  & 16'h0000 & Per core scratch memory start/end address            \\
+DEF\_MMU\_TIM0\_E  & 16'h007F & "                                                    \\
+DEF\_MMU\_SREG\_S  & 16'h0080 & Per core special registers start/end address         \\
+DEF\_MMU\_SREG\_E  & 16'h008F & "                                                    \\
+DEF\_MMU\_GPIO0\_S & 16'h0090 & Shared GPIOn start/end address                       \\
+DEF\_MMU\_GPIO0\_E & 16'h0090 & "                                                    \\
+DEF\_MMU\_GPIO1\_S & 16'h0091 & "                                                    \\
+DEF\_MMU\_GPIO1\_E & 16'h0091 & "                                                    \\
+DEF\_MMU\_GPIO2\_S & 16'h0092 & "                                                    \\
+DEF\_MMU\_GPIO2\_E & 16'h0092 & "                                                    \\
+DEF\_MMU\_UART0\_S & 16'h00A0 & Shared UART start/end address                        \\
+DEF\_MMU\_UART0\_E & 16'h00A1 & "                                                    \\
+DEF\_MMU\_REGS0\_S & 16'h00B0 & Shared registers start/end address                   \\
+DEF\_MMU\_REGS0\_E & 16'h00B7 & "                                                    \\
+DEF\_MMU\_BRAM0\_S & 16'h1000 & Shared memory with global monitor start/end address  \\
+DEF\_MMU\_BRAM0\_E & 16'h1FFF & "                                                    \\
+DEF\_MMU\_TIMR0\_S & 16'h0200 & Shared timer peripheral start/end address            \\
+DEF\_MMU\_TIMR0\_E & 16'h0202 & "                                                   
+\end{tabular}
+\caption{Peripheral Options}
+\label{tab:isa}
+\end{table}
+
+\clearpage
+\chapter{Code Listing}
+\section{top\_ms.v}
+The top level implementation file is described here.\\
+
+\inputminted[
+    linenos,
+    fontsize=\scriptsize,
+    baselinestretch=0.8,
+]{verilog}{../../vmicro16/vmicro16_soc.v}
+
+
+\end{appendices}

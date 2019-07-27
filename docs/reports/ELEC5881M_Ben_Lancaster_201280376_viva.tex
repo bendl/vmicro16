@@ -113,11 +113,11 @@
 \begin{frame}
 \vspace{-1cm}
 \begin{columns}[t]
-        \begin{column}{.5\textwidth}
-            \tableofcontents[sections={1-3}]
+        \begin{column}{.3\textwidth}
+            \tableofcontents[sections={1-3},subsectionstyle=show/show/hide]
         \end{column}
-        \begin{column}{.5\textwidth}
-            \tableofcontents[sections={4-5}]
+        \begin{column}{.3\textwidth}
+            \tableofcontents[sections={4-6},subsectionstyle=show/show/hide]
         \end{column}
     \end{columns}
 \end{frame}
@@ -128,10 +128,8 @@
 \subsection{Why a project on CPUs?}
 \begin{frame}{Why a project on CPUs?}
 \begin{itemize}\setlength\itemsep{1em}
-    \item{\textbf{CPUs will be used for the rest of humanity}\\
-    1000s of years}
-    \item{\textbf{Understand design constraints and considerations}\\
-    Be a better engineer}
+    \item{\textbf{CPUs will be used for the rest of humanity}}
+    \item{\textbf{Understand design constraints and considerations}}
     \item{\textbf{Prepare myself for future employment/work}}
 \end{itemize}
 \end{frame}
@@ -140,25 +138,16 @@
 \begin{frame}{Why Multi-core?}
 
 \begin{itemize}\setlength\itemsep{1em}
-    \item{\textbf{Rate of single-core speed improvements slowing}\\
-    Pipelining, register renaming, branch predictions, OoOE, clock speeds
-    }
-    \item{\textbf{Future of computing = parallel}\\
-    \begin{itemize}\setlength\itemsep{1em}
-        \item Identifying parallel opportunities
-        \item Massively parallel (NoC's)
-        \item Higher throughput
-    \end{itemize}
-    }
+    \item{\textbf{Rate of single-core speed improvements slowing}}
+    \item{\textbf{Future of computing = parallel}}
 \end{itemize}
 \end{frame}
 
 \subsection{Why RISC?}
 \begin{frame}{Why RISC?}
 \begin{itemize}\setlength\itemsep{1em}
-    \item Easier design \& impl
+    \item Simpler design \& impl
     \item Smaller = fit more cores on a chip
-    \item FPGA size limitations
     \item Previous experience + future work
     \item I'm a RISC purist
 \end{itemize}
@@ -170,19 +159,23 @@
 
 \subsection{Overview}
 \begin{frame}{Overview}
-\textbf{What this project produces:}
-\begin{itemize}[<+->]\setlength\itemsep{1em}
-    \item{\textbf{System-on-Chip with multi-processor functionality}\\
-    Tested on FPGA hardware with 1-96 CPU cores.}
+What this project produces:
+\begin{itemize}\setlength\itemsep{1em}
+    \item{System-on-Chip with multi-processor functionality\\
+    %Tested on FPGA hardware with 1-96 CPU cores.
+    }
     
-    \item{\textbf{Custom 16-bit RISC CPU}\\
-    With interrupts and its own Instruction Set Architecture (ISA).}
+    \item{Custom 16-bit RISC CPU\\
+    %With interrupts and its own Instruction Set Architecture (ISA).
+    }
     
-    \item{\textbf{Software/Assembly compiler}\\
-    PRCO304 programming language/Intel assembly syntax.}
+    \item{Software/Assembly compiler\\
+    %PRCO304 programming language/Intel assembly syntax.
+    }
     
-    \item{\textbf{Aimed at Design Engineers, not end users}\\
-    Project is provided as source code/design files for Design Engineers to customise and implement in hardware themselves.}
+    \item{Aimed at Design Engineers, not end users\\
+    %Project is provided as source code/design files for Design Engineers to customise and implement in hardware themselves.
+    }
 \end{itemize}
 \end{frame}
 
@@ -202,15 +195,13 @@
 \end{figure}
 \column{0.5\textwidth}
 \begin{itemize}
-    \item \textbf{Shared Memory with Global Monitor}
-    \item Timer with Interrupt
-    \item Per-core Interrupt Vector and Mask
-    \item Shared Register Set
-    \item UART Transceiver
-    \item Multiple GPIO ports
-    \item Per-core scratch memory
-    \item \textbf{Per-core Special Registers}
-    \item Customisable by designers
+    \item \textbf{Shared Memory*}
+    \item Timer + interrupts
+    \item UART send/receive 
+    \item GPIO
+    \item Scratch memory
+    \item Extra registers
+    \item + more
 \end{itemize}
 \end{columns}
 \end{frame}
@@ -276,6 +267,7 @@
 \end{center}
 \end{frame}
 
+\iffalse
 \begin{frame}[t]{Interrupts}
 \begin{columns}[t]
 \column{0.5\textwidth}
@@ -292,16 +284,17 @@
 \vspace{1cm}
 Demo: 2 Core LED toggle (GPIO0) with TIMR0 1s interrupt (interrupts\_2.s)
 \end{frame}
+\fi
 
 \begin{frame}{Timer Interrupt Example}
     \begin{figure}
         \centering
         \includegraphics[width=0.9\textwidth]{interrupts}
-        \caption{TIMR0 1us interrupt with context switching}
-        \label{fig:my_label}
     \end{figure}
+    Demo: 2 Core LED toggle (GPIO0) with TIMR0 1s interrupt (interrupts\_2.s)
 \end{frame}
 
+\iffalse
 \begin{frame}{Timer Peripheral Registers}
     \begin{figure}
         \centering
@@ -317,6 +310,7 @@ Demo: 2 Core LED toggle (GPIO0) with TIMR0 1s interrupt (interrupts\_2.s)
         \item For 1s:  Load = 0x1000, Prescaler = 0x3000 (demo)\\(20ns * 0x1000 * 0x3000 = approx. 1s)
     \end{itemize}
 \end{frame}
+\fi
 
 \section{Multi-core Functionality}
 \frame{\vspace{-1cm}\tableofcontents[currentsection, subsectionstyle=show/show/hide]}
@@ -478,10 +472,6 @@ Each core has it's own instruction memory
     \pro Fast fetching and branching
     \con Requires a dedicated BRAM (FPGA) per core
     \con Limited BRAM blocks available
-    \begin{itemize}
-        \con Low consumption (\verb|DEF_MEM_INSTR_DEPTH|)
-        \con More cores = some implemented in LUT/regs (distributed)
-    \end{itemize}
     \con \textbf{Reduces maximum core count}
 \end{itemize}
 \column{0.5\textwidth}
@@ -493,19 +483,15 @@ Each core has it's own instruction memory
 \end{frame}
 
 \begin{frame}[fragile,t]{Design Challenges}
-\begin{columns}[t]
+\begin{columns}
 \column{0.5\textwidth}
 \textbf{Memory Limitations - Solution}\\
 \vspace{0.5cm}
 Global instruction ROM
 \begin{itemize}
-    \pro Reduce duplicate ROMs
-    \pro Single BRAM requirement (expandable)
+    \pro Single BRAM
     \pro Smaller core size
-    \con \textbf{Slow access times} (exponential)
-    \begin{itemize}
-        \con Requires another interconnect/arbiter/scheduler = logic
-    \end{itemize}
+    \con \textbf{Slow access times}
     \pro \textbf{Increases maximum core count}
 \end{itemize}
 \column{0.5\textwidth}
@@ -542,7 +528,7 @@ Global instruction ROM
 \end{figure}
 \end{frame}
 
-\subsection{Per-core Memory VS Global Memory for instructions}
+\subsection{Summation - Shared Instruction ROM}
 \begin{frame}{Multi-core vs Single-Core for Summation}
 240 samples (@30 cores = 8 samples per core)
 \begin{figure}
@@ -557,46 +543,32 @@ Global instruction ROM
 
 \subsection{Accomplishments}
 \begin{frame}{Accomplishments}
-\begin{itemize}
-    \item \textbf{Near complete System-on-Chip design with various peripherals}\\
+\begin{itemize}\setlength{\itemsep 1em}
+    \item \textbf{System-on-Chip with peripherals}\\
     Timers, GPIO, UART, Registers, Memory
     
     \item \textbf{Common multi-thread/core synchronisation primitives}\\
     Semaphores, Mutexes, Memory Barriers, Atomic Instructions
     
-    \item \textbf{AMBA APB bus interface with Global Monitor}\\
-    Timers, GPIO, UART, Registers, Memory
+    \item \textbf{AMBA APB bus interconnects}
     
-    \item \textbf{Working shared bus arbitration}\\
-    Schedules access to shared resources
+    \item \textbf{Interrupts with hardware context-switching}
     
-    \item \textbf{Working FPGA implementation for a 96 core design}\\
-    Nearly fills Cyclone V FPGA on the DE1-SoC
-    
-    \item \textbf{Interrupts with hardware context-switching}\\
-    Low latency to react to interrupt
-    
-    \item \textbf{Acknowledges design limitations and attempts to overcome}\\
-    LUT resources, block memories, power and temperature requirements
+    \item \textbf{Understanding of limitations and solutions}
 \end{itemize}
 \end{frame}
 
 \subsection{Future Improvements}
 \begin{frame}{Future Improvements}
 
-\begin{itemize}
-    \item \textbf{Working Global Reset}\\
-    Global resets are expensive (LUT resources)\\
-    Resetting block memories is not trivial
+\begin{itemize}\setlength{\itemsep 1em}
+    \item \textbf{Global Reset}
     
-    \item \textbf{On-chip Programming}\\
-    Use the UART0 receiver to program each cores flash memory
+    \item \textbf{On-chip Programming}
     
-    \item \textbf{Per-core gating/enabling}\\
-    Improve power efficiency for ASIC implementation by disabling cores at run-time via software.
+    \item \textbf{Per-core gating/enabling}
     
-    \item \textbf{Improve memory bottleneck}\\
-    Each core requires it's own memory - reduce by multiplexing access to a single large memory.
+    \item \textbf{Improve memory bottleneck}
 \end{itemize}
 \end{frame}
 
@@ -608,7 +580,7 @@ Global instruction ROM
 
 \end{frame}
 
-\begin{frame}[fragile]{Info}
+\begin{frame}[fragile]{Q\&A}
 \begin{itemize}\setlength{\itemsep 1em}
     \item GitHub repository: \url{https://github.com/bendl/vmicro16}
     \item Full Report: \url{https://github.com/bendl/vmicro16/blob/master/docs/reports/build/ELEC5881M_Ben_Lancaster_201280376_Final.pdf}

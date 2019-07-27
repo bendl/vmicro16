@@ -78,14 +78,51 @@ DEF\_MMU\_TIMR0\_E & 16'h0202 & "
 
 \clearpage
 \chapter{Code Listing}
-\section{top\_ms.v}
-The top level implementation file is described here.\\
+\startcontents[chapters]
+\printcontents[chapters]{}{1}{}
+
+\section{vmicro16\_soc\_config.v}
+Configuration file for configuring the vmicro16\_soc.v and vmicro16.v features.
 
 \inputminted[
     linenos,
     fontsize=\scriptsize,
     baselinestretch=0.8,
+]{verilog}{../../vmicro16/vmicro16_soc_config.v}
+
+\section{top\_ms.v}
+Top level module that connects the SoC design to hardware pins on the FPGA.
+\inputminted[
+    linenos,
+    fontsize=\scriptsize,
+    baselinestretch=0.8,
+]{verilog}{../../vmicro16/top_ms.v}
+
+\section{vmicro16\_soc.v}
+\inputminted[
+    linenos,
+    fontsize=\scriptsize,
+    baselinestretch=0.8,
 ]{verilog}{../../vmicro16/vmicro16_soc.v}
+
+
+\section{vmicro16\_periph.v}
+Various memory-mapped APB peripherals, such as GPIO, UART, timers, and memory.
+
+\inputminted[
+    linenos,
+    fontsize=\scriptsize,
+    baselinestretch=0.8,
+]{verilog}{../../vmicro16/vmicro16_periph.v}
+
+\section{vmicro16.v}
+Vmicro16 CPU core module.
+
+\inputminted[
+    linenos,
+    fontsize=\scriptsize,
+    baselinestretch=0.8,
+]{verilog}{../../vmicro16/vmicro16.v}
 
 
 \end{appendices}

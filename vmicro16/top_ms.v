@@ -29,6 +29,7 @@ module seven_display # (
     endcase
 endmodule
 
+
 // minispartan6+ XC6SLX9
 module top_ms # (
     parameter GPIO_PINS = 8
@@ -60,16 +61,10 @@ module top_ms # (
     wire [7:0]  gpio0;
     wire [15:0] gpio1;
     wire [7:0]  gpio2;
-
     
     vmicro16_soc soc (
         .clk     (CLK50),
-        
-        `ifdef DEF_GLOBAL_RESET
-        .reset   ((~SW[0])),
-        `else
-        .reset   (0),
-        `endif
+        .reset   (~SW[0]),
 
         //.M_PADDR    (M_PADDR),
         //.M_PWRITE   (M_PWRITE),
@@ -84,8 +79,8 @@ module top_ms # (
         .gpio1   (gpio1),
         .gpio2   (gpio2),
 
-        //.dbug0   (LEDS[3:0]),
-        .dbug1   (LEDS[7:4])
+        .dbug0   (LEDS[7:4])
+        //.dbug1   (LEDS[7:4])
     );
 
     // SSD displays (split across 2 gpio ports 1 and 2)

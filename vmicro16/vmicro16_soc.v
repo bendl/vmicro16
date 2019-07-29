@@ -5,6 +5,28 @@
 `include "clog2.v"
 `include "formal.v"
 
+module pow_reset # (
+    parameter INIT  = 1,
+    parameter N     = 8
+) (
+    input       clk,
+    input       reset,
+    output reg  resethold
+);
+    initial resethold = INIT ? (N-1) : 0;
+
+    always @(*)
+        resethold = |hold;
+
+    reg [`clog2(N)-1:0] hold = (N-1);
+    always @(posedge clk)
+        if (reset)
+            hold <= N-1;
+        else
+            if (hold)
+                hold <= hold - 1;
+endmodule
+
 // Vmicro16 multi-core SoC with various peripherals
 // and interrupts
 module vmicro16_soc (
@@ -22,14 +44,25 @@ module vmicro16_soc (
     output     [`CORES-1:0]         dbug0,
     output     [`CORES*8-1:0]       dbug1
 );
-    genvar di;
-    generate for(di = 0; di < `CORES; di = di + 1) begin : gen_dbug0
-        assign dbug0[di] = dbug1[di*8];
-    end
-    endgenerate
-
     wire [`CORES-1:0] w_halt;
     assign halt = &w_halt;
+    
+    assign dbug0 = w_halt;
+
+    // soft register reset hold for brams and registers
+    wire soft_reset;
+    `ifdef DEF_GLOBAL_RESET
+        pow_reset # (
+            .INIT       (1),
+            .N          (8)
+        ) por_inst (
+            .clk        (clk),
+            .reset      (reset),
+            .resethold  (soft_reset)
+        );
+    `else
+        assign soft_reset = 0;
+    `endif
 
     // Peripherals (master to slave)
      wire [`APB_WIDTH-1:0]          M_PADDR;
@@ -66,7 +99,7 @@ module vmicro16_soc (
         .HAS_PSELX_ADDR (1)
     ) apb (
         .clk        (clk),
-        .reset      (reset),
+        .reset      (soft_reset),
         // APB master to slave
         .S_PADDR    (w_PADDR),
         .S_PWRITE   (w_PWRITE),
@@ -92,7 +125,7 @@ module vmicro16_soc (
         .NAME       ("GPIO0")
     ) gpio0_apb (
         .clk        (clk),
-        .reset      (reset),
+        .reset      (soft_reset),
         // apb slave to master interface
         .S_PADDR    (M_PADDR),
         .S_PWRITE   (M_PWRITE),
@@ -112,7 +145,7 @@ module vmicro16_soc (
         .NAME       ("GPIO1")
     ) gpio1_apb (
         .clk        (clk),
-        .reset      (reset),
+        .reset      (soft_reset),
         // apb slave to master interface
         .S_PADDR    (M_PADDR),
         .S_PWRITE   (M_PWRITE),
@@ -132,7 +165,7 @@ module vmicro16_soc (
         .NAME       ("GPI02")
     ) gpio2_apb (
         .clk        (clk),
-        .reset      (reset),
+        .reset      (soft_reset),
         // apb slave to master interface
         .S_PADDR    (M_PADDR),
         .S_PWRITE   (M_PWRITE),
@@ -149,7 +182,7 @@ module vmicro16_soc (
         .ADDR_EXP   (4) //2^^4 = 16 FIFO words
     ) uart0_apb (
         .clk        (clk),
-        .reset      (reset),
+        .reset      (soft_reset),
         // apb slave to master interface
         .S_PADDR    (M_PADDR),
         .S_PWRITE   (M_PWRITE),
@@ -165,7 +198,7 @@ module vmicro16_soc (
 
     timer_apb timr0 (
         .clk        (clk),
-        .reset      (reset),
+        .reset      (soft_reset),
         // apb slave to master interface
         .S_PADDR    (M_PADDR),
         .S_PWRITE   (M_PWRITE),
@@ -191,7 +224,7 @@ module vmicro16_soc (
         .PARAM_DEFAULTS_R1  (`SLAVES)
     ) regs0_apb (
         .clk        (clk),
-        .reset      (reset),
+        .reset      (soft_reset),
         // apb slave to master interface
         .S_PADDR    (M_PADDR),
         .S_PWRITE   (M_PWRITE),
@@ -209,7 +242,7 @@ module vmicro16_soc (
         .CORE_ID_BITS (`clog2(`CORES))
     ) bram_apb (
         .clk        (clk),
-        .reset      (reset),
+        .reset      (soft_reset),
         // apb slave to master interface
         .S_PADDR    (M_PADDR),
         .S_PWRITE   (M_PWRITE),
@@ -254,7 +287,7 @@ module vmicro16_soc (
         .NAME           ("INSTR_ROM_G")
     ) instr_rom_apb (
         .clk            (clk),
-        .reset          (reset),
+        .reset          (soft_reset),
         .S_PADDR        (instr_M_PADDR),
         .S_PWRITE       (),
         .S_PSELx        (instr_M_PSELx),
@@ -272,7 +305,7 @@ module vmicro16_soc (
         .HAS_PSELX_ADDR (0)
     ) apb_instr_intercon (
         .clk        (clk),
-        .reset      (reset),
+        .reset      (soft_reset),
         // APB master from cores
         // master
         .S_PADDR    (instr_w_PADDR),
@@ -305,7 +338,7 @@ module vmicro16_soc (
             .MEM_SCRATCH_DEPTH  (`DEF_MMU_TIM0_CELLS)
         ) c1 (
             .clk        (clk),
-            .reset      (reset),
+            .reset      (soft_reset),
 
             // debug
             .halt       (w_halt[i]),
@@ -361,20 +394,22 @@ module vmicro16_soc (
     // total bus time
     generate
         genvar g2;
-        for (g2 = 0; g2 < `CORES; g2 = g2 + 1)
-        always @(posedge clk) begin
-            if (w_PSELx[g2])
-                bus_core_times[g2] <= bus_core_times[g2] + 1;
+        for (g2 = 0; g2 < `CORES; g2 = g2 + 1) begin : formal_for_times
+			  always @(posedge clk) begin
+					if (w_PSELx[g2])
+						 bus_core_times[g2] <= bus_core_times[g2] + 1;
 
-            // Core working time
-            `ifndef DEF_CORE_HAS_INSTR_MEM
-                if (!w_PSELx[g2] && !instr_w_PSELx[g2])
-            `else
-                if (!w_PSELx[g2])
-            `endif
-                    if (!w_halt[g2])
-                        core_work_times[g2] <= core_work_times[g2] + 1;
-        end
+					// Core working time
+					`ifndef DEF_CORE_HAS_INSTR_MEM
+						 if (!w_PSELx[g2] && !instr_w_PSELx[g2])
+					`else
+						 if (!w_PSELx[g2])
+					`endif
+							  if (!w_halt[g2])
+									core_work_times[g2] <= core_work_times[g2] + 1;
+
+			  end
+		  end
     endgenerate
 
     reg [15:0] bus_time_average = 0;
@@ -415,16 +450,16 @@ module vmicro16_soc (
     
     generate
         genvar g3;
-        for (g3 = 0; g3 < `CORES; g3 = g3 + 1) begin
-        // Detect new reqs for each core
-        assign bus_core_reqs_real[g3] = w_PSELx[g3] > 
-                                       bus_core_reqs_last[g3];
-        
-        always @(posedge clk)
-            if (bus_core_reqs_real[g3])
-                bus_core_reqs_count[g3] <= bus_core_reqs_count[g3] + 1;
+			  for (g3 = 0; g3 < `CORES; g3 = g3 + 1) begin : formal_for_reqs
+			  // Detect new reqs for each core
+			  assign bus_core_reqs_real[g3] = w_PSELx[g3] > 
+														bus_core_reqs_last[g3];
+			  
+			  always @(posedge clk)
+					if (bus_core_reqs_real[g3])
+						 bus_core_reqs_count[g3] <= bus_core_reqs_count[g3] + 1;
 
-    end
+		 end
     endgenerate
     
 

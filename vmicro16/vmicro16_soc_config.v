@@ -1,3 +1,4 @@
+// Configuration defines for the vmicro16_soc and vmicro16 cpu.
 
 `ifndef VMICRO16_SOC_CONFIG_H
 `define VMICRO16_SOC_CONFIG_H
@@ -40,7 +41,7 @@
 `define DEF_ALU_HW_MULT 1
 
 // Enables global reset (requires more luts)
-//`define DEF_GLOBAL_RESET
+`define DEF_GLOBAL_RESET
 
 //////////////////////////////////////////////////////////
 // Memory mapping

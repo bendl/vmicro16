@@ -41,8 +41,8 @@ timer:
 
     // set load = 0x3000
     movi    r1, #0x3
-    //movi    r2, #0x0C
-    movi    r2, #0x04
+    movi    r2, #0x0C
+    //movi    r2, #0x04
     lshft   r1, r2
     sw      r1, r0
 
@@ -51,8 +51,13 @@ timer:
     // 20ns * 10000 * 5000     = 1.0s
     // 20.0 * 0x3000 * 0x1000  = ~1.0s
     movi    r1, #0x1
+    // 1.0 second
     //movi    r2, #0x0C
-    //lshft   r1, r2
+    // 0.25 second
+    movi    r2, #0x0a
+    // 0.0625 second
+    //movi    r2, #0x04
+    lshft   r1, r2
     sw      r1, r0 + #0x02
     
     // Start the timer (write 0x0001 to 0x0101)
@@ -71,5 +76,12 @@ isr0:
     xor     r1, r2
     // write back
     sw      r1, r0
+
+    // write ascii value to uart0
+    movi    r0, #0xa0
+    movi    r2, #0x30
+    add     r1, r2
+    sw      r1, r0
+
     // return from interrupt
     intr    r0, r0

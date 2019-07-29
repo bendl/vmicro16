@@ -18,7 +18,6 @@
 //   https://www.xilinx.com/support/documentation/user_guides/ug473_7Series_Memory_Resources.pdf
 //   https://www.xilinx.com/support/documentation/user_guides/ug383.pdf
 //   https://www.xilinx.com/support/documentation/sw_manuals/xilinx2016_4/ug901-vivado-synthesis.pdf
-
 module vmicro16_bram # (
     parameter MEM_WIDTH     = 16,
     parameter MEM_DEPTH     = 64,
@@ -262,7 +261,9 @@ module vmicro16_core_mmu # (
             
 
     always @(ints_vector)
-        $display($time, "\tC%d\t\tints_vector W: | %h %h %h %h | %h %h %h %h |", CORE_ID, 
+        $display($time, 
+                "\tC%d\t\tints_vector W: | %h %h %h %h | %h %h %h %h |",
+                 CORE_ID, 
             ints_vector[0*`DATA_WIDTH +: `DATA_WIDTH],
             ints_vector[1*`DATA_WIDTH +: `DATA_WIDTH],
             ints_vector[2*`DATA_WIDTH +: `DATA_WIDTH],
@@ -280,7 +281,8 @@ module vmicro16_core_mmu # (
     always @(*)
         if      (tim0_en) mmu_out = tim0_out;
         else if (sreg_en) mmu_out = sr_val;
-        else if (intv_en) mmu_out = ints_vector[mmu_addr[2:0]*`DATA_WIDTH +: `DATA_WIDTH];
+        else if (intv_en) mmu_out = ints_vector[mmu_addr[2:0]*`DATA_WIDTH 
+                                                    +: `DATA_WIDTH];
         else if (intm_en) mmu_out = ints_mask;
         else              mmu_out = per_out;
 
@@ -298,7 +300,11 @@ module vmicro16_core_mmu # (
             casex (mmu_state)
                 MMU_STATE_T1: begin
                     if (req && apb_en) begin
-                        M_PADDR   <= {mmu_lwex, mmu_swex, CORE_ID[CORE_ID_BITS-1:0], mmu_addr[MEM_WIDTH-1:0]};
+                        M_PADDR   <= {mmu_lwex, 
+                                      mmu_swex, 
+                                      CORE_ID[CORE_ID_BITS-1:0], 
+                                      mmu_addr[MEM_WIDTH-1:0]};
+                        
                         M_PWDATA  <= mmu_in;
                         M_PSELx   <= 1;
                         M_PWRITE  <= mmu_we;
@@ -454,98 +460,6 @@ module vmicro16_regs # (
     assign rd1 = regs[rs1];
     //assign rd2 = regs[rs2];
 endmodule
-
-
-
-module vmicro16_regs_apb # (
-    parameter BUS_WIDTH         = 16,
-    parameter DATA_WIDTH        = 16,
-    parameter CELL_DEPTH        = 8,
-    parameter PARAM_DEFAULTS_R0 = 0,
-    parameter PARAM_DEFAULTS_R1 = 0
-) (
-    input clk,
-    input reset,
-    // APB Slave to master interface
-    input  [`clog2(CELL_DEPTH)-1:0] S_PADDR,
-    input                           S_PWRITE,
-    input                           S_PSELx,
-    input                           S_PENABLE,
-    input  [DATA_WIDTH-1:0]          S_PWDATA,
-    
-    output [DATA_WIDTH-1:0]          S_PRDATA,
-    output                          S_PREADY
-);
-    wire [DATA_WIDTH-1:0] rd1;
-
-    assign S_PRDATA = (S_PSELx & S_PENABLE) ? rd1  : 16'h0000;
-    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1 : 1'b0;
-    assign reg_we   = (S_PSELx & S_PENABLE & S_PWRITE);
-
-    always @(*)
-        if (reg_we)
-            $display($time, "\t\tREGS_APB[%h] <= %h", S_PADDR, S_PWDATA);
-
-    always @(*) 
-        `rassert(reg_we == (S_PSELx & S_PENABLE & S_PWRITE))
-
-    vmicro16_regs # (
-        .CELL_DEPTH         (CELL_DEPTH),
-        .CELL_WIDTH         (DATA_WIDTH),
-        .PARAM_DEFAULTS_R0  (PARAM_DEFAULTS_R0),
-        .PARAM_DEFAULTS_R1  (PARAM_DEFAULTS_R1)
-    ) regs_apb (
-        .clk    (clk),
-        .reset  (reset),
-
-        .rs1    (S_PADDR),
-        .rd1    (rd1),
-
-        //.rs2    (),
-        //.rd2    (),
-        
-        .we     (reg_we),
-        .ws1    (S_PADDR),
-        .wd     (S_PWDATA) // either alu_c or mem_out
-    );
-endmodule
-
-
-
-
-module vmicro16_gpio_apb # (
-    parameter BUS_WIDTH  = 16,
-    parameter DATA_WIDTH = 16,
-    parameter PORTS      = 8,
-    parameter NAME       = "GPIO"
-) (
-    input clk,
-    input reset,
-    // APB Slave to master interface
-    input  [0:0]                    S_PADDR, // not used (optimised out)
-    input                           S_PWRITE,
-    input                           S_PSELx,
-    input                           S_PENABLE,
-    input  [DATA_WIDTH-1:0]         S_PWDATA,
-    
-    output [DATA_WIDTH-1:0]          S_PRDATA,
-    output                          S_PREADY,
-    output reg [PORTS-1:0]          gpio
-);
-    assign S_PRDATA = (S_PSELx & S_PENABLE) ? gpio : 16'h0000;
-    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1 : 1'b0;
-    assign ports_we = (S_PSELx & S_PENABLE & S_PWRITE);
-
-    always @(posedge clk)
-        if (reset)
-            gpio <= 0;
-        else if (ports_we) begin
-            $display($time, "\t\%s <= %h", NAME, S_PWDATA[PORTS-1:0]);
-            gpio <= S_PWDATA[PORTS-1:0];
-        end
-endmodule
-
-// Decoder is hard to parameterise as it's very closely linked to the ISA.
 
 module vmicro16_dec # (
     parameter INSTR_WIDTH    = 16,
@@ -1011,19 +925,11 @@ module vmicro16_core # (
                 r_pc            <= r_pc_saved;
                 regs_use_int    <= 0;
                 int_pending_ack <= 0;
-
-                `ifndef DEF_CORE_HAS_INSTR_MEM
-                    w2_PADDR <= r_pc_saved;
-                `endif
             end else
             `endif
             if (w_branching) begin
                 $display($time, "\tC%02h: branching to %h", CORE_ID, r_instr_rdd);
                 r_pc            <= r_instr_rdd;
-
-                `ifndef DEF_CORE_HAS_INSTR_MEM
-                    w2_PADDR <= r_instr_rdd;
-                `endif
 
                 `ifdef DEF_ENABLE_INT
                     int_pending_ack <= 0;
@@ -1032,11 +938,6 @@ module vmicro16_core # (
                 // normal increment
                 // pc <= pc + 1
                 r_pc            <= r_pc + 1;
-
-                `ifndef DEF_CORE_HAS_INSTR_MEM
-                    // setup t1, t2 of apb
-                    w2_PADDR <= r_pc + 1;
-                `endif
 
                 `ifdef DEF_ENABLE_INT
                     int_pending_ack <= 0;
@@ -1056,7 +957,6 @@ module vmicro16_core # (
                 int_pending_ack <= 1;
                 // Jump to ISR
                 r_pc            <= ints_vector[0 +: `DATA_WIDTH];
-                r_state         <= STATE_FE;
             end else if (w_intr) begin
                 $display($time, "\tC%02h: Returning from ISR: %h", CORE_ID, r_pc_saved);
                 r_pc            <= r_pc_saved;
@@ -1162,6 +1062,13 @@ module vmicro16_core # (
             end
             else if (r_state == STATE_FE) 
                 r_state <= STATE_IF;
+            else if (r_state == STATE_HALT) begin
+                `ifdef DEF_ENABLE_INT
+                    if (int_pending) begin
+                        r_state <= STATE_FE;
+                    end
+                `endif
+            end
         end
 
 `ifdef DEF_CORE_HAS_INSTR_MEM

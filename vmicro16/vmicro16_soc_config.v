@@ -6,7 +6,7 @@
 
 `define FORMAL
 
-`define CORES           8
+`define CORES           2
 `define SLAVES          7
 
 ///////////////////////////////////////////////////////////
@@ -14,7 +14,7 @@
 //////////////////////////////////////////////////////////
 // Per core instruction memory
 //  Set this to give each core its own instruction memory cache
-//`define DEF_CORE_HAS_INSTR_MEM
+`define DEF_CORE_HAS_INSTR_MEM
 
 // Top level data width for registers, memory cells, bus widths
 `define DATA_WIDTH      16
@@ -22,9 +22,15 @@
 // Set this to use a workaround for the MMU's APB T2 clock
 //`define FIX_T3
 
-// Instruction memory (read only) on each core.
+// Instruction memory (read only)
 //   Must be large enough to support software program.
-`define DEF_MEM_INSTR_DEPTH 64
+`ifdef DEF_CORE_HAS_INSTR_MEM
+    // 4096 16-bit words global
+    `define DEF_MEM_INSTR_DEPTH 4096
+`else
+    // 64 16-bit words per core
+    `define DEF_MEM_INSTR_DEPTH 64
+`endif
 
 // Scratch memory (read/write) on each core.
 //   See `DEF_MMU_TIM0_* defines for info.
@@ -60,14 +66,13 @@
 // Memory mapping
 //////////////////////////////////////////////////////////
 // TIM0
-`define DEF_MMU_TIM0_CELLS  128
+// Number of scratch memory cells per core
+`define DEF_MMU_TIM0_CELLS  64
 `define DEF_MMU_TIM0_S      16'h0000
 `define DEF_MMU_TIM0_E      16'h007F
-
 // SREG
 `define DEF_MMU_SREG_S      16'h0080
 `define DEF_MMU_SREG_E      16'h008F
-
 // GPIO0
 `define DEF_MMU_GPIO0_S     16'h0090
 `define DEF_MMU_GPIO0_E     16'h0090
@@ -93,9 +98,14 @@
 //////////////////////////////////////////////////////////
 // Interrupts
 //////////////////////////////////////////////////////////
+// Enable/disable interrupts
+//   Disabling will free up resources for other features
 `define DEF_ENABLE_INT
+// Number of interrupt in signals
 `define DEF_NUM_INT     8
+// Default interrupt bitmask (0 = hidden, 1 = enabled)
 `define DEF_INT_MASK    0
+// Bit position of the TIMR0 interrupt signal
 `define DEF_INT_TIMR0   0
 // Interrupt vector memory location
 `define DEF_MMU_INTSV_S     16'h0100

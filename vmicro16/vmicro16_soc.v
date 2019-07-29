@@ -477,10 +477,11 @@ module vmicro16_soc (
         // Instruction fetches occur on the w2 master port
         generate
             genvar g4;
-            for (g4 = 0; g4 < `CORES; g4 = g4 + 1)
+            for (g4 = 0; g4 < `CORES; g4 = g4 + 1) begin : formal_for_fetch_times
                 always @(posedge clk)
                     if (instr_w_PSELx[g4])
                         instr_fetch_times[g4] <= instr_fetch_times[g4] + 1;
+            end
         endgenerate
     `endif
 

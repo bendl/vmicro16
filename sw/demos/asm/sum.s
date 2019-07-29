@@ -143,5 +143,12 @@ write_gpio:
     movi    r3, #0x91
     sw      r2, r3
 
+write_uart_done:
+    // write ascii value to uart0
+    movi    r3, #0xa0
+    movi    r2, #0x30
+    add     r2, r6
+    sw      r2, r3
+
 exit:
     halt    r0, r0

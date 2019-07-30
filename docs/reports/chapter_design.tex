@@ -1,3 +1,83 @@
+
+\newpage
+\chapter{Interconnect}
+{%\hypersetup{linkcolor=black}
+\startcontents[chapters]
+\printcontents[chapters]{}{1}{}
+}
+
+\section{Introduction}
+
+
+\section{Overview}
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{watchdog}
+\end{figure}
+\subsection{Design Considerations}
+
+\section{Peripheral Interconnect Interface}
+
+\subsection{Master to Slave Interface}
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{21}
+\bitheader[endianness=big]{0,15,16-20} \\
+\begin{rightwordgroup}{PADDR[20:0]}
+  \bitbox{1}{\rotatebox{90}{\small LE}}
+  \bitbox{1}{\rotatebox{90}{\small SE}}
+& \bitbox{3}{\small CORE\_ID}
+& \bitbox{16}{Address}
+\end{rightwordgroup}\\
+
+\begin{rightwordgroup}{PWDATA[15:0]}
+\bitbox{5}{\color{lightgray}\rule{\width}{\height}} & \bitbox{16}{Write data}
+\end{rightwordgroup}\\
+
+\begin{rightwordgroup}{PRDATA[15:0]}
+\bitbox{5}{\color{lightgray}\rule{\width}{\height}} & \bitbox{16}{Read Data}
+\end{rightwordgroup}\\
+
+\begin{rightwordgroup}{PWRITE[0:0]}
+\bitbox{20}{\color{lightgray}\rule{\width}{\height}} & \bitbox{1}{\rotatebox{90}{\small WE}}
+\end{rightwordgroup}\\
+
+\begin{rightwordgroup}{PENABLE[0:0]}
+\bitbox{20}{\color{lightgray}\rule{\width}{\height}} & \bitbox{1}{\rotatebox{90}{\small EN}}
+\end{rightwordgroup}
+\end{bytefield}
+\end{figure}
+
+\subsection{Variable Core Support}
+\begin{figure}[H]
+\centering
+\begin{minted}[fontsize=\footnotesize]{verilog}
+input      [MASTER_PORTS*BUS_WIDTH-1:0]  S_PADDR,
+input      [MASTER_PORTS-1:0]            S_PWRITE,
+input      [MASTER_PORTS-1:0]            S_PSELx,
+input      [MASTER_PORTS-1:0]            S_PENABLE,
+input      [MASTER_PORTS*DATA_WIDTH-1:0] S_PWDATA,
+output reg [MASTER_PORTS*DATA_WIDTH-1:0] S_PRDATA,
+output reg [MASTER_PORTS-1:0]            S_PREADY,
+\end{minted}
+\caption{Variable size inputs and outputs to the interconnect.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=.5em, rightcurly=., rightcurlyspace=0pt]{84}
+\bitheader[endianness=big]{0,20,41,62,83} \\
+\bitbox{21}{Core $N$-$1$} & 
+\bitbox{21}{$\cdots$} & 
+\bitbox{21}{Core 1} & 
+\bitbox{21}{Core 0}
+\end{bytefield}
+\end{figure}
+
+
+\section{Shared Bus Arbitration}
+\lipsum[1-2]
+
 \chapter{Memory Mapping}
 {%\hypersetup{linkcolor=black}
 \startcontents[chapters]
@@ -203,6 +283,16 @@ To improve this, it was decided to implement a new state within the processor's 
 \printcontents[chapters]{}{1}{}
 }
 
+\section{Watchdog Timer}
+In any multi-threaded system there exists the possibility for a deadlock -- a state where all threads are in a waiting state -- and algorithm execution is forever blocked.
+
+A common method of detecting a deadlock is to periodically check that a thread is.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.7]{interconnold}
+\end{figure}
+
 \section{GPIO Interface}
 \begin{figure}[H]
 \centering
@@ -274,82 +364,3 @@ The Vmicro16 processor uses
 \caption{•}
 \label{}
 \end{figure}
-
-\newpage
-\chapter{Interconnect}
-{%\hypersetup{linkcolor=black}
-\startcontents[chapters]
-\printcontents[chapters]{}{1}{}
-}
-
-\section{Introduction}
-
-
-\section{Overview}
-\begin{figure}[H]
-\centering
-\includegraphics[width=13cm]{interconnold}
-\end{figure}
-\subsection{Design Considerations}
-
-\section{Peripheral Interconnect Interface}
-
-\subsection{Master to Slave Interface}
-\begin{figure}[H]
-\centering
-\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{21}
-\bitheader[endianness=big]{0,15,16-20} \\
-\begin{rightwordgroup}{PADDR[20:0]}
-  \bitbox{1}{\rotatebox{90}{\small LE}}
-  \bitbox{1}{\rotatebox{90}{\small SE}}
-& \bitbox{3}{\small CORE\_ID}
-& \bitbox{16}{Address}
-\end{rightwordgroup}\\
-
-\begin{rightwordgroup}{PWDATA[15:0]}
-\bitbox{5}{\color{lightgray}\rule{\width}{\height}} & \bitbox{16}{Write data}
-\end{rightwordgroup}\\
-
-\begin{rightwordgroup}{PRDATA[15:0]}
-\bitbox{5}{\color{lightgray}\rule{\width}{\height}} & \bitbox{16}{Read Data}
-\end{rightwordgroup}\\
-
-\begin{rightwordgroup}{PWRITE[0:0]}
-\bitbox{20}{\color{lightgray}\rule{\width}{\height}} & \bitbox{1}{\rotatebox{90}{\small WE}}
-\end{rightwordgroup}\\
-
-\begin{rightwordgroup}{PENABLE[0:0]}
-\bitbox{20}{\color{lightgray}\rule{\width}{\height}} & \bitbox{1}{\rotatebox{90}{\small EN}}
-\end{rightwordgroup}
-\end{bytefield}
-\end{figure}
-
-\subsection{Variable Core Support}
-\begin{figure}[H]
-\centering
-\begin{minted}[fontsize=\footnotesize]{verilog}
-input      [MASTER_PORTS*BUS_WIDTH-1:0]  S_PADDR,
-input      [MASTER_PORTS-1:0]            S_PWRITE,
-input      [MASTER_PORTS-1:0]            S_PSELx,
-input      [MASTER_PORTS-1:0]            S_PENABLE,
-input      [MASTER_PORTS*DATA_WIDTH-1:0] S_PWDATA,
-output reg [MASTER_PORTS*DATA_WIDTH-1:0] S_PRDATA,
-output reg [MASTER_PORTS-1:0]            S_PREADY,
-\end{minted}
-\caption{Variable size inputs and outputs to the interconnect.}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\begin{bytefield}[bitwidth=.5em, rightcurly=., rightcurlyspace=0pt]{84}
-\bitheader[endianness=big]{0,20,41,62,83} \\
-\bitbox{21}{Core $N$-$1$} & 
-\bitbox{21}{$\cdots$} & 
-\bitbox{21}{Core 1} & 
-\bitbox{21}{Core 0}
-\end{bytefield}
-\end{figure}
-
-
-\section{Shared Bus Arbitration}
-\lipsum[1-2]

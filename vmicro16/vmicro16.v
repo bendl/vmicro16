@@ -223,20 +223,20 @@ module vmicro16_core_mmu # (
 
     assign busy = req || (mmu_state == MMU_STATE_T2);
 
-    // tightly integrated memory usage
-    //wire tim0_en = (mmu_addr >= `DEF_MMU_TIM0_S) 
-    //            && (mmu_addr <= `DEF_MMU_TIM0_E);
-    //wire sreg_en = (mmu_addr >= `DEF_MMU_SREG_S) 
-    //            && (mmu_addr <= `DEF_MMU_SREG_E);
-    //wire intv_en = (mmu_addr >= `DEF_MMU_INTSV_S) 
-    //            && (mmu_addr <= `DEF_MMU_INTSV_E);
-    //wire intm_en = (mmu_addr >= `DEF_MMU_INTSM_S) 
-    //            && (mmu_addr <= `DEF_MMU_INTSM_E);
+    // more luts than below but easier
+    wire tim0_en = (mmu_addr >= `DEF_MMU_TIM0_S) 
+                && (mmu_addr <= `DEF_MMU_TIM0_E);
+    wire sreg_en = (mmu_addr >= `DEF_MMU_SREG_S) 
+                && (mmu_addr <= `DEF_MMU_SREG_E);
+    wire intv_en = (mmu_addr >= `DEF_MMU_INTSV_S) 
+                && (mmu_addr <= `DEF_MMU_INTSV_E);
+    wire intm_en = (mmu_addr >= `DEF_MMU_INTSM_S) 
+                && (mmu_addr <= `DEF_MMU_INTSM_E);
 
-    wire tim0_en = ~mmu_addr[12] && ~mmu_addr[9] && ~mmu_addr[7];
-    wire sreg_en = mmu_addr[7] && ~mmu_addr[4] && ~mmu_addr[5];
-    wire intv_en = mmu_addr[8] && ~mmu_addr[3];
-    wire intm_en = mmu_addr[8] && mmu_addr[3];
+    //wire tim0_en = ~mmu_addr[12] && ~mmu_addr[9] && ~mmu_addr[7];
+    //wire sreg_en = mmu_addr[7] && ~mmu_addr[4] && ~mmu_addr[5];
+    //wire intv_en = mmu_addr[8] && ~mmu_addr[3];
+    //wire intm_en = mmu_addr[8] && mmu_addr[3];
     
     wire apb_en    = !(|{tim0_en, sreg_en, intv_en, intm_en});
     wire tim0_we   = (tim0_en && mmu_we);

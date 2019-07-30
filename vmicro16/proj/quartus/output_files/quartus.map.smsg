@@ -1,1 +1,1 @@
-Info (10281): Verilog HDL Declaration information at vmicro16_periph.v(164): object "SWEX_SUCCESS" differs only in case from object "swex_success" in the same scope File: Z:/uni/vmicro16/vmicro16/vmicro16_periph.v Line: 164
+Info (10281): Verilog HDL Declaration information at vmicro16_periph.v(210): object "SWEX_SUCCESS" differs only in case from object "swex_success" in the same scope File: Z:/uni/vmicro16/vmicro16/vmicro16_periph.v Line: 210

@@ -49,6 +49,10 @@ module vmicro16_soc (
     
     assign dbug0 = w_halt;
 
+    // Watchdog reset pulse signal.
+    //   Passed to pow_reset to generate a longer reset pulse
+    wire wdreset;
+
     // soft register reset hold for brams and registers
     wire soft_reset;
     `ifdef DEF_GLOBAL_RESET
@@ -57,7 +61,11 @@ module vmicro16_soc (
             .N          (8)
         ) por_inst (
             .clk        (clk),
+            `ifdef DEF_USE_WATCHDOG
+            .reset      (reset | wdreset),
+            `else
             .reset      (reset),
+            `endif
             .resethold  (soft_reset)
         );
     `else
@@ -117,6 +125,26 @@ module vmicro16_soc (
         .M_PRDATA   (M_PRDATA),
         .M_PREADY   (M_PREADY)
     );
+
+`ifdef DEF_USE_WATCHDOG
+    vmicro16_watchdog_apb # (
+        .BUS_WIDTH  (`APB_WIDTH),
+        .NAME       ("WDOG0")
+    ) wdog0_apb (
+        .clk        (clk),
+        .reset      (),
+        // apb slave to master interface
+        .S_PADDR    (),
+        .S_PWRITE   (M_PWRITE),
+        .S_PSELx    (M_PSELx[`APB_PSELX_WDOG0]),
+        .S_PENABLE  (M_PENABLE),
+        .S_PWDATA   (),
+        .S_PRDATA   (),
+        .S_PREADY   (M_PREADY[`APB_PSELX_WDOG0]),
+
+        .wdreset    (wdreset)
+    );
+`endif
 
     vmicro16_gpio_apb # (
         .BUS_WIDTH  (`APB_WIDTH),

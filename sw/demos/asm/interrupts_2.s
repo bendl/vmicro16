@@ -53,8 +53,10 @@ timer:
     movi    r1, #0x1
     // 1.0 second
     //movi    r2, #0x0C
+    // 0.5 second
+    movi    r2, #0x0B
     // 0.25 second
-    movi    r2, #0x0a
+    //movi    r2, #0x0a
     // 0.0625 second
     //movi    r2, #0x04
     lshft   r1, r2
@@ -81,6 +83,10 @@ isr0:
     movi    r0, #0xa0
     movi    r2, #0x30
     add     r1, r2
+    sw      r1, r0
+
+    // reset watchdog
+    movi    r0, #0xb8
     sw      r1, r0
 
     // return from interrupt

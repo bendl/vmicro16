@@ -7,8 +7,8 @@
 
 `define FORMAL
 
-`define CORES           64
-`define SLAVES          7
+`define CORES           2
+`define SLAVES          8
 
 ///////////////////////////////////////////////////////////
 // Core parameters
@@ -43,6 +43,9 @@
 // Enables global reset (requires more luts)
 `define DEF_GLOBAL_RESET
 
+// Enable a watch dog timer to reset the soc if threadlocked
+`define DEF_USE_WATCHDOG
+
 //////////////////////////////////////////////////////////
 // Memory mapping
 //////////////////////////////////////////////////////////
@@ -55,6 +58,7 @@
 `define APB_PSELX_GPIO1 4
 `define APB_PSELX_GPIO2 5
 `define APB_PSELX_TIMR0 6
+`define APB_PSELX_WDOG0 7
 
 `define APB_GPIO0_PINS  8
 `define APB_GPIO1_PINS  16
@@ -89,6 +93,9 @@
 // REGS0
 `define DEF_MMU_REGS0_S     16'h00B0
 `define DEF_MMU_REGS0_E     16'h00B7
+// WDOG0
+`define DEF_MMU_WDOG0_S     16'h00B8
+`define DEF_MMU_WDOG0_E     16'h00B8
 // BRAM0
 `define DEF_MMU_BRAM0_S     16'h1000
 `define DEF_MMU_BRAM0_E     16'h1fff

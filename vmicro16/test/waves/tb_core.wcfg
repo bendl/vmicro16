@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="151816666334fs"></ZoomStartTime>
-      <ZoomEndTime time="391016666335fs"></ZoomEndTime>
-      <Cursor1Time time="193390000000fs"></Cursor1Time>
+      <ZoomStartTime time="1850000000fs"></ZoomStartTime>
+      <ZoomEndTime time="102450000001fs"></ZoomEndTime>
+      <Cursor1Time time="20050000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="225"></NameColumnWidth>
-      <ValueColumnWidth column_width="124"></ValueColumnWidth>
+      <ValueColumnWidth column_width="119"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="13" />
+   <WVObjectSize size="16" />
    <wave_markers>
       <marker time="6000000000000" label="" />
    </wave_markers>
@@ -43,16 +43,16 @@
             <obj_property name="ObjectShortName">MASTER_PORTS[31:0]</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_vmicro16_soc/uut/apb/S_PSELx" type="array">
-            <obj_property name="ElementShortName">S_PSELx[15:0]</obj_property>
-            <obj_property name="ObjectShortName">S_PSELx[15:0]</obj_property>
+            <obj_property name="ElementShortName">S_PSELx[1:0]</obj_property>
+            <obj_property name="ObjectShortName">S_PSELx[1:0]</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_vmicro16_soc/uut/apb/active" type="array">
-            <obj_property name="ElementShortName">active[3:0]</obj_property>
-            <obj_property name="ObjectShortName">active[3:0]</obj_property>
+            <obj_property name="ElementShortName">active[0:0]</obj_property>
+            <obj_property name="ObjectShortName">active[0:0]</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_vmicro16_soc/uut/apb/active_w" type="array">
-            <obj_property name="ElementShortName">active_w[3:0]</obj_property>
-            <obj_property name="ObjectShortName">active_w[3:0]</obj_property>
+            <obj_property name="ElementShortName">active_w[0:0]</obj_property>
+            <obj_property name="ObjectShortName">active_w[0:0]</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_vmicro16_soc/uut/apb/active_ended" type="logic">
             <obj_property name="ElementShortName">active_ended</obj_property>
@@ -216,8 +216,8 @@
       <obj_property name="DisplayName">label</obj_property>
       <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/tb_vmicro16_soc/uut/apb/active" type="array">
-         <obj_property name="ElementShortName">active[3:0]</obj_property>
-         <obj_property name="ObjectShortName">active[3:0]</obj_property>
+         <obj_property name="ElementShortName">active[0:0]</obj_property>
+         <obj_property name="ObjectShortName">active[0:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_vmicro16_soc/uut/apb/active_ended" type="logic">
          <obj_property name="ElementShortName">active_ended</obj_property>
@@ -360,8 +360,8 @@
       <obj_property name="label">SRAM</obj_property>
       <obj_property name="DisplayName">label</obj_property>
       <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/S_PADDR" type="array">
-         <obj_property name="ElementShortName">S_PADDR[21:0]</obj_property>
-         <obj_property name="ObjectShortName">S_PADDR[21:0]</obj_property>
+         <obj_property name="ElementShortName">S_PADDR[18:0]</obj_property>
+         <obj_property name="ObjectShortName">S_PADDR[18:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/S_PWRITE" type="logic">
          <obj_property name="ElementShortName">S_PWRITE</obj_property>
@@ -396,8 +396,8 @@
          <obj_property name="ObjectShortName">S_PRDATA[15:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/core_id" type="array">
-         <obj_property name="ElementShortName">core_id[3:0]</obj_property>
-         <obj_property name="ObjectShortName">core_id[3:0]</obj_property>
+         <obj_property name="ElementShortName">core_id[0:0]</obj_property>
+         <obj_property name="ObjectShortName">core_id[0:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/mem_addr" type="array">
          <obj_property name="ElementShortName">mem_addr[11:0]</obj_property>
@@ -408,8 +408,8 @@
          <obj_property name="ObjectShortName">mem[0:4095][15:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_vmicro16_soc/uut/bram_apb/ram_exflags/mem" type="array">
-         <obj_property name="ElementShortName">mem[0:4095][4:0]</obj_property>
-         <obj_property name="ObjectShortName">mem[0:4095][4:0]</obj_property>
+         <obj_property name="ElementShortName">mem[0:4095][1:0]</obj_property>
+         <obj_property name="ObjectShortName">mem[0:4095][1:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group322" type="group">
@@ -417,8 +417,8 @@
       <obj_property name="DisplayName">label</obj_property>
       <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/tb_vmicro16_soc/uut/w_halt" type="array">
-         <obj_property name="ElementShortName">w_halt[15:0]</obj_property>
-         <obj_property name="ObjectShortName">w_halt[15:0]</obj_property>
+         <obj_property name="ElementShortName">w_halt[1:0]</obj_property>
+         <obj_property name="ObjectShortName">w_halt[1:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_vmicro16_soc/uut/all_halted" type="logic">
          <obj_property name="ElementShortName">all_halted</obj_property>
@@ -451,22 +451,56 @@
          <obj_property name="DisplayName">label</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_vmicro16_soc/uut/instr_fetch_times" type="array">
-         <obj_property name="ElementShortName">instr_fetch_times[0:15][15:0]</obj_property>
-         <obj_property name="ObjectShortName">instr_fetch_times[0:15][15:0]</obj_property>
+         <obj_property name="ElementShortName">instr_fetch_times[0:1][15:0]</obj_property>
+         <obj_property name="ObjectShortName">instr_fetch_times[0:1][15:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_vmicro16_soc/uut/bus_core_times" type="array">
-         <obj_property name="ElementShortName">bus_core_times[0:15][15:0]</obj_property>
-         <obj_property name="ObjectShortName">bus_core_times[0:15][15:0]</obj_property>
+         <obj_property name="ElementShortName">bus_core_times[0:1][15:0]</obj_property>
+         <obj_property name="ObjectShortName">bus_core_times[0:1][15:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_vmicro16_soc/uut/bus_core_reqs_count" type="array">
-         <obj_property name="ElementShortName">bus_core_reqs_count[0:15][15:0]</obj_property>
-         <obj_property name="ObjectShortName">bus_core_reqs_count[0:15][15:0]</obj_property>
+         <obj_property name="ElementShortName">bus_core_reqs_count[0:1][15:0]</obj_property>
+         <obj_property name="ObjectShortName">bus_core_reqs_count[0:1][15:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_vmicro16_soc/uut/core_work_times" type="array">
-         <obj_property name="ElementShortName">core_work_times[0:15][15:0]</obj_property>
-         <obj_property name="ObjectShortName">core_work_times[0:15][15:0]</obj_property>
+         <obj_property name="ElementShortName">core_work_times[0:1][15:0]</obj_property>
+         <obj_property name="ObjectShortName">core_work_times[0:1][15:0]</obj_property>
       </wvobject>
+   </wvobject>
+   <wvobject fp_name="group335" type="group">
+      <obj_property name="label">WDOG0</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/wdog0_apb/wdreset" type="logic">
+         <obj_property name="ElementShortName">wdreset</obj_property>
+         <obj_property name="ObjectShortName">wdreset</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/wdog0_apb/we" type="logic">
+         <obj_property name="ElementShortName">we</obj_property>
+         <obj_property name="ObjectShortName">we</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/wdog0_apb/timer" type="array">
+         <obj_property name="ElementShortName">timer[9:0]</obj_property>
+         <obj_property name="ObjectShortName">timer[9:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group339" type="group">
+      <obj_property name="label">POWRESET</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/por_inst/reset" type="logic">
+         <obj_property name="ElementShortName">reset</obj_property>
+         <obj_property name="ObjectShortName">reset</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_vmicro16_soc/uut/por_inst/resethold" type="logic">
+         <obj_property name="ElementShortName">resethold</obj_property>
+         <obj_property name="ObjectShortName">resethold</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="/tb_vmicro16_soc/uut/reset" type="logic">
+      <obj_property name="ElementShortName">reset</obj_property>
+      <obj_property name="ObjectShortName">reset</obj_property>
    </wvobject>
 </wave_config>

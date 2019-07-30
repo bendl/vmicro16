@@ -37,6 +37,9 @@ module addr_dec # (
     // TIMR0
     assign sel[`APB_PSELX_TIMR0] = ((addr >= `DEF_MMU_TIMR0_S) 
                                  && (addr <= `DEF_MMU_TIMR0_E));
+    // WDOG0
+    assign sel[`APB_PSELX_WDOG0] = ((addr >= `DEF_MMU_WDOG0_S) 
+                                 && (addr <= `DEF_MMU_WDOG0_E));
 
     // binary number output
     always @(*)
@@ -54,6 +57,8 @@ module addr_dec # (
             seli = `APB_PSELX_BRAM0;
         else if ((addr >= `DEF_MMU_TIMR0_S) && (addr <= `DEF_MMU_TIMR0_E))
             seli = `APB_PSELX_TIMR0;
+        else if ((addr >= `DEF_MMU_WDOG0_S) && (addr <= `DEF_MMU_WDOG0_E))
+            seli = `APB_PSELX_WDOG0;
         else
             seli = 0;
 endmodule
@@ -196,17 +201,15 @@ module apb_intercon_s # (
     input   [SLAVE_PORTS*DATA_WIDTH-1:0]    M_PRDATA,
     input   [SLAVE_PORTS-1:0]               M_PREADY
 );
-
-
+    // APB state machine
     localparam STATE_IDLE = 0;
     localparam STATE_T1   = 1;
     localparam STATE_T2   = 2;
     reg [1:0] state = STATE_IDLE;
 
-
-    reg  [`clog2(MASTER_PORTS)-1:0] active      = 0;
+    reg  [`clog2(MASTER_PORTS)-1:0] active = 0;
     wire [`clog2(MASTER_PORTS)-1:0] active_w;
-    wire [MASTER_PORTS-1:0] granted;
+    wire [MASTER_PORTS-1:0]         granted;
 
     generate if (ARBITER_HIGHBIT) begin : gen_arbiter_high_bit
         arbiter #(

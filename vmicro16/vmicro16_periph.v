@@ -3,6 +3,52 @@
 `include "vmicro16_soc_config.v"
 `include "formal.v"
 
+// Simple watchdog peripheral
+module vmicro16_watchdog_apb # (
+    parameter BUS_WIDTH  = 16,
+    parameter NAME       = "WD",
+    parameter CLK_HZ     = 50_000_000
+) (
+    input clk,
+    input reset,
+
+    // APB Slave to master interface
+    input  [0:0]                    S_PADDR, // not used (optimised out)
+    input                           S_PWRITE,
+    input                           S_PSELx,
+    input                           S_PENABLE,
+    input  [0:0]                    S_PWDATA,
+    
+    // prdata not used
+    output [0:0]                    S_PRDATA,
+    output                          S_PREADY,
+
+    // watchdog reset, active high
+    output reg                      wdreset
+);
+    //assign S_PRDATA = (S_PSELx & S_PENABLE) ? gpio : 16'h0000;
+    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1 : 1'b0;
+    wire   we       = (S_PSELx & S_PENABLE & S_PWRITE);
+
+    // countdown timer
+    reg [`clog2(CLK_HZ)-1:0] timer = CLK_HZ;
+
+    wire w_wdreset = (timer == 0);
+
+    // infer a register to aid timing
+    initial wdreset = 0;
+    always @(posedge clk)
+        wdreset <= w_wdreset;
+
+    always @(posedge clk)
+        if (we) begin
+            $display($time, "\t\%s <= RESET", NAME);
+            timer <= CLK_HZ;
+        end else begin
+            timer <= timer - 1;
+        end
+endmodule
+
 module timer_apb # (
     parameter CLK_HZ = 50_000_000
 ) (

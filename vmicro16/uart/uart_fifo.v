@@ -103,6 +103,14 @@ module uart_fifo # (
       {rising1, rising } <= {rising, tx_fifo_pop};
    wire wrising = rising > rising1;
 
+   // tx_fifo_pop is 2 clock cycles high, we need 1 clock high,
+   // so find the rising edge = 1 clock high
+   reg rxrising;
+   reg rxrising1;
+   always @(posedge clk)
+      {rxrising1, rxrising } <= {rxrising, rx_fifo_pop};
+   wire rxwrising = rxrising > rxrising1;
+
    //---------------------------------------------------------------------------
    //
    // SEQUENTIAL LOGIC

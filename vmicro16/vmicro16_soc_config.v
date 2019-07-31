@@ -7,7 +7,7 @@
 
 `define FORMAL
 
-`define CORES           2
+`define CORES           4
 `define SLAVES          8
 
 ///////////////////////////////////////////////////////////
@@ -45,6 +45,15 @@
 
 // Enable a watch dog timer to reset the soc if threadlocked
 `define DEF_USE_WATCHDOG
+
+// Enables instruction memory programming via UART0
+//`define DEF_USE_REPROG
+
+`ifdef DEF_USE_REPROG
+    `ifndef DEF_GLOBAL_RESET
+        `error_DEF_USE_REPROG_requires_DEF_GLOBAL_RESET
+    `endif
+`endif
 
 //////////////////////////////////////////////////////////
 // Memory mapping

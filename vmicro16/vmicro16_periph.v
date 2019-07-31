@@ -147,6 +147,62 @@ module timer_apb # (
     assign int_data = {`DATA_WIDTH{1'b1}};
 endmodule
 
+
+// APB wrapped programmable vmicro16_bram
+module vmicro16_bram_prog_apb # (
+    parameter BUS_WIDTH    = 16,
+    parameter MEM_WIDTH    = 16,
+    parameter MEM_DEPTH    = 64,
+    parameter APB_PADDR    = 0,
+    parameter USE_INITS    = 0,
+    parameter NAME         = "BRAMPROG",
+    parameter CORE_ID      = 0
+) (
+    input clk,
+    input reset,
+    // APB Slave to master interface
+    input  [`clog2(MEM_DEPTH)-1:0]  S_PADDR,
+    input                           S_PWRITE,
+    input                           S_PSELx,
+    input                           S_PENABLE,
+    input  [BUS_WIDTH-1:0]          S_PWDATA,
+    
+    output [BUS_WIDTH-1:0]          S_PRDATA,
+    output                          S_PREADY,
+
+    // interface to program the instruction memory
+    input     [`clog2(`DEF_MEM_INSTR_DEPTH)-1:0] addr,
+    input     [`DATA_WIDTH-1:0]                  data,
+    input                                        we,
+    input                                        prog
+);
+    wire [MEM_WIDTH-1:0] mem_out;
+
+    assign S_PRDATA = (S_PSELx & S_PENABLE) ? mem_out : 16'h0000;
+    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1    : 1'b0;
+    wire s_we = (S_PSELx & S_PENABLE & S_PWRITE);
+
+    wire [`clog2(`DEF_MEM_INSTR_DEPTH)-1:0] mem_addr = we ? addr : S_PADDR;
+    wire [`DATA_WIDTH-1:0]                  mem_data = we ? data : S_PWDATA;
+    wire                                    mem_we   = we | s_we;
+
+    vmicro16_bram # (
+        .MEM_WIDTH  (MEM_WIDTH),
+        .MEM_DEPTH  (MEM_DEPTH),
+        .NAME       ("BRAMPROG"),
+        .USE_INITS  (0),
+        .CORE_ID    (-1)
+    ) bram_apb (
+        .clk        (clk),
+        .reset      (reset),
+
+        .mem_addr   (mem_addr),
+        .mem_in     (mem_data),
+        .mem_we     (mem_we),
+        .mem_out    (mem_out)
+    );
+endmodule
+
 // APB wrapped vmicro16_bram
 module vmicro16_bram_apb # (
     parameter BUS_WIDTH    = 16,

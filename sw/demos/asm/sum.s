@@ -13,6 +13,9 @@
 //   assume 8 cores
 //     = rshft by 3
 
+    nop     r0, r0
+    nop     r0, r0
+
 entry:
     // Core id in r6
     movi    r0, #0x80
@@ -56,7 +59,7 @@ entry:
     // 3 cores
     //movi    r4, #0x50
     // 4 cores
-    //movi    r4, #0x3c
+    movi    r4, #0x3c
     // 8 cores
     //movi    r4, #0x1e
     // 12 cores
@@ -64,7 +67,7 @@ entry:
     // 15 cores
     //movi    r4, #0x0f
     // 16 cores
-    movi    r4, #0x0f
+    //movi    r4, #0x0f
     // 30 cores
     //movi    r4, #0x08
     

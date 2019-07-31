@@ -32,15 +32,17 @@ endmodule
 module vmicro16_soc (
     input clk,
     input reset,
-
-    //input  uart_rx,
+    
+    // UART0
+    input                           uart_rx,
     output                          uart_tx,
+    //
     output [`APB_GPIO0_PINS-1:0]    gpio0,
     output [`APB_GPIO1_PINS-1:0]    gpio1,
     output [`APB_GPIO2_PINS-1:0]    gpio2,
-
+    //
     output                          halt,
-
+    //
     output     [`CORES-1:0]         dbug0,
     output     [`CORES*8-1:0]       dbug1
 );
@@ -52,6 +54,7 @@ module vmicro16_soc (
     // Watchdog reset pulse signal.
     //   Passed to pow_reset to generate a longer reset pulse
     wire wdreset;
+    wire prog_prog;
 
     // soft register reset hold for brams and registers
     wire soft_reset;
@@ -62,7 +65,7 @@ module vmicro16_soc (
         ) por_inst (
             .clk        (clk),
             `ifdef DEF_USE_WATCHDOG
-            .reset      (reset | wdreset),
+            .reset      (reset | wdreset | prog_prog),
             `else
             .reset      (reset),
             `endif
@@ -221,7 +224,7 @@ module vmicro16_soc (
         .S_PREADY   (M_PREADY[`APB_PSELX_UART0]),
         // uart wires
         .tx_wire    (uart_tx),
-        .rx_wire    (uart_rx)
+        .rx_wire    ()
     );
 
     timer_apb timr0 (
@@ -307,7 +310,29 @@ module vmicro16_soc (
     wire [`CORES*`DATA_WIDTH-1:0]  instr_w_PRDATA;
     wire [`CORES-1:0]              instr_w_PREADY;
 
-    vmicro16_bram_apb # (
+    `ifdef DEF_USE_REPROG
+        wire [`clog2(`DEF_MEM_INSTR_DEPTH)-1:0] prog_addr;
+        wire [`DATA_WIDTH-1:0] prog_data;
+        wire prog_we;
+        uart_prog rom_prog (
+            .clk        (clk),
+            .reset      (reset | wdreset),
+            // input stream
+            .uart_rx    (uart_rx),
+            // programmer
+            .addr       (prog_addr),
+            .data       (prog_data),
+            .we         (prog_we),
+            .prog       (prog_prog)
+        );
+    `endif
+
+    `ifdef DEF_USE_REPROG
+        vmicro16_bram_prog_apb
+    `else
+        vmicro16_bram_apb
+    `endif
+    # (
         .BUS_WIDTH      (`APB_WIDTH),
         .MEM_WIDTH      (`DATA_WIDTH),
         .MEM_DEPTH      (`DEF_MEM_INSTR_DEPTH),
@@ -315,14 +340,22 @@ module vmicro16_soc (
         .NAME           ("INSTR_ROM_G")
     ) instr_rom_apb (
         .clk            (clk),
-        .reset          (soft_reset),
+        .reset          (reset),
         .S_PADDR        (instr_M_PADDR),
-        .S_PWRITE       (),
+        .S_PWRITE       (0),
         .S_PSELx        (instr_M_PSELx),
         .S_PENABLE      (instr_M_PENABLE),
-        .S_PWDATA       (),
+        .S_PWDATA       (0),
         .S_PRDATA       (instr_M_PRDATA),
         .S_PREADY       (instr_M_PREADY)
+        
+        `ifdef DEF_USE_REPROG
+            ,
+            .addr      (prog_addr),
+            .data      (prog_data),
+            .we        (prog_we),
+            .prog      (prog_prog)
+        `endif
     );
      
     apb_intercon_s # (
@@ -423,21 +456,21 @@ module vmicro16_soc (
     generate
         genvar g2;
         for (g2 = 0; g2 < `CORES; g2 = g2 + 1) begin : formal_for_times
-			  always @(posedge clk) begin
-					if (w_PSELx[g2])
-						 bus_core_times[g2] <= bus_core_times[g2] + 1;
+              always @(posedge clk) begin
+                    if (w_PSELx[g2])
+                         bus_core_times[g2] <= bus_core_times[g2] + 1;
 
-					// Core working time
-					`ifndef DEF_CORE_HAS_INSTR_MEM
-						 if (!w_PSELx[g2] && !instr_w_PSELx[g2])
-					`else
-						 if (!w_PSELx[g2])
-					`endif
-							  if (!w_halt[g2])
-									core_work_times[g2] <= core_work_times[g2] + 1;
+                    // Core working time
+                    `ifndef DEF_CORE_HAS_INSTR_MEM
+                         if (!w_PSELx[g2] && !instr_w_PSELx[g2])
+                    `else
+                         if (!w_PSELx[g2])
+                    `endif
+                              if (!w_halt[g2])
+                                    core_work_times[g2] <= core_work_times[g2] + 1;
 
-			  end
-		  end
+              end
+          end
     endgenerate
 
     reg [15:0] bus_time_average = 0;
@@ -478,16 +511,16 @@ module vmicro16_soc (
     
     generate
         genvar g3;
-			  for (g3 = 0; g3 < `CORES; g3 = g3 + 1) begin : formal_for_reqs
-			  // Detect new reqs for each core
-			  assign bus_core_reqs_real[g3] = w_PSELx[g3] > 
-														bus_core_reqs_last[g3];
-			  
-			  always @(posedge clk)
-					if (bus_core_reqs_real[g3])
-						 bus_core_reqs_count[g3] <= bus_core_reqs_count[g3] + 1;
+              for (g3 = 0; g3 < `CORES; g3 = g3 + 1) begin : formal_for_reqs
+              // Detect new reqs for each core
+              assign bus_core_reqs_real[g3] = w_PSELx[g3] > 
+                                                        bus_core_reqs_last[g3];
+              
+              always @(posedge clk)
+                    if (bus_core_reqs_real[g3])
+                         bus_core_reqs_count[g3] <= bus_core_reqs_count[g3] + 1;
 
-		 end
+         end
     endgenerate
     
 

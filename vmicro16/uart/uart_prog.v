@@ -23,6 +23,11 @@ module uart_prog # (
     wire uart_rx_fifo_empty;
     wire [7:0] uart_rx_byte;
     wire uart_irq;
+
+    reg read = 0;
+    always @(posedge clk)
+        read <= uart_irq;
+    
     uart_fifo # (
         .DATA_WIDTH (DATA_WIDTH),
         .ADDR_EXP   (ADDR_EXP)
@@ -42,10 +47,6 @@ module uart_prog # (
     reg [7:0] word_h = 0;
     reg [`clog2(`DEF_MEM_INSTR_DEPTH)-1:0] word_i  = 0;
     reg word_ib;
-
-    reg read = 0;
-    always @(posedge clk)
-        read <= uart_irq;
     
     reg new_data = 0;
     always @(posedge clk)

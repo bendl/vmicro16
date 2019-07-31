@@ -37,7 +37,7 @@ module top_ms # (
     input           CLK50,
     input  [3:0]    SW,
     // UART
-    //input           RXD,
+    input           RXD,
     output          TXD,
     // Peripherals
     output [7:0]    LEDS,
@@ -74,14 +74,21 @@ module top_ms # (
         //.M_PRDATA   (M_PRDATA),
         //.M_PREADY   (M_PREADY),
         
+        // UART
         .uart_tx (TXD),
+        .uart_rx (RXD),
+
+        // GPIO
         .gpio0   (LEDS[3:0]),
         .gpio1   (gpio1),
         .gpio2   (gpio2),
 
-        .dbug0   (LEDS[7:4])
+        // DBUG
+        .dbug0   (LEDS[5:4])
         //.dbug1   (LEDS[7:4])
     );
+
+    assign LEDS[7:6] = {TXD, RXD};
 
     // SSD displays (split across 2 gpio ports 1 and 2)
     wire [3:0] ssd_chars [0:5];

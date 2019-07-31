@@ -7,7 +7,7 @@
 
 `define FORMAL
 
-`define CORES           4
+`define CORES           1
 `define SLAVES          8
 
 ///////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@
 `define DEF_USE_WATCHDOG
 
 // Enables instruction memory programming via UART0
-//`define DEF_USE_REPROG
+`define DEF_USE_REPROG
 
 `ifdef DEF_USE_REPROG
     `ifndef DEF_GLOBAL_RESET

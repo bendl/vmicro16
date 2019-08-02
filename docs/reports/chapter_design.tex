@@ -6,17 +6,29 @@
 \printcontents[chapters]{}{1}{}
 }
 
+\noindent\\
+\lipsum[1]
+
 \section{Introduction}
+The multi-processor design this project entails requires a number of hardware modules to 
+
+\subsection{Comparison of On-chip Buses}
+The choice of on-chip interconnect has changed multiple times over the life-cycle of this project, primary due to ease of implementation and resource requirements. 
+
+Originally, it was planned to use the Wishbone bus.
+
+Finally, it was decided to use the AMBA APB
 
 
+\newpage
 \section{Overview}
 \begin{figure}[H]
 \centering
-\includegraphics[width=15cm]{watchdog}
+\includegraphics[width=\textwidth]{watchdog}
 \end{figure}
 \subsection{Design Considerations}
 
-\section{Peripheral Interconnect Interface}
+\section{Interfaces}
 
 \subsection{Master to Slave Interface}
 \begin{figure}[H]
@@ -51,8 +63,9 @@
 \newpage
 \subsection{Multi-master Support}
 \subsubsection{Design Goals}
-\begin{enumerate}[label=\bfseries E\arabic*.]
-\item \textbf{Foo}\\Foobar
+\begin{enumerate}[leftmargin=3\parindent,label=\bfseries DG\arabic*.]
+\item \textbf{Foo}\\
+Bing
 \end{enumerate}
 
 \begin{figure}[h]
@@ -89,9 +102,6 @@ output reg [MASTER_PORTS-1:0]            S_PREADY,
 \end{figure}
 
 
-\section{Shared Bus Arbitration}
-\lipsum[1-2]
-
 \section{Further Work}
 The submitted design is acceptable for a multi-core system as it fulfils the following requirements:
 \begin{itemize}
@@ -108,6 +118,28 @@ The submitted design is acceptable for a multi-core system as it fulfils the fol
 \noindent\\
 The Vmicro16 processor uses a memory-mapping scheme to communicate with peripherals and other cores.
 
+\section{Introduction}
+\lipsum[1]
+
+\section{Address Decoding}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{decoder}
+\caption{Foo}
+\label{fig:multimaster}
+\end{figure}
+
+\subsection{Decoder Optimisations}
+In memory-mapped systems, there are two methods used to decode an address bus to perform a chip select (CS). These are full-address and partial-address decoding \cite{tanenbaum2016structured}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{partial}
+\caption{Foo}
+\label{fig:multimaster}
+\end{figure}
+
+\newpage
 \section{Memory Map}
 \begin{figure}[H]
 \centering

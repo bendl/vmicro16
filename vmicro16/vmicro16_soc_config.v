@@ -26,11 +26,11 @@
 // Instruction memory (read only)
 //   Must be large enough to support software program.
 `ifdef DEF_CORE_HAS_INSTR_MEM
-    // 4096 16-bit words global
-    `define DEF_MEM_INSTR_DEPTH 4096
-`else
     // 64 16-bit words per core
     `define DEF_MEM_INSTR_DEPTH 64
+`else
+    // 4096 16-bit words global
+    `define DEF_MEM_INSTR_DEPTH 4096
 `endif
 
 // Scratch memory (read/write) on each core.

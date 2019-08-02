@@ -116,6 +116,7 @@ set_location_assignment PIN_AB28 -to ssd3[4]
 set_location_assignment PIN_AB25 -to ssd3[5]
 set_location_assignment PIN_AB22 -to ssd3[6]
 set_global_assignment -name OPTIMIZATION_MODE BALANCED
+set_global_assignment -name VERILOG_FILE ../../uart/uart_prog.v
 set_global_assignment -name VERILOG_FILE ../../vmicro16_periph.v
 set_global_assignment -name VERILOG_FILE ../../uart/fifo2.v
 set_global_assignment -name SDC_FILE HardwareTest.sdc

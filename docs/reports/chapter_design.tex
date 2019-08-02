@@ -48,7 +48,21 @@
 \end{bytefield}
 \end{figure}
 
-\subsection{Variable Core Support}
+\newpage
+\subsection{Multi-master Support}
+\subsubsection{Design Goals}
+\begin{enumerate}[label=\bfseries E\arabic*.]
+\item \textbf{Foo}\\Foobar
+\end{enumerate}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{multimaster}
+\caption{Foo}
+\label{fig:multimaster}
+\end{figure}
+
+
 \begin{figure}[H]
 \centering
 \begin{minted}[fontsize=\footnotesize]{verilog}
@@ -77,6 +91,14 @@ output reg [MASTER_PORTS-1:0]            S_PREADY,
 
 \section{Shared Bus Arbitration}
 \lipsum[1-2]
+
+\section{Further Work}
+The submitted design is acceptable for a multi-core system as it fulfils the following requirements:
+\begin{itemize}
+\item Support an arbitrary number of peripherals.
+\item Supports memory-mapped address decoding.
+\item Supports multiple master interfaces.
+\end{itemize}
 
 \chapter{Memory Mapping}
 {%\hypersetup{linkcolor=black}

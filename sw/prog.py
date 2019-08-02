@@ -1,7 +1,7 @@
 
 import argparse
 import serial
-
+from time import sleep
 
 parser = argparse.ArgumentParser(
     description='Parse assembly into vmicro16 instruction words.')
@@ -27,7 +27,7 @@ with serial.Serial('COM8', 115200, timeout=1) as ser:
 
         # Padding
         rem   = 64 - len(lines)
-        print(len(lines), rem)
+        print(len(lines), rem-2, 2)
         assert(rem >= 0)
 
         for l in lines:
@@ -39,12 +39,22 @@ with serial.Serial('COM8', 115200, timeout=1) as ser:
 
             # send low byte first
             ser.write(low)
+            sleep(0.01)
             ser.write(high)
+            sleep(0.01)
 
-        # Fill up remaining blanks
-        for i in range(rem):
-            ser.write(0)
-            ser.write(0)
+            print("Sent ", hex(high), hex(low))
 
-        print("Done!")
+    # Fill up remaining blanks
+    for i in range(rem-2):
+        ser.write(0)
+        print("Sent ", 0)
+        sleep(0.001)
+
+    sleep(0.1)
+    ser.write(0xff)
+    sleep(0.1)
+    ser.write(0xff)
+
+    print("Done!")
 

@@ -116,12 +116,16 @@ The submitted design is acceptable for a multi-core system as it fulfils the fol
 \printcontents[chapters]{}{1}{}
 }
 \noindent\\
-The Vmicro16 processor uses a memory-mapping scheme to communicate with peripherals and other cores.
+The Vmicro16 processor uses a memory-mapping scheme to communicate with peripherals and other cores. This chapter describes the design decisions and implementation of memory-map  used in this project.
 
 \section{Introduction}
-\lipsum[1]
+Memory mapping is a common technique used by CPUs, micro-controllers, and other system-on-chip devices, that enables peripherals and other devices to be accessed via a memory address on a common bus.
 
 \section{Address Decoding}
+An address decoder is used to determine the peripheral that the address is requesting.
+
+After the bus arbiter selects a pending APB interface from the CPU cores, the \verb|PADDR| signal is passed through a decoder module to determine which module the address is asking for.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\textwidth]{decoder}

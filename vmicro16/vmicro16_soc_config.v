@@ -7,7 +7,7 @@
 
 `define FORMAL
 
-`define CORES           1
+`define CORES           2
 `define SLAVES          8
 
 ///////////////////////////////////////////////////////////
@@ -15,7 +15,7 @@
 //////////////////////////////////////////////////////////
 // Per core instruction memory
 //  Set this to give each core its own instruction memory cache
-//`define DEF_CORE_HAS_INSTR_MEM
+`define DEF_CORE_HAS_INSTR_MEM
 
 // Top level data width for registers, memory cells, bus widths
 `define DATA_WIDTH      16
@@ -47,7 +47,7 @@
 `define DEF_USE_WATCHDOG
 
 // Enables instruction memory programming via UART0
-`define DEF_USE_REPROG
+//`define DEF_USE_REPROG
 
 `ifdef DEF_USE_REPROG
     `ifndef DEF_GLOBAL_RESET

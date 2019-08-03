@@ -55,6 +55,10 @@ entry:
     //movi    r4, #0x0a
     // 64 cores
     movi    r4, #0x05
+    // 80 cores
+    //movi    r4, #0x04
+    // 160 cores
+    //movi    r4, #0x02
     
     // ROOT
     //   write nsamples_per_thread to shared bram (broadcast)

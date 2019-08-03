@@ -41,6 +41,9 @@ module top_ms # (
     output          TXD,
     // Peripherals
     output [7:0]    LEDS,
+
+    // 3v3 input from the s6 on the de1soc
+    input           S6_3v3,
     
     // SSDs
     output [6:0] ssd0,
@@ -84,11 +87,11 @@ module top_ms # (
         .gpio2   (gpio2),
 
         // DBUG
-        .dbug0   (LEDS[5:4])
+        .dbug0   (LEDS[4])
         //.dbug1   (LEDS[7:4])
     );
 
-    assign LEDS[7:6] = {TXD, RXD};
+    assign LEDS[7:5] = {TXD, RXD, S6_3v3};
 
     // SSD displays (split across 2 gpio ports 1 and 2)
     wire [3:0] ssd_chars [0:5];

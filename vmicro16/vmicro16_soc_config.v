@@ -7,7 +7,7 @@
 
 `define FORMAL
 
-`define CORES           64
+`define CORES           8
 `define SLAVES          8
 
 ///////////////////////////////////////////////////////////
@@ -15,7 +15,7 @@
 //////////////////////////////////////////////////////////
 // Per core instruction memory
 //  Set this to give each core its own instruction memory cache
-//`define DEF_CORE_HAS_INSTR_MEM
+`define DEF_CORE_HAS_INSTR_MEM
 
 // Top level data width for registers, memory cells, bus widths
 `define DATA_WIDTH      16
@@ -117,7 +117,7 @@
 //////////////////////////////////////////////////////////
 // Enable/disable interrupts
 //   Disabling will free up resources for other features
-//`define DEF_ENABLE_INT
+`define DEF_ENABLE_INT
 // Number of interrupt in signals
 `define DEF_NUM_INT     8
 // Default interrupt bitmask (0 = hidden, 1 = enabled)

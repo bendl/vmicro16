@@ -6,18 +6,22 @@
 \printcontents[chapters]{}{1}{}
 }
 
-\noindent\\
-\lipsum[1]
+%\noindent\\
+%\lipsum[1]
 
 \section{Introduction}
-The multi-processor design this project entails requires a number of hardware modules to 
+The Vmicro16 processor needs to communicate with multiple peripheral modules (such as UART, timers, GPIO, and more) to provide useful functionality for the end user.
+
+Previous peripheral interface designs of mine have been directly connected to a main driver with unique inputs and outputs that the peripheral required. For example, a timer peripheral would have dedicated wires for it's load and prescaler values, wires for enabling and resetting, and wires for reading. A memory peripheral would have wires for it's address, read and write data, and a write enable signal. This resulted in each peripheral having a unique interface and unique logic for driving the peripheral, which consumed significant amounts of limited FPGA resources.
+
+It can be seen that many of the peripherals need similar inputs and outputs (for example read and write data signals, write enables, and addresses), and because of this, a standard interface can be used to interface with each peripheral. Using a standard interface can reduce logic requirements as each peripheral can be driven by a single driver.
 
 \subsection{Comparison of On-chip Buses}
 The choice of on-chip interconnect has changed multiple times over the life-cycle of this project, primary due to ease of implementation and resource requirements. 
 
-Originally, it was planned to use the Wishbone bus.
+Originally, it was planned to use the Wishbone bus \cite{wishbone} due to it's popularity within open-source FPGA modules and good quality documentation.
 
-Finally, it was decided to use the AMBA APB
+Late in the project, it was decided to use the AMBA APB protocal \cite {ambaapb}. APB has intuitive signal names and behaviours: PREADY
 
 
 \newpage

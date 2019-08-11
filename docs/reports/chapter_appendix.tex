@@ -12,11 +12,12 @@ The following configuration options are defined in \verb|vmicro16_soc_config.v|.
 \begin{table}[H]
 \centering
 \label{tab:isa}
-\begin{tabularx}{\textwidth}{l|l|l}
+\begin{tabularx}{\textwidth}{l|l|p{8cm}}
 Macro      & Default & Purpose                         \\ 
 \hline
 CORES  & 4       & Number of CPU cores in the SoC  \\
-SLAVES & 7       & Number of peripherals          
+SLAVES & 7       & Number of peripherals  \\    
+DEF\_USE\_WATCHDOG &  & Enable watchdog module to detect deadlocks and infinite loops \\    
 \end{tabularx}
 \caption{SoC Configuration Options}
 \end{table}
@@ -24,7 +25,7 @@ SLAVES & 7       & Number of peripherals
 \section{Core Options}
 \begin{table}[H]
 \centering
-\begin{tabular}{l|l|l}
+\begin{tabular}{l|l|p{8cm}}
 Macro                      & Default & Purpose                                     \\ 
 \hline
 DATA\_WIDTH                & 16      & Width of CPU registers in bits              \\
@@ -32,7 +33,11 @@ DEF\_CORE\_HAS\_INSTR\_MEM & //      & Enable a per core instruction memory cach
 DEF\_MEM\_INSTR\_DEPTH     & 64      & Instruction memory cache per core           \\
 DEF\_MEM\_SCRATCH\_DEPTH   & 64      & RW RAM per core                             \\
 ̀DEF\_ALU\_HW\_MULT        & 1       & Enable/disable HW multiply (1 clock)        \\
-FIX\_T3                    & //      & Enable a T3 state for the APB transaction  
+FIX\_T3                    & //      & Enable a T3 state for the APB transaction \\
+
+DEF\_GLOBAL\_RESET           & //      & Enable synchronous reset logic \\
+
+DEF\_USE\_REPROG           & //      & Programme instruction memory via UART0. Requires DEF\_GLOBAL\_RESET\\
 \end{tabular}
 \caption{Core Options}
 \label{tab:isa}

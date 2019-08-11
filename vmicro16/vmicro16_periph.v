@@ -381,11 +381,13 @@ module vmicro16_bram_ex_apb # (
 
     always @(*)
         if (S_PSELx && S_PENABLE)
-            $display($time, "\t\tBRAMex[%h] READ %h\tCORE: %h", mem_addr, mem_out, S_PADDR[16 +: CORE_ID_BITS]);
+            $display($time, "\t\tBRAMex[%h] READ %h\tCORE: %h", 
+                mem_addr, mem_out, S_PADDR[16 +: CORE_ID_BITS]);
 
     always @(posedge clk)
         if (we)
-            $display($time, "\t\tBRAMex[%h] WRITE %h\tCORE: %h", mem_addr, S_PWDATA, S_PADDR[16 +: CORE_ID_BITS]);
+            $display($time, "\t\tBRAMex[%h] WRITE %h\tCORE: %h", 
+                mem_addr, S_PWDATA, S_PADDR[16 +: CORE_ID_BITS]);
 
     vmicro16_bram # (
         .MEM_WIDTH  (MEM_WIDTH),

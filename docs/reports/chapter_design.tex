@@ -21,18 +21,45 @@ The choice of on-chip interconnect has changed multiple times over the life-cycl
 
 Originally, it was planned to use the Wishbone bus \cite{wishbone} due to it's popularity within open-source FPGA modules and good quality documentation.
 
-Late in the project, it was decided to use the AMBA APB protocal \cite {ambaapb}. APB has intuitive signal names and behaviours: PREADY
+Late in the project, it was decided to use the AMBA APB protocal \cite {ambaapb}. APB describes an intuitive and easy to implement 2-state interface.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{apb_wave}
+\caption{Waveform showing an APB read transaction.}
+\end{figure}
 
-\newpage
 \section{Overview}
+The system-on-chip design is split into 3 main parts: peripheral interconnect (red), CPU array (gray), and the instruction memory interconnect (green).
+
+A block diagram of this project is shown in Figure \ref{fig:watchdog}
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{watchdog}
+\caption{Block diagram of the Vmicro16 system-on-chip.}
+\label{fig:watchdog}
 \end{figure}
+
 \subsection{Design Considerations}
+There are several design issues to consider for this project. These are listed below:
+
+\begin{itemize}
+\item \textbf{Design size limitations}\\
+The target devices for this project are small to medium sized FPGAs (featuring approximately 10,000 to 30,000 logic cells). Because of this, it is important to use a bus interconnect that has a small logic footprint yet is able to scale reasonably well.
+
+\item \textbf{Ease of implementation}\\
+The interconnect and any peripherals should be easy to implement within a reasonable time.
+
+\item \textbf{Scalable}\\
+The interconnect should allow for easy scalability of master and slave interfaces with minimal code changes.
+\end{itemize}
 
 \section{Interfaces}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{ahb}
+\end{figure}
 
 \subsection{Master to Slave Interface}
 \begin{figure}[H]

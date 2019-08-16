@@ -21,7 +21,7 @@ The choice of on-chip interconnect has changed multiple times over the life-cycl
 
 Originally, it was planned to use the Wishbone bus \cite{wishbone} due to it's popularity within open-source FPGA modules and good quality documentation.
 
-Late in the project, it was decided to use the AMBA APB protocal \cite {ambaapb}. APB describes an intuitive and easy to implement 2-state interface.
+Late in the project, it was decided to use the AMBA APB protocol \cite {ambaapb} as it is more commonly used in large commercial designs and understanding how the interface worked would better benefit myself. APB describes an intuitive and easy to implement 2-state interface.
 
 \begin{figure}[H]
 \centering
@@ -147,10 +147,10 @@ The submitted design is acceptable for a multi-core system as it fulfils the fol
 \printcontents[chapters]{}{1}{}
 }
 \noindent\\
-The Vmicro16 processor uses a memory-mapping scheme to communicate with peripherals and other cores. This chapter describes the design decisions and implementation of memory-map  used in this project.
+The Vmicro16 processor uses a memory-mapping scheme to communicate with peripherals and other cores. This chapter describes the design decisions and implementation of the memory-map used in this project.
 
 \section{Introduction}
-Memory mapping is a common technique used by CPUs, micro-controllers, and other system-on-chip devices, that enables peripherals and other devices to be accessed via a memory address on a common bus. This allows for the reuse of existing instructions (commonly memory load/store instructions) to communicate with external peripherals with little additional logic.
+Memory mapping is a common technique used by CPUs, micro-controllers, and other system-on-chip devices, that enables peripherals and other devices to be accessed via a memory address on a common bus. In a processor use-case, this allows for the reuse of existing instructions (commonly memory load/store instructions) to communicate with external peripherals with little additional logic.
 
 \section{Address Decoding}
 An address decoder is used to determine the peripheral that the address is requesting. The address decoder module, \verb|addr_dec| in \verb|apb_intercon.v|, takes the 16-bit \verb|PADDR| from the active APB interface and checks for set bits to determine which peripheral to select. The decoder outputs a chip enable signal \verb|PSEL| for the selected peripheral. For example, if bit 12 is set in \verb|PADDR| then the shared memory peripheral's \verb|PSEL| is set high and others to low. A schematic for the decoder is shown in Figure \ref{fig:decoder}.
@@ -163,7 +163,7 @@ An address decoder is used to determine the peripheral that the address is reque
 \end{figure}
 
 \subsection{Decoder Optimisations}
-Performing a 16-bit equality comparison of the \verb|PADDR| signal against each peripheral memory address consumes a significant amount of logic. Depending on the synthesis tools and FPGA features, a 16-bit comparator might require the 16-bit address input and a fixed 16-bit value input to compare against (where the 0s are inverted) and a wide-AND is performed \cite{palchaudhuri2015high,salauyou2015designing}. An example 4-bit comparator is shown below in Figure \ref{fig:comparator}.
+Performing a 16-bit equality comparison of the \verb|PADDR| signal against each peripheral memory address consumes a significant amount of logic. Depending on the synthesis tools and FPGA features, a 16-bit comparator might require a fixed 16-bit value input to compare against (where the 0s are inverted) and a wide-AND to reduce and compare \cite{palchaudhuri2015high,salauyou2015designing}. An example 4-bit comparator is shown below in Figure \ref{fig:comparator}.
 
 \begin{figure}[H]
 \centering
@@ -174,7 +174,7 @@ Performing a 16-bit equality comparison of the \verb|PADDR| signal against each 
 
 As we are targeting FPGAs, which use LUTs to implement combinatorial logic, we can conveniently utilise Verilog's \verb|==| operator on fairly large operands without worrying about consuming too many resources. The targeted FPGA devices in this project, the Cyclone V and Spartan 6, feature 6-input LUTs which allow 64 different configurations. Knowing this, we can design the address decoder to utilise the FPGA's LUTs more effectively and reduce it's footprint significantly.
 
-We can use part of the \verb|PADDR| signal as a chip select and the other bits as sub-addresses to interface with the peripheral. The chip enable bits are passed into these 6-input LUTs which are programmed (via the bitstream) to output 1 or 0 depending on the address. Figure \ref{fig:comparatorlut} below shows a LUT based approach to address decoding which will utilise approximately 3 ALM modules (including error detection). This method of comparison (LUT based) is utilised in the \verb|addr_dec| module in \verb|apb_intercon.v|.
+We can use part of the \verb|PADDR| signal as a chip select and the other bits as sub-addresses to interface with the peripheral. The addressing bits are passed into the FPGA's 6-input LUTs which are programmed (via the bitstream) to output 1 or 0 depending on the address. Figure \ref{fig:comparatorlut} below shows a LUT based approach to address decoding which will utilise approximately 3 ALM modules (including error detection). This method of comparison (LUT based) is utilised in the \verb|addr_dec| module in \verb|apb_intercon.v|.
 
 \begin{figure}[H]
 \centering
@@ -183,17 +183,22 @@ We can use part of the \verb|PADDR| signal as a chip select and the other bits a
 \label{fig:comparatorlut}
 \end{figure}
 
-The address decoding methods discussed above are examples of \textit{full-address} decoding, where each bit (whether required or not) is compared. It is possible to further reduce the required logic by utilising \textit{partial-address} decoding \cite{tanenbaum2016structured}. Partial-address decoding can reduce logic requirements by not using all bits. For example, if bits in address \verb|0x0100| do not conflict with bits in other addresses (i.e. bit 8 is high in more than 1 address), then the address decoder needs only concern bit 8, not the other bits. This is visualised in Figure \ref{fig:partial} below. This method is utilised in the MMU's address decoder (module \verb|vmicro16_mmu| in \verb|vmicro16.v:181|). As this is an optimisation per core, significant resources can be saved when many cores are used.
+The address decoding methods discussed above are examples of \textit{full-address} decoding, where each bit (whether required or not) is compared. It is possible to further reduce the required logic by utilising \textit{partial-address} decoding \cite{tanenbaum2016structured}. Partial-address decoding can reduce logic requirements by not using all bits. For example, if bits in address \verb|0x0100| do not conflict with bits in other addresses (i.e. bit 8 is high in more than 1 address), then the address decoder needs only concern bit 8, not the other bits. This is visualised in Figure \ref{fig:partial} below. This method is utilised in the MMU's address decoder (module \verb|vmicro16_mmu| in \verb|vmicro16.v:181|). As this is an optimisation per core, significant resources can be saved when a large number of cores are used.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\textwidth]{partial}
-\caption{Foo}
+\caption{Partial address decoding used by the Vmicro16 SoC design. Each peripheral shown only needs to decode a signal bit to determine if it is enabled.}
 \label{fig:partial}
 \end{figure}
 
-\newpage
 \section{Memory Map}
+The system-on-chip's memory map is shown below in Figure \ref{fig:memmap}. The addresses for each peripheral have been carefully chosen for both:
+\begin{itemize}
+\item Easy software access -- creating addresses via software requires few instructions (normally one to four \verb|MOVI| and \verb|LSHIFT| instructions to address \verb|0x0000| to  \verb|0xffff|), which increases software performance.
+\item and Reducing address decoding logic -- most addresses can be decoded using partial decoding techniques.
+\end{itemize}
+
 \begin{figure}[H]
 \centering
 \begin{bytefield}{24}
@@ -213,6 +218,7 @@ The address decoding methods discussed above are examples of \textit{full-addres
 	\bitbox[]{16}{} & \bitbox[]{16}{$\vdots$ \\[1ex]} \\
 	
 	\begin{rightwordgroup}{Shared peripherals}
+	\memsection{00B8}{}{1}{\nameref{sect:watchdog}}\\
 	\memsection{00B7}{00B0}{3}{REGS0}\\
 	\bitbox[]{16}{} & \bitbox[]{16}{$\vdots$ \\[1ex]} \\
 	\memsection{00A1}{00A0}{2}{UART0}\\
@@ -232,40 +238,6 @@ The address decoding methods discussed above are examples of \textit{full-addres
 \caption{Memory map showing addresses of various memory sections.}
 \label{fig:memmap}
 \end{figure}
-
-\newpage
-\section{Special Registers}
-From the software perspective, it is important for both the developer and software algorithms to know the target system's architecture to better utilise
-the resources available to them.
-Software written for one architecture with $N$ cores must also run on an architecture with $M$ cores. To enable such portability, the software must query the system for information such as: number of processor cores and the current core identifier. Without this information, the developer would be required to produce software for each individual architecture (e.g. an Intel i5 with 4 cores or an Intel i7 with 8 cores, or an NVIDIA GTX 970 with.
-
-\begin{figure}[H]
-\centering
-\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
-\bitheader[endianness=big]{0-15} \\
-\begin{rightwordgroup}{0080 R}
-\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{CORE\_ID}
-\end{rightwordgroup} \\
-\begin{rightwordgroup}{0081 R}
-\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{NUM\_CORES}
-\end{rightwordgroup} \\
-\begin{rightwordgroup}{0082 R}
-\bitbox{16}{SHARED\_MEMORY cells \tiny(default 4096)}
-\end{rightwordgroup} \\
-\begin{rightwordgroup}{0083 R}
-\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{NUM\_PERIPHERALS}
-\end{rightwordgroup} \\
-\begin{rightwordgroup}{0084 RW}
-\bitbox{16}{User defined}
-\end{rightwordgroup} \\
-\bitbox[]{16}{$\vdots$ \\[1ex]} \\
-\begin{rightwordgroup}{008F RW}
-\bitbox{16}{User defined}
-\end{rightwordgroup}
-\end{bytefield}
-\caption{Vmicro16 Special Registers layout (0x0080 - 0x008F).}
-\end{figure}
-
 
 \chapter{Interrupts}
 \label{sect:interrupts}
@@ -389,15 +361,57 @@ To improve this, it was decided to implement a new state within the processor's 
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 }
+\noindent\\
+To provide user's with useful functionality, common system-on-chip peripherals were created. This section describes each peripheral and it's design decisions.
+
+\section{Special Registers}
+From the software perspective, it is important for both the developer and software algorithms to know the target system's architecture to better utilise
+the resources available to them.
+Software written for one architecture with $N$ cores must also run on an architecture with $M$ cores. To enable such portability, the software must query the system for information such as: number of processor cores and the current core identifier. Without this information, the developer would be required to produce software for each individual architecture (e.g. an Intel i5 with 4 cores or an Intel i7 with 8 cores, or an NVIDIA GTX 970 with.
+
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
+\bitheader[endianness=big]{0-15} \\
+\begin{rightwordgroup}{0080 R}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{CORE\_ID}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0081 R}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{NUM\_CORES}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0082 R}
+\bitbox{16}{SHARED\_MEMORY cells \tiny(default 4096)}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0083 R}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{NUM\_PERIPHERALS}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0084 RW}
+\bitbox{16}{User defined}
+\end{rightwordgroup} \\
+\bitbox[]{16}{$\vdots$ \\[1ex]} \\
+\begin{rightwordgroup}{008F RW}
+\bitbox{16}{User defined}
+\end{rightwordgroup}
+\end{bytefield}
+\caption{Vmicro16 Special Registers layout (0x0080 - 0x008F).}
+\end{figure}
 
 \section{Watchdog Timer}
-In any multi-threaded system there exists the possibility for a deadlock -- a state where all threads are in a waiting state -- and algorithm execution is forever blocked.
+\label{sect:watchdog}
+In any multi-threaded system there exists the possibility for a deadlock -- a state where all threads are in a waiting state -- and algorithm execution is forever blocked. This can occur either by poor software programming or incorrect thread arbitration by the processor. A common method of detecting a deadlock is to make each thread signal that it is not blocked by resetting a countdown timer. If the countdown timer is not reset, it will eventually reach zero and it is assumed that all threads are blocked as none have reset the countdown.
 
-A common method of detecting a deadlock is to periodically check that a thread is.
+In this system-on-chip design, software can reset the watchdog timer by writing any 16-bit value to the address \verb|0x00B8|.
 
-\begin{figure}[h]
+This peripheral is optional and can be enabled using the configuration parameters described in \nameref{sect:config}.
+
+\begin{figure}[H]
 \centering
-\includegraphics[scale=0.7]{interconnold}
+\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
+\bitheader[endianness=big]{0-15} \\
+\begin{rightwordgroup}{00B8 W}
+\bitbox{16}{Reset Watchdog}
+\end{rightwordgroup}
+\end{bytefield}
 \end{figure}
 
 \section{GPIO Interface}

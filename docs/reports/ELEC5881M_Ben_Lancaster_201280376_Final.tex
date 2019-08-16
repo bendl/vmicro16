@@ -9,14 +9,19 @@
 %\usepackage{helvet}
 %\renewcommand{\familydefault}{\sfdefault}
 
+%\usepackage{lmodern}
+
 \linespread{1.2}
 \usepackage[margin=1in]{geometry}
+
+\usepackage{microtype}
 
 \usepackage[sort,numbers,sectionbib]{natbib}
 %\usepackage{natbib}
 %\usepackage{biblatex}
 \bibliographystyle{IEEEtranUrldate}
 \renewcommand{\bibname}{References}
+%\usepackage{urlbst}
 
 % http://ctan.org/pkg/lipsum
 \usepackage{lipsum}
@@ -124,10 +129,11 @@
 \tableofcontents
 
 \include{chapter_int_intro}
+\include{chapter_proj}
 \include{chapter_design}
 \include{chapter_results}
 \include{chapter_improv}
-\include{chapter_appendix}
+%\include{chapter_appendix}
 
 %TC:ignore
 \clearpage

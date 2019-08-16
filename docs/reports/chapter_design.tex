@@ -150,28 +150,46 @@ The submitted design is acceptable for a multi-core system as it fulfils the fol
 The Vmicro16 processor uses a memory-mapping scheme to communicate with peripherals and other cores. This chapter describes the design decisions and implementation of memory-map  used in this project.
 
 \section{Introduction}
-Memory mapping is a common technique used by CPUs, micro-controllers, and other system-on-chip devices, that enables peripherals and other devices to be accessed via a memory address on a common bus.
+Memory mapping is a common technique used by CPUs, micro-controllers, and other system-on-chip devices, that enables peripherals and other devices to be accessed via a memory address on a common bus. This allows for the reuse of existing instructions (commonly memory load/store instructions) to communicate with external peripherals with little additional logic.
 
 \section{Address Decoding}
-An address decoder is used to determine the peripheral that the address is requesting.
-
-After the bus arbiter selects a pending APB interface from the CPU cores, the \verb|PADDR| signal is passed through a decoder module to determine which module the address is asking for.
+An address decoder is used to determine the peripheral that the address is requesting. The address decoder module, \verb|addr_dec| in \verb|apb_intercon.v|, takes the 16-bit \verb|PADDR| from the active APB interface and checks for set bits to determine which peripheral to select. The decoder outputs a chip enable signal \verb|PSEL| for the selected peripheral. For example, if bit 12 is set in \verb|PADDR| then the shared memory peripheral's \verb|PSEL| is set high and others to low. A schematic for the decoder is shown in Figure \ref{fig:decoder}.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\textwidth]{decoder}
-\caption{Foo}
-\label{fig:multimaster}
+\caption{Schematic showing the address decoder (addr\_dec) accepting the active PADDR signal and outputting PSEL chip enable signals to each peripheral.}
+\label{fig:decoder}
 \end{figure}
 
 \subsection{Decoder Optimisations}
-In memory-mapped systems, there are two methods used to decode an address bus to perform a chip select (CS). These are full-address and partial-address decoding \cite{tanenbaum2016structured}.
+Performing a 16-bit equality comparison of the \verb|PADDR| signal against each peripheral memory address consumes a significant amount of logic. Depending on the synthesis tools and FPGA features, a 16-bit comparator might require the 16-bit address input and a fixed 16-bit value input to compare against (where the 0s are inverted) and a wide-AND is performed \cite{palchaudhuri2015high,salauyou2015designing}. An example 4-bit comparator is shown below in Figure \ref{fig:comparator}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{comparator}
+\caption{Example 4-bit binary comparator which compares the bits (a, b, c, d) to the constant value 1010. The 0s of the constant are inverted and then all are passed to a wide-AND.}
+\label{fig:comparator}
+\end{figure}
+
+As we are targeting FPGAs, which use LUTs to implement combinatorial logic, we can conveniently utilise Verilog's \verb|==| operator on fairly large operands without worrying about consuming too many resources. The targeted FPGA devices in this project, the Cyclone V and Spartan 6, feature 6-input LUTs which allow 64 different configurations. Knowing this, we can design the address decoder to utilise the FPGA's LUTs more effectively and reduce it's footprint significantly.
+
+We can use part of the \verb|PADDR| signal as a chip select and the other bits as sub-addresses to interface with the peripheral. The chip enable bits are passed into these 6-input LUTs which are programmed (via the bitstream) to output 1 or 0 depending on the address. Figure \ref{fig:comparatorlut} below shows a LUT based approach to address decoding which will utilise approximately 3 ALM modules (including error detection). This method of comparison (LUT based) is utilised in the \verb|addr_dec| module in \verb|apb_intercon.v|.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{comparatorlut}
+\caption{Bits [7:3] of an 8-bit PADDR signal are used as inputs to 5-bit LUTs to generate a PSEL signal. In addition, a default error case is shown allowing the address decoder to detect incorrect PADDR values (e.g. if no PSEL signals are generated).}
+\label{fig:comparatorlut}
+\end{figure}
+
+The address decoding methods discussed above are examples of \textit{full-address} decoding, where each bit (whether required or not) is compared. It is possible to further reduce the required logic by utilising \textit{partial-address} decoding \cite{tanenbaum2016structured}. Partial-address decoding can reduce logic requirements by not using all bits. For example, if bits in address \verb|0x0100| do not conflict with bits in other addresses (i.e. bit 8 is high in more than 1 address), then the address decoder needs only concern bit 8, not the other bits. This is visualised in Figure \ref{fig:partial} below. This method is utilised in the MMU's address decoder (module \verb|vmicro16_mmu| in \verb|vmicro16.v:181|). As this is an optimisation per core, significant resources can be saved when many cores are used.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\textwidth]{partial}
 \caption{Foo}
-\label{fig:multimaster}
+\label{fig:partial}
 \end{figure}
 
 \newpage

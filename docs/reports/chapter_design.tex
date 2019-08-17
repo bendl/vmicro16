@@ -369,32 +369,6 @@ From the software perspective, it is important for both the developer and softwa
 the resources available to them.
 Software written for one architecture with $N$ cores must also run on an architecture with $M$ cores. To enable such portability, the software must query the system for information such as: number of processor cores and the current core identifier. Without this information, the developer would be required to produce software for each individual architecture (e.g. an Intel i5 with 4 cores or an Intel i7 with 8 cores, or an NVIDIA GTX 970 with.
 
-\begin{figure}[H]
-\centering
-\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
-\bitheader[endianness=big]{0-15} \\
-\begin{rightwordgroup}{0080 R}
-\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{CORE\_ID}
-\end{rightwordgroup} \\
-\begin{rightwordgroup}{0081 R}
-\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{NUM\_CORES}
-\end{rightwordgroup} \\
-\begin{rightwordgroup}{0082 R}
-\bitbox{16}{SHARED\_MEMORY cells \tiny(default 4096)}
-\end{rightwordgroup} \\
-\begin{rightwordgroup}{0083 R}
-\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{NUM\_PERIPHERALS}
-\end{rightwordgroup} \\
-\begin{rightwordgroup}{0084 RW}
-\bitbox{16}{User defined}
-\end{rightwordgroup} \\
-\bitbox[]{16}{$\vdots$ \\[1ex]} \\
-\begin{rightwordgroup}{008F RW}
-\bitbox{16}{User defined}
-\end{rightwordgroup}
-\end{bytefield}
-\caption{Vmicro16 Special Registers layout (0x0080 - 0x008F).}
-\end{figure}
 
 \section{Watchdog Timer}
 \label{sect:watchdog}

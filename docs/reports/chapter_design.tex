@@ -1,10 +1,7 @@
 
-\newpage
 \chapter{Interconnect}
-{%\hypersetup{linkcolor=black}
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
-}
 
 %\noindent\\
 %\lipsum[1]
@@ -174,7 +171,7 @@ Performing a 16-bit equality comparison of the \verb|PADDR| signal against each 
 
 As we are targeting FPGAs, which use LUTs to implement combinatorial logic, we can conveniently utilise Verilog's \verb|==| operator on fairly large operands without worrying about consuming too many resources. The targeted FPGA devices in this project, the Cyclone V and Spartan 6, feature 6-input LUTs which allow 64 different configurations \cite{s6clb, cvclb}. Knowing this, we can design the address decoder to utilise the FPGA's LUTs more effectively and reduce it's footprint significantly.
 
-We can use part of the \verb|PADDR| signal as a chip select and the other bits as sub-addresses to interface with the peripheral. The addressing bits are passed into the FPGA's 6-input LUTs which are programmed (via the bitstream) to output 1 or 0 depending on the address. Figure \ref{fig:comparatorlut} below shows a LUT based approach to address decoding which will utilise approximately 3 ALM modules (including error detection). This method of comparison (LUT based) is utilised in the \verb|addr_dec| module in \verb|apb_intercon.v|.
+We can use part of the \verb|PADDR| signal as a chip select and the other bits as sub-addresses to interface with the peripheral. The addressing bits are passed into the FPGA's 6-input LUTs which are programmed (via the bitstream) to output 1 or 0 depending on the address. Figure \ref{fig:comparatorlut} below shows a LUT based approach to address decoding which will utilise approximately one ALM/CLB module per peripheral chip select (\verb|PSEL|) and one for error detection. This method of comparison (LUT based) is utilised in the \verb|addr_dec| module in \verb|apb_intercon.v|.
 
 \begin{figure}[H]
 \centering

@@ -115,32 +115,159 @@ The decoder extracts register selects and operands from the input instruction. T
 \begin{listing}[H]
 \centering
 \begin{minted}[fontsize=\scriptsize,linenos,baselinestretch=0.5,frame=single,framesep=10pt]{verilog}
-always @(*) case (opcode)
-    `VMICRO16_OP_SPCL: casez(instr[11:0])
-        `VMICRO16_OP_SPCL_NOP,
-        `VMICRO16_OP_SPCL_HALT,
-        `VMICRO16_OP_SPCL_INTR:   alu_op = `VMICRO16_ALU_NOP;
-        default:                  alu_op = `VMICRO16_ALU_NOP; endcase
-    
-    `VMICRO16_OP_LW:              alu_op = `VMICRO16_ALU_LW;
-    `VMICRO16_OP_SW:              alu_op = `VMICRO16_ALU_SW;
-    `VMICRO16_OP_LWEX:            alu_op = `VMICRO16_ALU_LW;
-    `VMICRO16_OP_SWEX:            alu_op = `VMICRO16_ALU_SW;
+always @(*) case (instr[15:11])
+    `VMICRO16_OP_BR:              alu_op = `VMICRO16_ALU_BR;
+    `VMICRO16_OP_MULT:            alu_op = `VMICRO16_ALU_MULT;
 
-    `VMICRO16_OP_MOV:             alu_op = `VMICRO16_ALU_MOV;
-    `VMICRO16_OP_MOVI:            alu_op = `VMICRO16_ALU_MOVI;
+    `VMICRO16_OP_CMP:             alu_op = `VMICRO16_ALU_CMP;
+    `VMICRO16_OP_SETC:            alu_op = `VMICRO16_ALU_SETC;
+    
+    `VMICRO16_OP_BIT:     casez (instr[4:0])
+        `VMICRO16_OP_BIT_OR:      alu_op = `VMICRO16_ALU_BIT_OR;
+        `VMICRO16_OP_BIT_XOR:     alu_op = `VMICRO16_ALU_BIT_XOR;
+        `VMICRO16_OP_BIT_AND:     alu_op = `VMICRO16_ALU_BIT_AND;
+        `VMICRO16_OP_BIT_NOT:     alu_op = `VMICRO16_ALU_BIT_NOT;
+        `VMICRO16_OP_BIT_LSHFT:   alu_op = `VMICRO16_ALU_BIT_LSHFT;
+        `VMICRO16_OP_BIT_RSHFT:   alu_op = `VMICRO16_ALU_BIT_RSHFT;
+        default:                  alu_op = `VMICRO16_ALU_BAD; endcase
 \end{minted}
 \caption{Vmicro16's ALU implementation named vmicro16\_alu. vmicro16.v}
 \caption{Vmicro16's decoder module code showing nested bit switches to determine the intended opcode. vmicro16.v}
 \label{fig:vdecoder}
 \end{listing}
 
-In \cref{fig:vdecoder}, it can be seen that the first 8 opcode cases are represented using the same 15-11 bits, however the \verb|VMICRO16_OP_BIT| instructions require another bit range to be compared to determine the output opcode.
+In \cref{fig:vdecoder}, it can be seen that the first 4 opcode cases (BR, MULT, CMP, SETC) are represented using the same 15-11 (opcode) bits, however the BIT instructions share the same opcode and so require another bit range to be compared to determine the output function.
 
 
 
 \subsection{Pipelining}
 In the interim progress update, the processor design featured \textit{instruction pipelining} to meet requirement \ref{ed:ipc}. Instruction pipelining allows instructions executions to be overlapped in the pipeline, resulting in higher throughput (up to one instruction per clock) at the expense of 5-6 clocks of latency and code complexity. As the development of the project shifted from single-core to multi-core, it became obvious that the complexity of the pipelined processor would inhibit the integration of multi-core functionality. It was decided to remove the instruction pipelining functionality and use a simpler state-machine based pipeline that is much simpler to extend and would cause fewer challenges later in the project. 
+
+\subsection{Design Optimisations}
+In a design that has many instantiations of the same component, a small resource saving improvement within the component can have a significant overall savings improvement if it is instantiated many times. Project requirement \ref{cd:vendor} requires the design to be compiled for a range of FPGA sizes, and so space saving optimisations are considered. 
+
+\subsubsection{Register Set Size Improvements}
+A register set in a CPU is a fast, temporary, and small memory that software instructions directly manipulate to perform computation. In the Vmicro16 instruction set, eight registers named r0 to r7 are available to software. The instruction set allows up to two registers to be references in most instructions, for example the instruction \verb|add r0, r1| tells the processor to perform the following actions:
+\begin{enumerate}[leftmargin=4\parindent, label=\bfseries Clock \arabic*.]
+\item Fetch r0 and r1 from the register set
+\item Add the two values together in the ALU
+\item Store the result back the register set in r0
+\end{enumerate}
+For task 1, it was originally decided to use a dual port register set (meaning that two data reads can be performed in a single clock, in this case r0 and r1), however due to the asynchronous design of the register set (for speed) the RTL produced consumed a significant amount of FPGA resources, approximately 256 flip-flops (16 (data width) * 8 (registers) * 2 (ports)). To reduce this, it was decided to split task 1 into two steps over two clock cycles using a single-port register set. This required the processor pipe-line to use another clock cycle resulting in slightly lower performance, however the size improvements will allow for more cores to be instantiated in the design. This optimisation is also applied to the interrupt register set, resulting in a saving of approximately 256 flip-flops per core (128 in the normal mode register set, and 128 in the interrupt register set). As shown, adding a single clock delay saves a significant amount of LUTs. This saving is amplified when instantiating many cores.
+
+
+
+\section{Interrupts}
+\label{sect:interrupts}
+Interrupts are a technique used by processors to run software functions when an event occurs within the processor, such as exceptions, or signalled from an external source, such as a UART receiver signalling it has received new data. Today, it is common for micro-controllers, soft-processors, and desktop processors, to all feature interrupts. Modern implementations support an \textit{interrupt vector} which is a memory array that contains addresses to different \textit{interrupt handlers} (a software function called when a particular interrupt is received).
+
+Although interrupts are not a requirement for a multi-core system, it was decided to implement this functionality to boost my understanding of such systems. In addition, example demos provided with this project are better visualised with a interrupt functionality.
+
+
+\subsection{Hardware Implementation}
+
+\subsubsection{Context Switching}
+When acting upon an incoming interrupt the current state the processor must be saved so that changes from the interrupt handler, such as register writes and branches, do not affect the current state. After the interrupt handler function signals it has finished (by using the \textit{Interrupt Return} \verb|INTR| instruction) the saved state is restored.
+In the case of the Vmicro16 processor, the program counter \verb|r_pc[15:0]| and register set \verb|regs| instance are the only states that are saved. Going forth, the terms \textit{normal mode} and \textit{interrupt mode} are used to describe what registers the processor should use when executing instructions.
+
+When saving the state, to avoid clocking 128 bits (8 registers of 16 bits) into another register (which would increase timing delays and logic elements), a dedicated register set for the interrupt mode (\verb|regs_isr|) is multiplexed with the normal mode register set (\verb|regs|). Then depending on the mode (identified by the register \verb|regs_use_int|) the processor can easily switch between the two large states without significantly affecting timing.
+
+The timing diagram in \cref{fig:interrupts} visually describes this process.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{interrupts}
+\caption{Time diagram showing the TIMR0 peripheral emitting a 1us periodic interrupt signal (out) to the processor. The processor acknowledges the interrupt (int\_pending\_ack) and enters the interrupt mode (regs\_use\_int) for a period of time. When the interrupt handler reaches the Interrupt Return instruction (indicated by w\_intr) the processor returns to normal mode and restores the normal state.}
+\label{fig:interrupts}
+\end{figure}
+
+\subsection{Software Interface}
+To enable software to 
+
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
+\bitheader[endianness=big]{0-15} \\
+\begin{rightwordgroup}{0100 RW}
+\bitbox{16}{Interrupt handler $0$}
+\end{rightwordgroup} \\
+
+\bitbox[]{16}{$\vdots$ \\[1ex]} \\
+\begin{rightwordgroup}{0107 RW}
+\bitbox{16}{Interrupt handler $7$}
+\end{rightwordgroup} \\
+
+\begin{rightwordgroup}{0108 RW}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{Interrupt bit mask}
+\end{rightwordgroup}
+\end{bytefield}
+\caption{The interrupt vector consists of eight 16-bit values that point to memory addresses of the instruction memory to jump to.}
+\label{fig:r_interrupts}
+\end{figure}
+
+\subsubsection{Interrupt Vector (0x0100-0x0107)}
+The interrupt vector is a per-core register that is used to store the addresses of interrupt handlers. An interrupt handler is simply a software function residing in instruction memory that is branched to when a particular interrupt is received. 
+
+\subsubsection{Interrupt Mask (0x0108)}
+The interrupt mask is a per-core register that is used to mask/listen specific interrupt sources. This enables processing cores to individually select which interrupts they respond to. This allows for multi-processor designs where each core can be used for a particular interrupt source, improving the time response to the interrupt for time critical programs. The Interrupt Mask register is an 8-bit read/write register where each bit corresponds to a particular interrupt source and each bit corresponds with the interrupt handler in the interrupt vector.
+
+\begin{figure}
+\centering
+\begin{bytefield}[bitwidth=4ex]{16}
+& \bitlabel{8}{} &
+& \bitlabel{6}{[7:2] User defined} &
+& \bitlabel{1}{UART0 RX} 
+& \bitlabel{1}{TIMR0} \\
+\bitheader[endianness=big]{0-7,8,15} \\
+  \bitbox{8}{\color{lightgray}\rule{\width}{\height}}
+& \bitbox{1}{0}
+& \bitbox{1}{0}
+& \bitbox{1}{0}
+& \bitbox{1}{0}
+& \bitbox{1}{0}
+& \bitbox{1}{0}
+& \bitbox{1}{0}
+& \bitbox{1}{0}
+\end{bytefield}
+\caption{Interrupt Mask register (0x0108). Each bit corresponds to an interrupt source. 1 signifies the interrupt is enabled for/visible to the core. Bits [7:2] are left to the designer to assign.}
+\label{fig:r_interruptmask}
+\end{figure}
+
+\subsubsection{Software Example}
+To better understand the usage of the described interrupt registers, a simple software program is described below. The following software program produces a simple and power efficient routine to initialise the interrupt vector and interrupt mask.
+
+% pip install pygments-arm
+\begin{minted}[fontsize=\footnotesize,linenos,,baselinestretch=0.8]{arm}
+entry:
+    // Set interrupt vector at 0x100
+    // Move address of isr0 function to vector[0]
+    movi    r0, isr0
+    // create 0x100 value by left shifting 1 8 bits
+    movi    r1, #0x1
+    movi    r2, #0x8
+    lshft   r1, r2
+    // write isr0 address to vector[0]
+    sw      r0, r1
+    
+    // enable all interrupts by writing 0x0f to 0x108
+    movi    r0, #0x0f
+    sw      r0, r1 + #0x8
+    halt                  // enter low power idle state
+    
+isr0:                     // arbitrary name
+    movi    r0, #0xff     // do something
+    intr                  // return from interrupt
+\end{minted}
+
+A more complex example software program utilising interrupts and the TIMR0 interrupt is described in section \ref{sect:timr0_code}.
+
+\subsection{Design Improvements}
+The hardware and software interrupt design have changed throughout the projects cycle. In initial versions of the interrupt implementation, the software program, while waiting for an interrupt, would be in a tight infinite loop (branching to the same instruction). This resulted in the processor using all pipeline stages during this time. The pipeline stages produce many logic transitions and memory fetches which raise power consumption and temperatures. This is quite noticeable especially when running on the Spartan-6 LX9 FPGA.
+
+To improve this, it was decided to implement a new state within the processor's state machine that, when entered, did not produce high frequency logic transitions or memory fetches. The \verb|HALT| instruction was modified to enter this state and the only way to leave is from an interrupt or top-level reset. This removes the need for a software infinite loop that produces high frequency logic transitions (decoding, ALU, register reads, etc.) and memory fetches.
+
+
+
 
 
 \section{Verification}
@@ -153,24 +280,6 @@ The second verification technique is to use assertions in \verb|always| blocks t
 The third verification technique is to use automatic verifying test benches. These test benches drive components of the processor, such as the ALU and decoder, and check the output against the correct value. This uses the \verb|rassert| macro.
 
 The final method of verification is to verify the complete design via a behavioural test bench. The design is passed a compiled software program with a known expected output, and is ran until the \verb|r_halt| signal is raised. The test bench then checks the value on the \verb|debug0|, \verb|debug1|, and \verb|debug2| signals against the expected value. If this matches, then it is assumed that sub-components of the design also operate correctly. This technique does not monitor the states of sub-components and statistics (such as time taken to execute an instruction), there leaves the possibility that some components could have entered an illegal state.
-
-
-
-\subsection{Design Optimisations}
-In a design that has many instantiations of the same component, a small resource saving improvement in the component can have a significant overall improvement if it is instantiated many times. Project requirement, \ref{cd:vendor}, requires the design to be compiled for a range of FPGA sizes, and so space saving optimisations are considered. 
-
-\subsubsection{Register Set Size Improvements}
-A register set in a CPU is a fast, temporary, and small memory that software instructions directly manipulate to perform computation. In the Vmicro16 instruction set, eight registers named r0 to r7 are available to software. The instruction set allows up to two registers to be references in most instructions, for example the instruction \verb|add r0, r1| tells the processor to perform the following actions:
-\begin{enumerate}
-\item Fetch r0 and r1 from the register set
-\item Add the two values together in the ALU
-\item Store the result back the register set in r0
-\end{enumerate}
-For task 1, it was originally decided to use a dual port register set (meaning that two data reads can be performed in a single clock), however due to the asynchronous design of the register set (for speed) the RTL produced consumed a significant amount of FPGA resources, approximately 256 flip-flops (16 (data width) * 8 (registers) * 2 (ports)). To reduce this, it was decided to split task 1 into two steps over two clock cycles using a single-port register set. This required the processor pipe-line to use another clock cycle resulting in slightly lower performance, however the size improvements will allow for more cores to be instantiated in the design.
-
-
-
-
 
 
 

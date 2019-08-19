@@ -58,7 +58,7 @@ Scalability in loosely coupled systems is generally easier to implement as each 
 
 As loosely coupled system's nodes feature there own memory and IO modules, they generally perform better in cases where interaction between nodes is not prominent -- each node can store a separate part of the software program in it's memory module allowing simultaneous executing of the program.
 
-In scenarios where inter-node communication is prominent however, access to the MTS interface must be scheduled to avoid access conflicts which introduces delays and idle times in the software programs execution, resulting in lower throughput. Figure \ref{fig:loose} shows a general layout of a loosely coupled multiprocessor system.
+In scenarios where inter-node communication is prominent however, access to the MTS interface must be scheduled to avoid access conflicts which introduces delays and idle times in the software programs execution, resulting in lower throughput. \cref{fig:loose} shows a general layout of a loosely coupled multiprocessor system.
 
 Tightly coupled systems feature processing nodes that do not have their own dedicated memory or IO modules -- each node is directly connected to a shared memory module using a dedicated  port. In scenarios where inter-node communication is prominent, tightly coupled systems are generally better suited as nodes are directly connected to a shared memory and do not need to wait to use a shared bus.
 
@@ -85,7 +85,7 @@ This project will utilise a loosely coupled architecture due to it's easier scal
 
 \section{Network-on-chip Architectures}
 Network-on-chip (NoC) architectures implement on-chip communication mechanisms that are based on network communication  principles, such as routing, switching, and massive scalability \cite{newnoc}. NoC's can generally support hundreds to millions of processing cores.
-Figure \ref{fig:noc} shows an example 16-core network-on-chip architecture. 
+\cref{fig:noc} shows an example 16-core network-on-chip architecture. 
 NoC's can scale to very large sizes while not sacrificing performance because each processor core is able to drive the network rather than needing to wait for a shared bus to become free before doing so.
 
 The greater the number of cores in a network-on-chip design, the greater quality of service (QoS) problems arise. As such, network-on-chip architectures suffer the same problems as networks, such as fairness and throughput \cite{nocfairness}.

@@ -2,11 +2,9 @@
 \chapter{Single-core Design}
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
-\noindent\\
-While the majority of this report will focus on the multi-processing functionality of this project, it is important understand the design decisions of the single core that will be instantiated many times.
 
 \section{Introduction}
-A single-core processor will be instantiated multiple times and each will be connected to a communication bus.
+While the majority of this report will focus on the multi-processing functionality of this project, it is important understand the design decisions of the single core to understand the features and limitations of the multi-core system-on-chip as a whole.
 
 \section{Design and Implementation}
 The single-core design is a traditional 5-stage RISC processor (fetch, decode, execute, memory, write-back). The core uses separate instruction and data memories in the style of a Harvard architecture \cite{harvard}.
@@ -29,11 +27,11 @@ A small reduction in size within the single-core will result in substantial size
 \end{quotation}
 
 \noindent
-The 16-bit instruction set listing is shown in Figure \ref{fig:isa}.
+The 16-bit instruction set listing is shown in \cref{fig:isa}.
 
 Most instructions are \textit{destructive}, meaning that source operands also act as the destination, hence effectively \textit{destroying} the original source operand. This design decision reduces the complexity of the ISA as traditional three operand instructions, for example \verb|add r0, r0, r1|, can be encoded using only two operands \verb|add r0, r1|. However, this does increase the complexity of compilers as they may need to make temporary copies of registers as the instructions will \textit{destroy} the original data.
 
-The instruction set is split into 7 categories (highlighted by colours in Figure \ref{fig:isa}): special instructions, such as halting and interrupt returns; memory operations, such as loading and storing; bitwise operations, such as XOR and AND; unsigned arithmetic; signed arithmetic; conditional branches; and atomic load/store instructions.
+The instruction set is split into 7 categories (highlighted by colours in \cref{fig:isa}): special instructions, such as halting and interrupt returns; memory operations, such as loading and storing; bitwise operations, such as XOR and AND; unsigned arithmetic; signed arithmetic; conditional branches; and atomic load/store instructions.
 
 %The instruction set supports bitwise operations such as OR, XOR, AND, NOT, and left and right shifts. It was decided to provide these functions to enable software to easily create large 16-bit values which is expensive with only an 8-bit immediate.
 

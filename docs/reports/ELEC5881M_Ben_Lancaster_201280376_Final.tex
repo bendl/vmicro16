@@ -53,6 +53,8 @@
     linktoc=all
 }
 
+\usepackage[nameinlink,capitalise]{cleveref}
+
 % includegraphics
 \usepackage[]{graphicx}
 \graphicspath{{../img/}}
@@ -64,6 +66,8 @@
 % https://tex.stackexchange.com/questions/161124/how-to-make-a-minted-code-listing-centered-on-a-page
 % WARNING MAKES LONG CODE on 1 page!
 %\RecustomVerbatimEnvironment{Verbatim}{BVerbatim}{}
+\setminted[verilog]{linenos,baselinestretch=0.5,frame=single,framesep=10pt}
+\setminted[arm]{linenos,baselinestretch=0.5,frame=single,framesep=10pt}
 
 % tables, row colour
 \usepackage{tabularx,colortbl,booktabs}
@@ -137,7 +141,7 @@
 \include{chapter_software}
 \include{chapter_results}
 \include{chapter_improv}
-%\include{chapter_appendix}
+\include{chapter_appendix}
 
 %TC:ignore
 \clearpage

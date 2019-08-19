@@ -661,8 +661,8 @@ module vmicro16_alu # (
     wire r_setc;
 
     always @(*) begin
-			cmp_tmp = 0;
-			case (op)
+        cmp_tmp = 0;
+        case (op)
         // branch/nop, output nothing
         `VMICRO16_ALU_BR,
         `VMICRO16_ALU_NOP:          c = {DATA_WIDTH{1'b0}};
@@ -748,7 +748,7 @@ module branch (
 );
     always @(*)
         case (cond)
-            `VMICRO16_OP_BR_U:  en = 1; `VMICRO16_OP_BR_U:  en = 1;
+            `VMICRO16_OP_BR_U:  en = 1;
             `VMICRO16_OP_BR_E:  en = (flags[`VMICRO16_SFLAG_Z] == 1);
             `VMICRO16_OP_BR_NE: en = (flags[`VMICRO16_SFLAG_Z] == 0);
             `VMICRO16_OP_BR_G:  en = (flags[`VMICRO16_SFLAG_Z] == 0) && 

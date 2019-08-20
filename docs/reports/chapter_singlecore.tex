@@ -163,9 +163,16 @@ Interrupts are a technique used by processors to run software functions when an 
 
 Although interrupts are not a requirement for a multi-core system, it was decided to implement this functionality to boost my understanding of such systems. In addition, example demos provided with this project are better visualised with a interrupt functionality.
 
+\subsection{Overview}
 The interrupt functionality in this project supports the following:
 \begin{itemize}
-\item Per-core 8 cell interrupt vector accessible to software.\\Software programs running on the Vmicro16 processor can edit the interrupt vector to /
+\item Per-core 8 cell interrupt vector accessible to software.\\
+Software programs running on the Vmicro16 processor can edit the interrupt vector to add their own interrupt handlers at runtime.
+
+\item Fast context switching.\\
+A dedicated interrupt register set is multiplexed with the normal mode register set to provide instant context switching. It should be noted that only the registers are saved during a context switch. The means that the stack is not saved. A schematic of the register multiplex is shown in \cref{fig:regmult}.
+
+\item Parametrised interrupt sources and widths. Users can configure the width of the interrupt in signals and the data width per interrupt source via the \verb|vmicro16_soc_config.v|. By default, 8 interrupt sources are available and each can provide 8-bits of data.
 \end{itemize}
 
 \subsection{Hardware Implementation}

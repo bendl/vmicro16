@@ -72,7 +72,7 @@ In software, a mutex is an object used to control access to a shared resource. T
 
 In this project, mutexes are provided by the processor through the Shared Memory Peripheral (0x1000 to 0x1FFF) which provides a large RAM-style memory accessible by all cores through the peripheral interconnect bus. This large memory is explicitly defined to use the FPGA's BRAM blocks using Xilinx's Verilog \verb|ram_style="block"| attribute to avoid wasting LUTs when using high core counts. The peripheral allows each memory cell to be \textit{locked}, meaning that only the cell owner can modify it's contents. This is implemented by using another large memory, \verb|locks|, to store the $\verb|CORE_ID| + 1$ of the owner, as shown in \cref{fig:lock}. In this system, a lock containing the value zero indicates an unlocked cell. As \verb|CORE_ID|s are indexed from zero, one is added to each cell. For example, if core two wants to lock a memory cell, the value three is written to the lock.
 
-\begin{figure}[h]
+\begin{listing}[h]
 \centering
 \begin{minted}{verilog}
 reg [15:0]           ram   [0:8191]; // 16KB large RAM memory
@@ -80,7 +80,7 @@ reg [clog2(CORES):0] locks [0:8181]; // memory cell owner
 \end{minted}
 \caption{RAM and lock memories instantiated by the shared memory peripheral.}
 \label{fig:lock}
-\end{figure}
+\end{listing}
 
 To lock and unlock cells, the instructions \verb|LWEX| and \verb|SWEX| instructions are used. These instructions are similar to the \verb|LW/SW| instructions but provide locking functionality. The \textit{EX} in the instruction names indicate \textit{exclusive access}. \verb|LWEX| is used to read memory contents  (like \verb|LW|) and also lock the cell if not already locked. If a core attempts to lock an already locked cell, the lock does not change. Unlocking is done by the \verb|SWEX| instruction, which conditionally writes to the memory cell if it is locked by the same core. Unlike \verb|SW|, \verb|SWEX| returns a zero for success and one for failure if it is locked by another core.
 

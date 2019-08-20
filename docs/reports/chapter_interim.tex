@@ -466,12 +466,12 @@ Currently, the ALU does not store flags to indicate overflow, equality, or zero 
 
 
 The Verilog implementation of the ALU is shown in \cref{fig:aluv}. The ALU's asynchronous output is clocked with other registers, such as destination register \verb|rs1| and other control signals, in the \verb|EXME| register bank.
-\begin{figure}[H]
+\begin{listing}[H]
 \centering
 \inputminted[fontsize=\footnotesize,firstline=322,lastline=335,linenos]{verilog}{../../vmicro16/vmicro16.v}
 \caption{Vmicro16's ALU implementation named vmicro16\_alu. vmicro16.v}
 \label{fig:aluv}
-\end{figure}
+\end{listing}
 
 
 
@@ -480,12 +480,12 @@ The Verilog implementation of the ALU is shown in \cref{fig:aluv}. The ALU's asy
 Instruction decoding occurs in the between the IFID and IDEX stages. 
 The decoder extracts register selects and operands from the input instruction. The decoder outputs are asynchronous which allows the register selects to be passed to the register set and register data to be read asynchronously. The register selects and register read data is then clocked into the IDEX register bank.
 
-\begin{figure}[H]
+\begin{listing}[H]
 \centering
 \inputminted[fontsize=\footnotesize,firstline=224,lastline=245,linenos]{verilog}{../../vmicro16/vmicro16.v}
 \caption{Vmicro16's decoder module code showing nested bit switches to determine the intended opcode. vmicro16.v}
 \label{fig:decoder}
-\end{figure}
+\end{listing}
 
 In \cref{fig:decoder}, it can be seen that the first 8 opcode cases are represented using the same 15-11 bits, however the \verb|VMICRO16_OP_BIT| instructions require another bit range to be compared to determine the output opcode.
 

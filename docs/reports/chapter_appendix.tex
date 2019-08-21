@@ -1,6 +1,150 @@
 \begin{appendices}
 \startcontents[chapters]
 
+\chapter{Peripheral Information}
+\startcontents[chapters]
+\printcontents[chapters]{}{1}{}
+\noindent\\
+To provide user's with useful functionality, common system-on-chip peripherals were created. This section describes each peripheral and it's design decisions. The full memory-map is shown in \cref{fig:memmap}.
+
+\section{Special Registers}
+From the software perspective, it is important for both the developer and software algorithms to know the target system's architecture to better utilise
+the resources available to them.
+Software written for one architecture with $N$ cores must also run on an architecture with $M$ cores. To enable such portability, the software must query the system for information such as: number of processor cores and the current core identifier. Without this information, the developer would be required to produce software for each individual architecture (e.g. an Intel i5 with 4 cores or an Intel i7 with 8 cores, or an NVIDIA GTX 970 with 1664 CUDA cores.
+
+The special register peripheral is shown below.
+
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
+\bitheader[endianness=big]{0-15} \\
+\begin{rightwordgroup}{0080 R}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{CORE\_ID}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0081 R}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{NUM\_CORES}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0082 R}
+\bitbox{16}{SHARED\_MEMORY cells \tiny(default 4096)}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0083 R}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{NUM\_PERIPHERALS}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0084 RW}
+\bitbox{16}{SCRATCH\_MEMORY cells \tiny(default 64)}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0085 RW}
+\bitbox{16}{User defined}
+\end{rightwordgroup} \\
+\bitbox[]{16}{$\vdots$ \\[1ex]} \\
+\begin{rightwordgroup}{008F RW}
+\bitbox{16}{User defined}
+\end{rightwordgroup}
+\end{bytefield}
+\caption{Vmicro16 Special Registers layout (0x0080 - 0x008F).}
+\end{figure}
+
+\section{Watchdog Timer}
+\label{sect:watchdog}
+In any multi-threaded system there exists the possibility for a deadlock -- a state where all threads are in a waiting state -- and algorithm execution is forever blocked. This can occur either by poor software programming or incorrect thread arbitration by the processor. A common method of detecting a deadlock is to make each thread signal that it is not blocked by resetting a countdown timer. If the countdown timer is not reset, it will eventually reach zero and it is assumed that all threads are blocked as none have reset the countdown.
+
+In this system-on-chip design, software can reset the watchdog timer by writing any 16-bit value to the address \verb|0x00B8|.
+
+This peripheral is optional and can be enabled using the configuration parameters described in \nameref{sect:config}.
+
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
+\bitheader[endianness=big]{0-15} \\
+\begin{rightwordgroup}{00B8 W}
+\bitbox{16}{Reset Watchdog}
+\end{rightwordgroup}
+\end{bytefield}
+\end{figure}
+
+\section{GPIO Interface}
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
+\bitheader[endianness=big]{0-15} \\
+\begin{rightwordgroup}{0090 RW}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} &
+\bitbox{8}{GPIO0 Output}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0091 RW}
+\bitbox{16}{GPIO1 Output}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0092 RW}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} &
+\bitbox{8}{GPIO2 Output}
+\end{rightwordgroup}\\
+\begin{rightwordgroup}{0093 R}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} &
+\bitbox{8}{GPIO3 Input}
+\end{rightwordgroup}
+\end{bytefield}
+\end{figure}
+On the DE1-SoC board, GPIO0 is assigned to the LEDs, and GPIO1 and GPIO2 to the 6 seven-segment displays.
+
+
+\section{Timer with Interrupt}
+\label{sect:timer}
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
+\bitheader[endianness=big]{0-15} \\
+\begin{rightwordgroup}{0200 RW}
+\bitbox{16}{Load Value}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0201 W}
+\bitbox{13}{\color{lightgray}\rule{\width}{\height}} &
+\bitbox{1}{I} &
+\bitbox{1}{R} &
+\bitbox{1}{S}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{0202 W}
+\bitbox{16}{Prescaler}
+\end{rightwordgroup}
+\end{bytefield}
+\end{figure}
+
+\begin{description}
+\item [Clock Frequency] Uses top level FPGA clock (normally 50 MHz).
+\item [Load Value] Value to count down from each clock.
+\item [I] Interrupt enable bit. Default 0.
+\item [R] Reset Load Value and Prescaler values to their last written value.
+\item [S] Start the timer countdown. 1 = start. 0 = stop.
+\item [Prescaler]  Number of clocks per FPGA clock to wait between each decrement.
+\end{description}
+
+
+\section{UART Interface}
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
+\bitheader[endianness=big]{0,1,7,8,15} \\
+\begin{rightwordgroup}{00A0 W}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{Transmit Data}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{00A1 R}
+\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{Receive Data}
+\end{rightwordgroup} \\
+\begin{rightwordgroup}{00A2 RW}
+\bitbox{14}{\color{lightgray}\rule{\width}{\height}} & \bitbox{1}{E} & \bitbox{1}{I}
+\end{rightwordgroup}
+\end{bytefield}
+\end{figure}
+
+\begin{description}
+\item [E] Enable the UART  component.
+\item [I] Enable an interrupt upon receiving new data. Default 1.
+\end{description}
+
+\begin{quote}
+Note: If \verb|DEF_USE_REPROG| is enabled in \verb|vmicro16_soc_config.v| then the receiver port will be reserved for programming the instruction memory, resulting in reads and writes to addresses 0x00A1 and 0x00A2 to return 0.
+\end{quote}
+
+
 \chapter{Additional Figures}
 \section{Register Set Multiplex}
 \begin{figure}[H]
@@ -27,6 +171,10 @@
 \noindent\\
 The following configuration options are defined in \verb|vmicro16_soc_config.v|.
 
+\begin{quote}
+Defaults with empty/blank values signifies that the preprocessor define is commented out/not defined/disabled by default/computed by other parameters.
+\end{quote}
+
 \section{System-on-chip Configuration Options}
 \begin{table}[H]
 \centering
@@ -35,8 +183,9 @@ The following configuration options are defined in \verb|vmicro16_soc_config.v|.
 Macro      & Default & Purpose                         \\ 
 \hline
 CORES  & 4       & Number of CPU cores in the SoC  \\
-SLAVES & 7       & Number of peripherals  \\    
-DEF\_USE\_WATCHDOG &  & Enable watchdog module to detect deadlocks and infinite loops \\    
+SLAVES & 8       & Number of peripherals  \\    
+DEF\_USE\_WATCHDOG & //  & Enable watchdog module to recover from deadlocks and infinite loops \\    
+DEF\_GLOBAL\_RESET           & //      & Enable synchronous reset logic. Will consume more LUT resources. Does not reset BRAM blocks.\\
 \end{tabularx}
 \caption{SoC Configuration Options}
 \end{table}
@@ -53,9 +202,6 @@ DEF\_MEM\_INSTR\_DEPTH     & 64      & Instruction memory cache per core        
 DEF\_MEM\_SCRATCH\_DEPTH   & 64      & RW RAM per core                             \\
 DEF\_ALU\_HW\_MULT        & 1       & Enable/disable HW multiply (1 clock)        \\
 FIX\_T3                    & //      & Enable a T3 state for the APB transaction \\
-
-DEF\_GLOBAL\_RESET           & //      & Enable synchronous reset logic \\
-
 DEF\_USE\_REPROG           & //      & Programme instruction memory via UART0. Requires DEF\_GLOBAL\_RESET\\
 \end{tabular}
 \caption{Core Options}
@@ -100,12 +246,40 @@ DEF\_MMU\_TIMR0\_E & 16'h0202 & "
 \label{tab:isa}
 \end{table}
 
+\chapter{Viva Demonstration Examples}
+\section{2-core Timer Interrupt and ISR}
+\label{sec:2coretimer}
+This example demo, shown during the viva, blinks an LED every 0.5 seconds via a timer interrupt. Core 0 sets up the interrupt vector (by writing the isr0 function address to the interrupt vector) and enables all interrupt sources. Core 1 sets up the timer interval peripheral to produce an interrupt every 0.5 seconds. Core 1 also performs the interrupt handler (isr0): toggle an LED, write the state to UART0, and resets the watchdog.
+\inputminted[
+    linenos,
+    fontsize=\scriptsize,
+    baselinestretch=0.8,
+]{arm}{../../sw/demos/asm/interrupts_2.s}
+
 \clearpage
+\section{1-160 Core Parallel Summation}
+\label{sec:64coresum}
+This example demo performs a parallel summation of numbers 1 to 320. The algorithm \textit{assigns} each core a subset of the summation space. It does this using the core's ID and the number of cores in the system. The following formulas determine where the subset begins and ends for each core. Core 0 broadcasts the number to sum to then each core calculates its subset start and end positions. Each core then performs a summation over it's subset then adds the result to a global shared value. After pushes it's results, the global shared value will contain the final summation result.
+\begin{eqnarray}
+N_{samples} = 320\\
+N_{threads} = 64\\
+subset = N_{samples} / N_{threads}\\
+start  = ID * subset\\
+end  = start + subset
+\end{eqnarray}
+
+\inputminted[
+    linenos,
+    fontsize=\scriptsize,
+    baselinestretch=0.8,
+]{arm}{../../sw/demos/asm/sum64.s}
+
 \chapter{Code Listing}
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 
-\section{vmicro16\_soc\_config.v}
+\section{SoC Code Listing}
+\subsection{vmicro16\_soc\_config.v}
 Configuration file for configuring the vmicro16\_soc.v and vmicro16.v features.
 
 \inputminted[
@@ -114,7 +288,7 @@ Configuration file for configuring the vmicro16\_soc.v and vmicro16.v features.
     baselinestretch=0.8,
 ]{verilog}{../../vmicro16/vmicro16_soc_config.v}
 
-\section{top\_ms.v}
+\subsection{top\_ms.v}
 Top level module that connects the SoC design to hardware pins on the FPGA.
 \inputminted[
     linenos,
@@ -122,7 +296,7 @@ Top level module that connects the SoC design to hardware pins on the FPGA.
     baselinestretch=0.8,
 ]{verilog}{../../vmicro16/top_ms.v}
 
-\section{vmicro16\_soc.v}
+\subsection{vmicro16\_soc.v}
 \inputminted[
     linenos,
     fontsize=\scriptsize,
@@ -130,16 +304,7 @@ Top level module that connects the SoC design to hardware pins on the FPGA.
 ]{verilog}{../../vmicro16/vmicro16_soc.v}
 
 
-\section{vmicro16\_periph.v}
-Various memory-mapped APB peripherals, such as GPIO, UART, timers, and memory.
-
-\inputminted[
-    linenos,
-    fontsize=\scriptsize,
-    baselinestretch=0.8,
-]{verilog}{../../vmicro16/vmicro16_periph.v}
-
-\section{vmicro16.v}
+\subsection{vmicro16.v}
 Vmicro16 CPU core module.
 
 \inputminted[
@@ -147,6 +312,15 @@ Vmicro16 CPU core module.
     fontsize=\scriptsize,
     baselinestretch=0.8,
 ]{verilog}{../../vmicro16/vmicro16.v}
+
+\section{Peripheral Code Listing}
+Various memory-mapped APB peripherals, such as GPIO, UART, timers, and memory.
+
+\inputminted[
+    linenos,
+    fontsize=\scriptsize,
+    baselinestretch=0.8,
+]{verilog}{../../vmicro16/vmicro16_periph.v}
 
 
 

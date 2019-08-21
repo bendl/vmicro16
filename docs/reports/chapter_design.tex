@@ -45,7 +45,7 @@ There are several design issues to consider for this project. These are listed b
 The target devices for this project are small to medium sized FPGAs (featuring approximately 10,000 to 30,000 logic cells). Because of this, it is important to use a bus interconnect that has a small logic footprint yet is able to scale reasonably well.
 
 \item \textbf{Ease of implementation}\\
-The interconnect and any peripherals should be easy to implement within a reasonable time.
+The interconnect and any peripherals should be easy to implement within the time allocations specified in \cref{fig:gantt}.
 
 \item \textbf{Scalable}\\
 The interconnect should allow for easy scalability of master and slave interfaces with minimal code changes.
@@ -61,7 +61,7 @@ The interconnect should allow for easy scalability of master and slave interface
 \subsection{Master to Slave Interface}
 \begin{figure}[H]
 \centering
-\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{21}
+\begin{bytefield}[bitwidth=3.5ex, rightcurly=., rightcurlyspace=0pt]{21}
 \bitheader[endianness=big]{0,15,16-20} \\
 \begin{rightwordgroup}{PADDR[20:0]}
   \bitbox{1}{\rotatebox{90}{\small LE}}
@@ -234,95 +234,5 @@ The system-on-chip's memory map is shown below in \cref{fig:memmap}. The address
 \end{bytefield}
 \caption{Memory map showing addresses of various memory sections.}
 \label{fig:memmap}
-\end{figure}
-
-\newpage
-\chapter{Peripherals}
-{%\hypersetup{linkcolor=black}
-\startcontents[chapters]
-\printcontents[chapters]{}{1}{}
-}
-\noindent\\
-To provide user's with useful functionality, common system-on-chip peripherals were created. This section describes each peripheral and it's design decisions.
-
-\section{Special Registers}
-From the software perspective, it is important for both the developer and software algorithms to know the target system's architecture to better utilise
-the resources available to them.
-Software written for one architecture with $N$ cores must also run on an architecture with $M$ cores. To enable such portability, the software must query the system for information such as: number of processor cores and the current core identifier. Without this information, the developer would be required to produce software for each individual architecture (e.g. an Intel i5 with 4 cores or an Intel i7 with 8 cores, or an NVIDIA GTX 970 with.
-
-
-\section{Watchdog Timer}
-\label{sect:watchdog}
-In any multi-threaded system there exists the possibility for a deadlock -- a state where all threads are in a waiting state -- and algorithm execution is forever blocked. This can occur either by poor software programming or incorrect thread arbitration by the processor. A common method of detecting a deadlock is to make each thread signal that it is not blocked by resetting a countdown timer. If the countdown timer is not reset, it will eventually reach zero and it is assumed that all threads are blocked as none have reset the countdown.
-
-In this system-on-chip design, software can reset the watchdog timer by writing any 16-bit value to the address \verb|0x00B8|.
-
-This peripheral is optional and can be enabled using the configuration parameters described in \nameref{sect:config}.
-
-\begin{figure}[H]
-\centering
-\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
-\bitheader[endianness=big]{0-15} \\
-\begin{rightwordgroup}{00B8 W}
-\bitbox{16}{Reset Watchdog}
-\end{rightwordgroup}
-\end{bytefield}
-\end{figure}
-
-\section{GPIO Interface}
-\begin{figure}[H]
-\centering
-\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
-\bitheader[endianness=big]{0-15} \\
-\begin{rightwordgroup}{0090 RW}
-\bitbox{16}{GPIO0 Output}
-\end{rightwordgroup} \\
-\begin{rightwordgroup}{0091 RW}
-\bitbox{16}{GPIO1 Output}
-\end{rightwordgroup} \\
-\begin{rightwordgroup}{0092 R}
-\bitbox{16}{GPIO1 Input}
-\end{rightwordgroup}
-\end{bytefield}
-\end{figure}
-
-
-\section{Timer with Interrupt}
-\label{sect:timer}
-\begin{figure}[H]
-\centering
-\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
-\bitheader[endianness=big]{0-15} \\
-\begin{rightwordgroup}{0200 RW}
-\bitbox{16}{Load Value}
-\end{rightwordgroup} \\
-\begin{rightwordgroup}{0201 W}
-\bitbox{13}{\color{lightgray}\rule{\width}{\height}} &
-\bitbox{1}{I} &
-\bitbox{1}{R} &
-\bitbox{1}{S}
-\end{rightwordgroup} \\
-\begin{rightwordgroup}{0202 W}
-\bitbox{16}{Prescaler}
-\end{rightwordgroup}
-\end{bytefield}
-\end{figure}
-
-
-\section{UART Interface}
-\begin{figure}[H]
-\centering
-\begin{bytefield}[bitwidth=4ex, rightcurly=., rightcurlyspace=0pt]{16}
-\bitheader[endianness=big]{0,1,7,8,15} \\
-\begin{rightwordgroup}{00A0 W}
-\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{Transmit Data}
-\end{rightwordgroup} \\
-\begin{rightwordgroup}{00A1 R}
-\bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{Receive Data}
-\end{rightwordgroup} \\
-\begin{rightwordgroup}{00A2 R/W}
-\bitbox{14}{\color{lightgray}\rule{\width}{\height}} & \bitbox{1}{E} & \bitbox{1}{I}
-\end{rightwordgroup}
-\end{bytefield}
 \end{figure}
 

@@ -249,7 +249,7 @@ To better understand the usage of the described interrupt registers, a simple so
 
 % pip install pygments-arm
 \begin{minted}[fontsize=\footnotesize,linenos,,baselinestretch=0.8]{arm}
-entry:
+setup_interrupts:
     // Set interrupt vector at 0x100
     // Move address of isr0 function to vector[0]
     movi    r0, isr0
@@ -260,6 +260,7 @@ entry:
     // write isr0 address to vector[0]
     sw      r0, r1
     
+enable_interrupts:
     // enable all interrupts by writing 0x0f to 0x108
     movi    r0, #0x0f
     sw      r0, r1 + #0x8
@@ -270,7 +271,7 @@ isr0:                     // arbitrary name
     intr                  // return from interrupt
 \end{minted}
 
-A more complex example software program utilising interrupts and the TIMR0 interrupt is described in section \ref{sect:timr0_code}.
+A more complex example software program utilising interrupts and the TIMR0 interrupt is described in section \ref{sec:2coretimer}.
 
 \subsection{Design Improvements}
 The hardware and software interrupt design have changed throughout the projects cycle. In initial versions of the interrupt implementation, the software program, while waiting for an interrupt, would be in a tight infinite loop (branching to the same instruction). This resulted in the processor using all pipeline stages during this time. The pipeline stages produce many logic transitions and memory fetches which raise power consumption and temperatures. This is quite noticeable especially when running on the Spartan-6 LX9 FPGA.

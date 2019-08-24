@@ -101,9 +101,9 @@ An ideal arbiter for this interconnect, which ideally features many, possibly te
 \subsubsection{Overview}
 Due to this project's limited time, and my personal knowledge in this area, a simple rotating arbiter is used. This arbitration scheme is likely the simplest that can be thought of.  A schematic of arbiter interconnect is shown in \cref{fig:multimaster}.
 
-In this scheme, access to the bus is given incrementally to each master port, even if the master port has not requested to use the bus. The active master port can use the bus for as long as it requires, and signals it has finished by lowering the PSEL signal. When the PSEL signal is lowered, the arbiter grants access to the next master port. If this next master port has not raised it's PSEL signal (i.e. it has not requested access to the bus) then the arbiter grants access to the next master port, and so on. In Verilog, this is simply an incremental counter which is used to index the master ports array.
+In this scheme, access to the bus is given incrementally to each master port, even if the master port has not requested to use the bus. The active master port can use the bus for as long as it requires, and signals it has finished by lowering the PSEL signal. When the PSEL signal is lowered, the arbiter grants access to the next master port. If this next master port has not raised it's PSEL signal (i.e. it has not requested access to the bus) then the arbiter grants access to the next master port, and so on. In Verilog, this is simply an incremental counter which is used to index the master ports array. To support a variable number of master ports, the width of each APB signal is multiplied by the number of cores, as shown in \cref{lst:widemaster}.
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{multimaster}
 \caption{Foo}
@@ -111,19 +111,6 @@ In this scheme, access to the bus is given incrementally to each master port, ev
 \end{figure}
 
 
-\begin{listing}[H]
-\centering
-\begin{minted}[fontsize=\footnotesize]{verilog}
-input      [MASTER_PORTS*BUS_WIDTH-1:0]  S_PADDR,
-input      [MASTER_PORTS-1:0]            S_PWRITE,
-input      [MASTER_PORTS-1:0]            S_PSELx,
-input      [MASTER_PORTS-1:0]            S_PENABLE,
-input      [MASTER_PORTS*DATA_WIDTH-1:0] S_PWDATA,
-output reg [MASTER_PORTS*DATA_WIDTH-1:0] S_PRDATA,
-output reg [MASTER_PORTS-1:0]            S_PREADY,
-\end{minted}
-\caption{Variable size inputs and outputs to the interconnect.}
-\end{listing}
 
 \begin{figure}[H]
 \centering
@@ -144,6 +131,13 @@ The submitted design is acceptable for a multi-core system as it fulfils the fol
 \item Supports memory-mapped address decoding.
 \item Supports multiple master interfaces.
 \end{itemize}
+
+\subsubsection*{Performance Improvements}
+However, it fails in the performance aspect. A one clock penalty occurs if the next master port has not requested the bus. This may seem a small price to pay for such a simple arbiter design, however it can add up significantly in many-core designs. For example, if core \#0 performs some action on the bus, but core \#10 is the next  master that wants to use the bus, then the arbiter will waste time incremental granting access to cores \#1 to \#9 which do not need the bus. This is also made worse when one of the cores is blocking access to a peripheral resource, such as through a mutex or semaphore.
+
+To overcome this penalty, a scheme could use an algorithm to find the next master port requesting access, and grant access directly to it when the current master has finished. Another scheme could be to use a priority encoder. Here, a hard-coded lookup table (LUT) could be used, where the inputs are each master port's PSEL signal (acting as a bus request line) and the output being which master to grant access to. As this is targetting FPGA devices, this implemented would require few LUT resources for the arbiter, due to the hard-coded LUT approach. An example of this is given in M. Weber's \textit{Arbiter: Design Ideas and Coding Styles} \cite[p.~2]{weber2001arbiters}.
+
+\subsubsection*{Bus Errors and Recovery}
 
 \chapter{Memory Mapping}
 {%\hypersetup{linkcolor=black}

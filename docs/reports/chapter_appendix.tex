@@ -146,6 +146,22 @@ Note: If \verb|DEF_USE_REPROG| is enabled in \verb|vmicro16_soc_config.v| then t
 
 
 \chapter{Additional Figures}
+
+\begin{listing}[H]
+\centering
+\begin{minted}[fontsize=\footnotesize]{verilog}
+input      [MASTER_PORTS*BUS_WIDTH-1:0]  S_PADDR,
+input      [MASTER_PORTS-1:0]            S_PWRITE,
+input      [MASTER_PORTS-1:0]            S_PSELx,
+input      [MASTER_PORTS-1:0]            S_PENABLE,
+input      [MASTER_PORTS*DATA_WIDTH-1:0] S_PWDATA,
+output reg [MASTER_PORTS*DATA_WIDTH-1:0] S_PRDATA,
+output reg [MASTER_PORTS-1:0]            S_PREADY,
+\end{minted}
+\caption{Variable size inputs and outputs to the interconnect.}
+\label{lst:widemaster}
+\end{listing}
+
 \section{Register Set Multiplex}
 \begin{figure}[H]
 \centering

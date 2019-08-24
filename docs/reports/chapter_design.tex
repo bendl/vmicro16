@@ -90,11 +90,18 @@ The interconnect should allow for easy scalability of master and slave interface
 
 \newpage
 \subsection{Multi-master Support}
-\subsubsection{Design Goals}
-\begin{enumerate}[leftmargin=3\parindent,label=\bfseries DG\arabic*.]
-\item \textbf{Foo}\\
-Bing
-\end{enumerate}
+In this design, each processor can act as an APB master to communicate with peripherals, for example to write a value to UART or to the shared memory peripheral. Because each core runs independently from other cores, it is likely, especially is many-core systems, that two or more processors will want to use the peripheral bus at the same time.
+
+As the peripheral and instruction interconnects use a shared one-to-many (one master to many slaves) bus architecture, only one master can use the bus at any-time. To enable multiple masters to use the bus, a device called an \textit{arbiter} must be used to control which master gets access to drive the shared interconnect.
+
+Arbiters can vary in complexity, mostly relative to throughput requirements.
+
+An ideal arbiter for this interconnect, which ideally features many, possibly tens of, high-throughput masters, would likely feature a priority-based and pipelined arbiter with various devices to improve performance such as cache-coherencies. 
+
+\subsubsection{Overview}
+Due to this project's limited time, and my personal knowledge in this area, a simple rotating arbiter is used. This arbitration scheme is likely the simplest that can be thought of.  A schematic of arbiter interconnect is shown in \cref{fig:multimaster}.
+
+In this scheme, access to the bus is given incrementally to each master port, even if the master port has not requested to use the bus. The active master port can use the bus for as long as it requires, and signals it has finished by lowering the PSEL signal. When the PSEL signal is lowered, the arbiter grants access to the next master port. If this next master port has not raised it's PSEL signal (i.e. it has not requested access to the bus) then the arbiter grants access to the next master port, and so on. In Verilog, this is simply an incremental counter which is used to index the master ports array.
 
 \begin{figure}[h]
 \centering

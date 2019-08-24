@@ -1,18 +1,8 @@
-// sum.s
+// sum64.s
+// Simple 1-160 core summation program
 
-//0 
-//1
-//2 nstart
-//3 0
-//4 nsamples per node
-//5 bram address
-//6 core id
-//7 num threads
-
-// update:
-//   assume 8 cores
-//     = rshft by 3
-
+// Set up common values, such as: Core id (r6), 
+//   number of threads (cores) (r7), shared memory addresses (r5)
 entry:
     // Core id in r6
     movi    r0, #0x80
@@ -31,10 +21,11 @@ entry:
     movi    r2, #0x0C
     lshft   r5, r2
 
+jmp_to_barrier:
     // NOT_ROOT
     //   wait at barrier
     cmp     r6, r3
-    movi    r4, sem_inc
+    movi    r4, barrier_arrive
     br      r4, BR_NE
     
     // ROOT
@@ -43,12 +34,9 @@ entry:
     //      nst = ns / (num_threads)
     //      nst = ns >> (num_threads - 1)
     //      r0 = (num_threads -1) WRONG!!!
-    //mov     r0, r7
-    //subi    r0, r3 + #0x01
-    //movi    r4, #0x80
-    //rshft   r4, r0
     
-    // update: hex(0x140 // 64)
+root_broadcast:
+    // The root (core idx 0) broadcasts the number of samples
     // 16 cores
     //movi    r4, #0x14
     // 32 cores
@@ -61,12 +49,14 @@ entry:
     //movi    r4, #0x02
     
     // ROOT
+    // Do the broadcast
     //   write nsamples_per_thread to shared bram (broadcast)
     //   0x1001
     sw      r4, r5 + #0x01
 
-    // ALl wait at barrier
-sem_inc:
+// Reach the barrier to tell everone
+// that we have arrived
+barrier_arrive:
     // load latest count
     lwex    r0, r5
     // try increment count
@@ -77,9 +67,11 @@ sem_inc:
     // check success (== 0)
     cmp     r0, r3
     // branch if failed
-    movi    r4, sem_inc
+    movi    r4, barrier_arrive
     br      r4, BR_NE
 
+// Wait in an infinite loop
+// for all cores to 'arrive'
 barrier:
     // load the count
     lw      r0, r5
@@ -89,7 +81,8 @@ barrier:
     movi    r4, barrier
     br      r4, BR_NE
 
-    // EACH CORE
+// EACH CORE
+// All cores have arrived and in sync
 synced1:
     // Retrieve load the nsamples_per_thread
     lw      r4, r5 + #0x01
@@ -102,7 +95,8 @@ synced1:
     // samples_per_thread -> samples_per_thread + nstart
     add     r4, r2
 
-    // Sum numbers from nstart to limit
+// Perform the summation in a tight for loop
+//   Sum numbers from nstart to limit
 sum_loop:
     // sum += i
     add     r1, r2
@@ -113,8 +107,8 @@ sum_loop:
     movi    r0, sum_loop
     br      r0, BR_NE
 
-    // partial sum finished in r1
-    // use mutex to write to shared value
+// Summation of the subset finished, result is in r1
+//   Now use a mutex to add it to the global sum value in shared mem
 sum_mutex:
     // load latest count
     lwex    r0, r5 + #0x2
@@ -131,16 +125,19 @@ sum_mutex:
     movi    r4, sum_mutex
     br      r4, BR_NE
 
+// Write the latest global sum value to gpio1
 write_gpio:
     movi    r3, #0x91
     sw      r2, r3
 
+// Write the latest global sum value to uart0 tx
 write_uart_done:
-    // write ascii value to uart0
     movi    r3, #0xa0
     movi    r2, #0x30
     add     r2, r6
     sw      r2, r3
 
+// This core has finished
+// Enter a low power state
 exit:
     halt    r0, r0

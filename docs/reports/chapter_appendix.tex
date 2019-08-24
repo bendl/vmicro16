@@ -150,7 +150,7 @@ Note: If \verb|DEF_USE_REPROG| is enabled in \verb|vmicro16_soc_config.v| then t
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.7\textwidth]{interrupt_mux}
-\caption{Normal mode and interrupt mode register sets are multiplexed to instantly save the context.}
+\caption{Normal mode (bottom) and interrupt mode (top) register sets are multiplexed to switch between contexts.}
 \label{fig:regmult}
 \end{figure}
 
@@ -202,7 +202,7 @@ DEF\_MEM\_INSTR\_DEPTH     & 64      & Instruction memory cache per core        
 DEF\_MEM\_SCRATCH\_DEPTH   & 64      & RW RAM per core                             \\
 DEF\_ALU\_HW\_MULT        & 1       & Enable/disable HW multiply (1 clock)        \\
 FIX\_T3                    & //      & Enable a T3 state for the APB transaction \\
-DEF\_USE\_REPROG           & //      & Programme instruction memory via UART0. Requires DEF\_GLOBAL\_RESET\\
+DEF\_USE\_REPROG           & //      & Programme instruction memory via UART0. Requires DEF\_GLOBAL\_RESET. Enabling this will reserve the UART0 RX port for exclusive use for programming the instruction memory. Software reads of UART0 RX will return 0.\\
 \end{tabular}
 \caption{Core Options}
 \label{tab:isa}

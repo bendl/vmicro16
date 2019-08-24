@@ -10,7 +10,6 @@ While the majority of this report will focus on the multi-processing functionali
 The single-core design is a traditional 5-stage RISC processor (fetch, decode, execute, memory, write-back). The core uses separate instruction and data memories in the style of a Harvard architecture \cite{harvard}.
 
 To satisfy \ref{cd:vendor}, the Verilog code will be self-contained in a single file. This reduces the hierarchical complexity and eases cross-vendor project set-up as only a single file is required to be included. 
-A disadvantage with this single file approach is that some external Verilog verification tools that I plan to use, such as Verilator, do not currently support multiple Verilog modules (due to an unfixed bug) within a single file. 
 
 \begin{figure}[H]
 \centering 
@@ -23,23 +22,34 @@ A small reduction in size within the single-core will result in substantial size
 
 \subsection{Instruction Set Architecture}
 \begin{quotation}
-\noindent Core deliverable \ref{cd:isa} details the background for the requirement of a custom instruction set architecture.
+\noindent Core deliverable \ref{cd:isa} details the background for the requirement of a custom instruction set architecture. 
+The 16-bit instruction set listing is shown in \cref{fig:isa}.
 \end{quotation}
 
-\noindent
-The 16-bit instruction set listing is shown in \cref{fig:isa}.
+In this proposed architecture, most instructions are \textit{destructive}, meaning that source operands also act as the destination, hence effectively \textit{destroying} the original source operand. This design decision reduces the complexity of the ISA as traditional three operand instructions, for example \verb|add r0, r0, r1|, can be encoded using only two operands \verb|add r0, r1|. However, this does increase the complexity of compilers as they may need to make temporary copies of registers as the instructions will \textit{destroy} the original source data.
 
-Most instructions are \textit{destructive}, meaning that source operands also act as the destination, hence effectively \textit{destroying} the original source operand. This design decision reduces the complexity of the ISA as traditional three operand instructions, for example \verb|add r0, r0, r1|, can be encoded using only two operands \verb|add r0, r1|. However, this does increase the complexity of compilers as they may need to make temporary copies of registers as the instructions will \textit{destroy} the original data.
-
-The instruction set is split into 7 categories (highlighted by colours in \cref{fig:isa}): special instructions, such as halting and interrupt returns; memory operations, such as loading and storing; bitwise operations, such as XOR and AND; unsigned arithmetic; signed arithmetic; conditional branches; and atomic load/store instructions.
+The instruction set is split into 7 categories (highlighted by colours in \cref{fig:isa}):
+\begin{itemize}
+\item Special instructions, such as halting and interrupt returns;
+\item Bitwise operations, such as XOR and AND;
+\item Signed arithmetic;
+\item Unsigned arithmetic;
+\item Conditional branches and compare instructions;
+\item and Load/store instructions, with their atomic equivalents.
+\end{itemize}
 
 %The instruction set supports bitwise operations such as OR, XOR, AND, NOT, and left and right shifts. It was decided to provide these functions to enable software to easily create large 16-bit values which is expensive with only an 8-bit immediate.
+
+\subsection{Memory Management Unit}
+It was decided to use a memory management unit (MMU) to make it easier and extensible to communicate with external peripherals or additional registers. This method transparently uses the existing \verb|LW[EX]|/\verb|SW[EX]| to easily provide an arbitrary number of peripherals/special purpose addresses to the software running on the processor.
 
 \subsection{Instruction and Data Memory}
 The design uses separate instruction and data memories similar to a Harvard architecture computer. This architecture was chosen due because it is generally easier to implement, however later resulted in design challenges in large multi-core designs. This is discussed later in the report.
 
-\subsection{Memory Management Unit}
-It was decided to use a memory management unit (MMU) to make it easier and extensible to communicate with external peripherals or additional registers. This method would transparently use the existing \verb|LW|/\verb|SW| instructions which removes the requirement for a unique instruction for each peripheral. 
+Each single-core has it's own \textit{scratch} memory -- a small RAM-like memory which can be used for stack-space and arrays too large to fit into the 8 registers. These memories are provided as is -- meaning it's up to the software to implement and provide any stack-frame, function, and calling, functionality.
+Each core also features it's own read-only instruction memory that is programmed at compile time of the design, or via the \verb|UART0| reciever interface (discussed later). Both of these memories map onto synchronous, read-first, single-port, FPGA block RAMs to minimise LUT requirements.
+
+Users can customise the size of these memories by tweaking the following parameters in the \verb|vmicro16_soc_config.v| file: \verb|DEF_MEM_INSTR_DEPTH| for the instruction memory, and \verb|DEF_MEM_SCRATCH_DEPTH| for the scratch memory.
 
 
 \subsection{ALU Design}
@@ -141,7 +151,7 @@ In \cref{fig:vdecoder}, it can be seen that the first 4 opcode cases (BR, MULT, 
 
 
 \subsection{Pipelining}
-In the interim progress update, the processor design featured \textit{instruction pipelining} to meet requirement \ref{ed:ipc}. Instruction pipelining allows instructions executions to be overlapped in the pipeline, resulting in higher throughput (up to one instruction per clock) at the expense of 5-6 clocks of latency and code complexity. As the development of the project shifted from single-core to multi-core, it became obvious that the complexity of the pipelined processor would inhibit the integration of multi-core functionality. It was decided to remove the instruction pipelining functionality and use a simpler state-machine based pipeline that is much simpler to extend and would cause fewer challenges later in the project. 
+In the interim progress update, the processor design featured \textit{instruction pipelining} to meet requirement \ref{ed:ipc}. Instruction pipelining allows instructions executions to be overlapped in the pipeline, resulting in higher throughput (up to one instruction per clock) at the expense of 5-6 clocks of latency and \textit{significant} code complexity. As the development of the project shifted from single-core to multi-core, it became obvious that the complexity of the pipelined processor would inhibit the integration of multi-core functionality. It was decided to remove the instruction pipelining functionality and use a simpler state-machine based pipeline that is much simpler to extend and would cause fewer challenges later in the project. 
 
 \subsection{Design Optimisations}
 In a design that has many instantiations of the same component, a small resource saving improvement within the component can have a significant overall savings improvement if it is instantiated many times. Project requirement \ref{cd:vendor} requires the design to be compiled for a range of FPGA sizes, and so space saving optimisations are considered. 
@@ -153,7 +163,7 @@ A register set in a CPU is a fast, temporary, and small memory that software ins
 \item Add the two values together in the ALU
 \item Store the result back the register set in r0
 \end{enumerate}
-For task 1, it was originally decided to use a dual port register set (meaning that two data reads can be performed in a single clock, in this case r0 and r1), however due to the asynchronous design of the register set (for speed) the RTL produced consumed a significant amount of FPGA resources, approximately 256 flip-flops (16 (data width) * 8 (registers) * 2 (ports)). To reduce this, it was decided to split task 1 into two steps over two clock cycles using a single-port register set. This required the processor pipe-line to use another clock cycle resulting in slightly lower performance, however the size improvements will allow for more cores to be instantiated in the design. This optimisation is also applied to the interrupt register set, resulting in a saving of approximately 256 flip-flops per core (128 in the normal mode register set, and 128 in the interrupt register set). As shown, adding a single clock delay saves a significant amount of LUTs. This saving is amplified when instantiating many cores.
+For Clock 1, it was originally decided to use a dual port register set (meaning that two data reads can be performed in a single clock, in this case r0 and r1), however due to the asynchronous design of the register set (for speed) the RTL produced consumed a significant amount of FPGA resources, approximately 256 flip-flops (16 (data width) * 8 (registers) * 2 (ports)). To reduce this, it was decided to split task 1 into two steps over two clock cycles using a single-port register set. This required the processor pipe-line to use another clock cycle resulting in slightly lower performance, however the size improvements will allow for more cores to be instantiated in the design. This optimisation is also applied to the interrupt register set, resulting in a saving of approximately 256 flip-flops per core (128 in the normal mode register set, and 128 in the interrupt register set). As shown, adding a single clock delay saves a significant amount of LUTs. This saving will be amplified in designs with many cores.
 
 
 
@@ -170,9 +180,10 @@ The interrupt functionality in this project supports the following:
 Software programs running on the Vmicro16 processor can edit the interrupt vector to add their own interrupt handlers at runtime.
 
 \item Fast context switching.\\
-A dedicated interrupt register set is multiplexed with the normal mode register set to provide instant context switching. It should be noted that only the registers are saved during a context switch. The means that the stack is not saved. A schematic of the register multiplex is shown in \cref{fig:regmult}.
+A dedicated interrupt register set is multiplexed with the normal mode register set to provide faster context switching. It should be noted that only the registers are saved during a context switch. The means that the stack is not saved. A schematic of the register multiplex is shown in \cref{fig:regmult}.
 
-\item Parametrised interrupt sources and widths. Users can configure the width of the interrupt in signals and the data width per interrupt source via the \verb|vmicro16_soc_config.v|. By default, 8 interrupt sources are available and each can provide 8-bits of data.
+\item Parametrised interrupt sources and widths.\\
+Users can configure the width of the interrupt in signals and the data width per interrupt source via the \verb|vmicro16_soc_config.v|. By default, 8 interrupt sources are available and each can provide 8-bits of data.
 \end{itemize}
 
 \subsection{Hardware Implementation}
@@ -183,9 +194,9 @@ In the case of the Vmicro16 processor, the program counter \verb|r_pc[15:0]| and
 
 When saving the state, to avoid clocking 128 bits (8 registers of 16 bits) into another register (which would increase timing delays and logic elements), a dedicated register set for the interrupt mode (\verb|regs_isr|) is multiplexed with the normal mode register set (\verb|regs|). Then depending on the mode (identified by the register \verb|regs_use_int|) the processor can easily switch between the two large states without significantly affecting timing.
 
-The timing diagram in \cref{fig:interrupts} visually describes this process.
+The timing diagram in \cref{fig:interrupts} shows the behavioural logic for the TIMR0 interrupt source.
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{interrupts}
 \caption{Time diagram showing the TIMR0 peripheral emitting a 1us periodic interrupt signal (out) to the processor. The processor acknowledges the interrupt (int\_pending\_ack) and enters the interrupt mode (regs\_use\_int) for a period of time. When the interrupt handler reaches the Interrupt Return instruction (indicated by w\_intr) the processor returns to normal mode and restores the normal state.}
@@ -193,7 +204,7 @@ The timing diagram in \cref{fig:interrupts} visually describes this process.
 \end{figure}
 
 \subsection{Software Interface}
-To enable software to 
+A memory-mapped software interface is provided through the MMU to allow easy software control of the interrupt behaviour. The interface is provided at the address range 0x0100 to 0x0108. This interface is per-core allowing each core to individually control what interrupts it receives and what functions to call upon an interrupt. This enables complex functionality, such as allowing each core to execute different functions upon the same interrupt.
 
 \begin{figure}[H]
 \centering
@@ -212,7 +223,7 @@ To enable software to
 \bitbox{8}{\color{lightgray}\rule{\width}{\height}} & \bitbox{8}{Interrupt bit mask}
 \end{rightwordgroup}
 \end{bytefield}
-\caption{The interrupt vector consists of eight 16-bit values that point to memory addresses of the instruction memory to jump to.}
+\caption{The interrupt vector (0x0100 - 0x0107) consists of eight 16-bit values that point to memory addresses of the instruction memory to jump to.}
 \label{fig:r_interrupts}
 \end{figure}
 
@@ -220,7 +231,7 @@ To enable software to
 The interrupt vector is a per-core register that is used to store the addresses of interrupt handlers. An interrupt handler is simply a software function residing in instruction memory that is branched to when a particular interrupt is received. 
 
 \subsubsection{Interrupt Mask (0x0108)}
-The interrupt mask is a per-core register that is used to mask/listen specific interrupt sources. This enables processing cores to individually select which interrupts they respond to. This allows for multi-processor designs where each core can be used for a particular interrupt source, improving the time response to the interrupt for time critical programs. The Interrupt Mask register is an 8-bit read/write register where each bit corresponds to a particular interrupt source and each bit corresponds with the interrupt handler in the interrupt vector.
+The interrupt mask is a per-core register that is used to mask/listen specific interrupt sources. This enables processing cores to individually select which interrupts they respond to. This allows for multi-processor designs where each core can be used for a particular interrupt source, improving the time response to the interrupt for time critical programs. The Interrupt Mask register is an 8-bit read/write register where each bit corresponds to a particular interrupt source and each bit corresponds with the interrupt handler in the interrupt vector. The interrupt mask register is shown in \cref{fig:r_interruptmask}.
 
 \begin{figure}
 \centering
@@ -240,7 +251,7 @@ The interrupt mask is a per-core register that is used to mask/listen specific i
 & \bitbox{1}{0}
 & \bitbox{1}{0}
 \end{bytefield}
-\caption{Interrupt Mask register (0x0108). Each bit corresponds to an interrupt source. 1 signifies the interrupt is enabled for/visible to the core. Bits [7:2] are left to the designer to assign.}
+\caption{Interrupt Mask register (0x0108). Each bit corresponds to an interrupt source. 1 signifies the interrupt is enabled for/visible to the core. Bits [7:2] are left to the designer to assign. Bit 0 is assigned to TIMR0's interval timer. Bit 1 is assigned to the UART0's receiver (unassigned if DEF\_USE\_REPROG is enabled).}
 \label{fig:r_interruptmask}
 \end{figure}
 
@@ -263,7 +274,7 @@ setup_interrupts:
 enable_interrupts:
     // enable all interrupts by writing 0x0f to 0x108
     movi    r0, #0x0f
-    sw      r0, r1 + #0x8
+    sw      r0, r1 + #0x8 // (0x100 + 0x8 = 0x108)
     halt                  // enter low power idle state
     
 isr0:                     // arbitrary name

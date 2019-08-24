@@ -132,12 +132,17 @@ The submitted design is acceptable for a multi-core system as it fulfils the fol
 \item Supports multiple master interfaces.
 \end{itemize}
 
-\subsubsection*{Performance Improvements}
+\subsubsection*{Arbiter Performance Improvements}
 However, it fails in the performance aspect. A one clock penalty occurs if the next master port has not requested the bus. This may seem a small price to pay for such a simple arbiter design, however it can add up significantly in many-core designs. For example, if core \#0 performs some action on the bus, but core \#10 is the next  master that wants to use the bus, then the arbiter will waste time incremental granting access to cores \#1 to \#9 which do not need the bus. This is also made worse when one of the cores is blocking access to a peripheral resource, such as through a mutex or semaphore.
 
 To overcome this penalty, a scheme could use an algorithm to find the next master port requesting access, and grant access directly to it when the current master has finished. Another scheme could be to use a priority encoder. Here, a hard-coded lookup table (LUT) could be used, where the inputs are each master port's PSEL signal (acting as a bus request line) and the output being which master to grant access to. As this is targetting FPGA devices, this implemented would require few LUT resources for the arbiter, due to the hard-coded LUT approach. An example of this is given in M. Weber's \textit{Arbiter: Design Ideas and Coding Styles} \cite[p.~2]{weber2001arbiters}.
 
-\subsubsection*{Bus Errors and Recovery}
+\subsubsection*{APB Bus Errors and Recovery}
+This project's implementation of a multi-master APB interconnect does not provide a method of detecting errors and stalls. This is mainly due to time constraints.
+
+An easy error that could be detected is \verb|PADDR| addresses that do not fall into a memory-mapped address range. This can easily and cheaply be detected in the address decoding module. This will be discussed in detail in the next chapter.
+
+As previously stated, the active bus master can take control of the bus for as long as it wants to. This is useful for high-throughput transactions, such as memory operations to global memory, but detecting a stalled or glitched operation is not immediately identifiable. If an active master stalls or glitches, it may not be able to lower the PSEL line which appears to the arbiter that the transaction is still happening normally. To overcome this, a timer could be used to detect stalled operations and reset the affected peripheral (essential a watchdog but for an interconnect). 
 
 \chapter{Memory Mapping}
 {%\hypersetup{linkcolor=black}

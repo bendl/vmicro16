@@ -1,5 +1,5 @@
 Flow report for quartus
-Sun Aug 04 16:48:59 2019
+Mon Aug 26 15:44:01 2019
 Quartus Prime Version 17.1.0 Build 590 10/25/2017 SJ Lite Edition
 
 
@@ -40,25 +40,25 @@ refer to the applicable agreement for further details.
 +-------------------------------------------------------------------------------+
 ; Flow Summary                                                                  ;
 +---------------------------------+---------------------------------------------+
-; Flow Status                     ; Flow Failed - Sun Aug 04 16:48:58 2019      ;
+; Flow Status                     ; Successful - Mon Aug 26 15:44:01 2019       ;
 ; Quartus Prime Version           ; 17.1.0 Build 590 10/25/2017 SJ Lite Edition ;
 ; Revision Name                   ; quartus                                     ;
 ; Top-level Entity Name           ; top_ms                                      ;
 ; Family                          ; Cyclone V                                   ;
 ; Device                          ; 5CSEMA5F31C6                                ;
 ; Timing Models                   ; Final                                       ;
-; Logic utilization (in ALMs)     ; 40,080 / 32,070 ( 125 % )                   ;
-; Total registers                 ; 45385                                       ;
-; Total pins                      ; 58 / 457 ( 13 % )                           ;
+; Logic utilization (in ALMs)     ; N/A                                         ;
+; Total registers                 ; 1236                                        ;
+; Total pins                      ; 58                                          ;
 ; Total virtual pins              ; 0                                           ;
-; Total block memory bits         ; 245,760 / 4,065,280 ( 6 % )                 ;
-; Total DSP Blocks                ; 82 / 87 ( 94 % )                            ;
+; Total block memory bits         ; 75,776                                      ;
+; Total DSP Blocks                ; 3                                           ;
 ; Total HSSI RX PCSs              ; 0                                           ;
 ; Total HSSI PMA RX Deserializers ; 0                                           ;
 ; Total HSSI TX PCSs              ; 0                                           ;
 ; Total HSSI PMA TX Serializers   ; 0                                           ;
-; Total PLLs                      ; 0 / 6 ( 0 % )                               ;
-; Total DLLs                      ; 0 / 4 ( 0 % )                               ;
+; Total PLLs                      ; 0                                           ;
+; Total DLLs                      ; 0                                           ;
 +---------------------------------+---------------------------------------------+
 
 
@@ -67,7 +67,7 @@ refer to the applicable agreement for further details.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 08/04/2019 16:36:47 ;
+; Start date & time ; 08/26/2019 15:43:35 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; quartus             ;
 +-------------------+---------------------+
@@ -78,7 +78,7 @@ refer to the applicable agreement for further details.
 +--------------------------------------+----------------------------------------+---------------+-------------+-----------------+
 ; Assignment Name                      ; Value                                  ; Default Value ; Entity Name ; Section Id      ;
 +--------------------------------------+----------------------------------------+---------------+-------------+-----------------+
-; COMPILER_SIGNATURE_ID                ; 741621064968.156493300717724           ; --            ; --          ; --              ;
+; COMPILER_SIGNATURE_ID                ; 10995770589191.156683061401796         ; --            ; --          ; --              ;
 ; EDA_DESIGN_INSTANCE_NAME             ; NA                                     ; --            ; --          ; tb_vmicro16_soc ;
 ; EDA_NATIVELINK_SIMULATION_TEST_BENCH ; tb_vmicro16_soc                        ; --            ; --          ; eda_simulation  ;
 ; EDA_OUTPUT_DATA_FORMAT               ; Verilog Hdl                            ; --            ; --          ; eda_simulation  ;
@@ -105,9 +105,8 @@ refer to the applicable agreement for further details.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:05:36     ; 1.4                     ; 5559 MB             ; 00:05:57                           ;
-; Fitter               ; 00:03:20     ; 1.0                     ; 6601 MB             ; 00:03:29                           ;
-; Total                ; 00:08:56     ; --                      ; --                  ; 00:09:26                           ;
+; Analysis & Synthesis ; 00:00:28     ; 1.0                     ; 4869 MB             ; 00:00:35                           ;
+; Total                ; 00:00:28     ; --                      ; --                  ; 00:00:35                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
@@ -116,8 +115,7 @@ refer to the applicable agreement for further details.
 +----------------------+------------------+------------+------------+----------------+
 ; Module Name          ; Machine Hostname ; OS Name    ; OS Version ; Processor type ;
 +----------------------+------------------+------------+------------+----------------+
-; Analysis & Synthesis ; ben-xps-13       ; Windows 10 ; 10.0       ; x86_64         ;
-; Fitter               ; ben-xps-13       ; Windows 10 ; 10.0       ; x86_64         ;
+; Analysis & Synthesis ; BEN-SSD          ; Windows 10 ; 10.0       ; x86_64         ;
 +----------------------+------------------+------------+------------+----------------+
 
 
@@ -125,7 +123,6 @@ refer to the applicable agreement for further details.
 ; Flow Log ;
 ------------
 quartus_map --read_settings_files=on --write_settings_files=off quartus -c quartus
-quartus_fit --read_settings_files=on --write_settings_files=off quartus -c quartus
 
 
 

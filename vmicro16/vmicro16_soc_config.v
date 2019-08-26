@@ -7,7 +7,7 @@
 
 `define FORMAL
 
-`define CORES           8
+`define CORES           2
 `define SLAVES          8
 
 ///////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@
 //////////////////////////////////////////////////////////
 // Enable/disable interrupts
 //   Disabling will free up resources for other features
-`define DEF_ENABLE_INT
+//`define DEF_ENABLE_INT
 // Number of interrupt in signals
 `define DEF_NUM_INT     8
 // Default interrupt bitmask (0 = hidden, 1 = enabled)
@@ -130,6 +130,5 @@
 // Interrupt vector memory location
 `define DEF_MMU_INTSM_S     16'h0108
 `define DEF_MMU_INTSM_E     16'h0108
-
 
 `endif

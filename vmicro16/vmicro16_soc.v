@@ -442,9 +442,9 @@ module vmicro16_soc (
     // Count number of clocks each core is spending on
     //   bus transactions
     /////////////////////////////////////////////////////
-    reg [15:0] bus_core_times       [0:`CORES-1];
-    reg [15:0] core_work_times      [0:`CORES-1];
-    reg [15:0] instr_fetch_times    [0:`CORES-1];
+    reg [15:0] bus_core_times       [0:`CORES-1]; // bus work
+    reg [15:0] core_work_times      [0:`CORES-1]; // serial work
+    reg [15:0] instr_fetch_times    [0:`CORES-1]; // instruction fetches
     integer i2;
     initial 
         for(i2 = 0; i2 < `CORES; i2 = i2 + 1) begin

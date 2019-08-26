@@ -2,52 +2,52 @@
 TimeQuest Timing Analyzer Summary
 ------------------------------------------------------------
 
-Type  : Slow 1100mV 85C Model Setup 'clock50'
-Slack : 4.014
+Type  : Slow 1100mV 85C Model Setup 'CLK50'
+Slack : -9.654
+TNS   : -6729.102
+
+Type  : Slow 1100mV 85C Model Hold 'CLK50'
+Slack : 0.321
 TNS   : 0.000
 
-Type  : Slow 1100mV 85C Model Hold 'clock50'
-Slack : 0.306
+Type  : Slow 1100mV 85C Model Minimum Pulse Width 'CLK50'
+Slack : -2.636
+TNS   : -1993.309
+
+Type  : Slow 1100mV 0C Model Setup 'CLK50'
+Slack : -9.499
+TNS   : -6533.267
+
+Type  : Slow 1100mV 0C Model Hold 'CLK50'
+Slack : 0.284
 TNS   : 0.000
 
-Type  : Slow 1100mV 85C Model Minimum Pulse Width 'clock50'
-Slack : 8.868
+Type  : Slow 1100mV 0C Model Minimum Pulse Width 'CLK50'
+Slack : -2.636
+TNS   : -2019.128
+
+Type  : Fast 1100mV 85C Model Setup 'CLK50'
+Slack : -5.296
+TNS   : -3478.570
+
+Type  : Fast 1100mV 85C Model Hold 'CLK50'
+Slack : 0.180
 TNS   : 0.000
 
-Type  : Slow 1100mV 0C Model Setup 'clock50'
-Slack : 3.999
+Type  : Fast 1100mV 85C Model Minimum Pulse Width 'CLK50'
+Slack : -2.636
+TNS   : -1591.641
+
+Type  : Fast 1100mV 0C Model Setup 'CLK50'
+Slack : -4.753
+TNS   : -3035.531
+
+Type  : Fast 1100mV 0C Model Hold 'CLK50'
+Slack : 0.144
 TNS   : 0.000
 
-Type  : Slow 1100mV 0C Model Hold 'clock50'
-Slack : 0.288
-TNS   : 0.000
-
-Type  : Slow 1100mV 0C Model Minimum Pulse Width 'clock50'
-Slack : 8.822
-TNS   : 0.000
-
-Type  : Fast 1100mV 85C Model Setup 'clock50'
-Slack : 10.708
-TNS   : 0.000
-
-Type  : Fast 1100mV 85C Model Hold 'clock50'
-Slack : 0.179
-TNS   : 0.000
-
-Type  : Fast 1100mV 85C Model Minimum Pulse Width 'clock50'
-Slack : 8.783
-TNS   : 0.000
-
-Type  : Fast 1100mV 0C Model Setup 'clock50'
-Slack : 11.441
-TNS   : 0.000
-
-Type  : Fast 1100mV 0C Model Hold 'clock50'
-Slack : 0.165
-TNS   : 0.000
-
-Type  : Fast 1100mV 0C Model Minimum Pulse Width 'clock50'
-Slack : 8.778
-TNS   : 0.000
+Type  : Fast 1100mV 0C Model Minimum Pulse Width 'CLK50'
+Slack : -2.636
+TNS   : -1589.998
 
 ------------------------------------------------------------

@@ -263,6 +263,9 @@ DEF\_MMU\_TIMR0\_E & 16'h0202 & "
 \end{table}
 
 \chapter{Viva Demonstration Examples}
+\startcontents[chapters]
+\printcontents[chapters]{}{1}{}
+
 \section{2-core Timer Interrupt and ISR}
 \label{sec:2coretimer}
 This example demo, shown during the viva, blinks an LED every 0.5 seconds via a timer interrupt. Core 0 sets up the interrupt vector (by writing the isr0 function address to the interrupt vector) and enables all interrupt sources. Core 1 sets up the timer interval peripheral to produce an interrupt every 0.5 seconds. Core 1 also performs the interrupt handler (isr0): toggle an LED, write the state to UART0, and resets the watchdog.

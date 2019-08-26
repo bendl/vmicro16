@@ -116,10 +116,12 @@ set_location_assignment PIN_AB28 -to ssd3[4]
 set_location_assignment PIN_AB25 -to ssd3[5]
 set_location_assignment PIN_AB22 -to ssd3[6]
 set_global_assignment -name OPTIMIZATION_MODE BALANCED
+set_location_assignment PIN_AA21 -to TXD
+set_location_assignment PIN_AC23 -to RXD
+set_global_assignment -name SDC_FILE HardwareTest.sdc
 set_global_assignment -name VERILOG_FILE ../../uart/uart_prog.v
 set_global_assignment -name VERILOG_FILE ../../vmicro16_periph.v
 set_global_assignment -name VERILOG_FILE ../../uart/fifo2.v
-set_global_assignment -name SDC_FILE HardwareTest.sdc
 set_global_assignment -name VERILOG_FILE ../../uart/uart.v
 set_global_assignment -name VERILOG_FILE ../../uart/uart_tx.v
 set_global_assignment -name VERILOG_FILE ../../uart/uart_fifo.v
@@ -134,6 +136,4 @@ set_global_assignment -name VERILOG_FILE ../../top_ms.v
 set_global_assignment -name VERILOG_FILE ../../formal.v
 set_global_assignment -name VERILOG_FILE ../../clog2.v
 set_global_assignment -name VERILOG_FILE ../../apb_intercon.v
-set_location_assignment PIN_AA21 -to TXD
-set_location_assignment PIN_AC23 -to RXD
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

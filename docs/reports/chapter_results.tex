@@ -11,6 +11,9 @@ This chapter presents analytic information
 This section analysis the synthesised and implemented system-on-chip design to see the effect of increasing core counts.
 
 \subsection{Design Size}
+\subsubsection{Implementation}
+On a minimal system-on-chip configuration, with one core and minimal peripherals and features (no reprogramming, no interrupts, no UART), the design requires as few as 500 LUTs with the processor core requiring approximately 300-400 LUTs.
+
 \subsubsection{Constraints}
 As discussed in \cref{sec:singlecore} \nameref{sec:singlecore}, each processor core features two memories: instruction and scratch memory, which can both map onto synchronous, single-port, FPGA BRAM blocks. While this will reduce LUT requirements in designs with few cores, it becomes a non-trivial problem as the core counts increase. FPGAs have a fixed number of hard-BRAM blocks available for inference by the HDL compiler, for example the low-end Xilinx Spartan-6 XC6SLX9 FGPA features 32 18 Kb BRAM blocks \cite[p.~2]{s6fam}, and the Cyclone V 5CSEMA5F31C6N (used in the DE1-SoC) has 397 10 Kb blocks \cite[p.~22]{cvfam}.
 

@@ -17,7 +17,7 @@
 # clock50 and give a period of 50MHz, and say it comes from a
 # top level port named "clock". This would be declared as:
 #
-create_clock -name clk -period "50MHz" [get_ports clock]
+create_clock -name CLK50 -period "50MHz" [get_ports CLK50]
 #
 
 # There are no clocks in this sample design

@@ -77,7 +77,6 @@ def parse_line(l):
         r.linestr = l
         return r
 
-
     m = r_instr_ri.match(l)
     if m:
         r = Instr()
@@ -317,13 +316,8 @@ def cg(xs):
 with open(args.fname, "r") as f:
     # Apply a structure to each line
     lines = list(map(parse_line, f.readlines()))
-    for i, k in enumerate(lines):
-        #print(i+1, k)
-        pass
-
     # Removes empty information
     lines = list(filter(lambda x: x != None, lines))
-
     # Calculates instruction offsets
     calc_offset(list(lines))
 
@@ -335,12 +329,13 @@ with open(args.fname, "r") as f:
 
     print("\nReplacing labels...")
     cg_replace_labels(all_instr)
-    for i, k in enumerate(all_instr):
-        #print(i, k)
-        pass
 
     # Write hex words to verilog memh file
     binstr = cg(all_instr)
+    # Ensure instructions fit within the instruction memory size 64/4096
+    assert(len(binstr) <= 64)
+    assert(len(binstr) <= 4096)
+
     print("\n{:s} produces:".format(args.fname))
     print("=====================================\n")
     with open("asm.s.hex", "w") as out:

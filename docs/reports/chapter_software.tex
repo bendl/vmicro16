@@ -119,7 +119,7 @@ critical:
 \subsubsection{Barriers}
 Barriers are a useful software sequence used to block execution until all other threads (or a subset) have reached the same point. Barriers are often used for broadcast and gather actions (sending values to each core or receiving them). They are also used to synchronise program execution if some threads have more work to do than others.
 
-\begin{wrapfigure}{L}{0.5\textwidth}
+\begin{listing}[h]
 \centering
 \begin{minted}[fontsize=\footnotesize,
     baselinestretch=0.8,]{arm}
@@ -149,17 +149,27 @@ barrier_wait:
 \end{minted}
 \caption{Assembly code for a memory barrier. Threads will wait in the barrier\_wait function until all other threads have reached that code point.}
 \label{fig:codebarrier}
-\end{wrapfigure}
+\end{listing}
 
 The Vmicro16 processor provides barrier synchronisation through the Shared Memory Peripheral. Like the mutex code, the barrier code uses the \verb|LWEX| and \verb|SWEX| instructions to lock a memory cell. Instead of immediately checking the lock as an abstract object, the barrier code treats the cell as a normal memory cell containing a numeric value. \cref{fig:codebarrier} shows a software example of this. When the \verb|barrier_reached| code is reached, the code will increment the shared memory value by 1, indicating that the number of threads that have reached this point has increased by one (r5). The \verb|barrier_wait| function is then entered which waits until this numeric value (r5) is equal to the number of threads (r7) in the system. If this is true, then all threads have reached the \verb|barrier_wait| function and can continue with normal program execution.
 
 \section{Design Challenges}
+This section describes some of the design challenges, attempted solutions, and other possible solutions not within scope of this project.
+
 \subsection{Memory Constraints}
+As discussed in \cref{sec:singlecore} \nameref{sec:singlecore}, each processor core features two memories: instruction and scratch memory, which can both map onto synchronous, single-port, FPGA BRAM blocks. While this will reduce LUT requirements in designs with few cores, it becomes a non-trivial problem as the core counts increase. FPGAs have a fixed number of hard-BRAM blocks available for inference by the HDL compiler, for example the low-end Xilinx Spartan-6 XC6SLX9 FGPA features 32 18 Kb BRAM blocks \cite[p.~2]{s6fam}, and the Cyclone V 5CSEMA5F31C6N has 397 10 Kb blocks \cite[p.~22]{cvfam}.
 
-
-\begin{figure}[H]
+\begin{figure}[h]
 \centering
-\includegraphics[width=13cm]{soc_layout_schem}
-\caption{•}
+\includegraphics[width=0.5\textwidth]{bram_limit}
+\caption{A theoretical FPGA device with 3 BRAM blocks running a 4-core design. Each core can map onto a BRAM block, however as there are more cores than BRAM blocks available, some core memories will be implemented as distributed RAM, or in the worse case using ALMs.}
 \label{}
 \end{figure}
+
+
+
+
+
+
+
+

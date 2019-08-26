@@ -6,3 +6,45 @@ So far the system's design, implementation, and example usage, has been presente
 
 \section{Introduction}
 This chapter presents analytic information
+
+\section{Scenario Performance}
+To evaluate the performance of the system-on-chip, scenarios encompassing computational problems that are reflective of real-world applications are compiled and ran on the design.
+
+\subsection{Scenario Overview}
+The scenario is a software program that runs a parallel implementation of the summation function, i.e. \verb|sum [1..10]| which returns 55. While this may seem too simple at first to measure performance of a multi-core system-on-chip, the function is actually quite appropriate as it encompasses various parallel problems, such as: a fixed time/size serial part; broadcasting of the data set (in this case the range of the summation); thread synchronisation (to know when the data is ready and to schedule gathering of intermediary results); and is highly scalable.
+
+The summation task flow is as follows:
+\begin{enumerate}
+\item Root (core \#0) broadcasts the range of the summation (i.e. sum 1 to 10) to all cores via the global shared memory.
+\item Non-root cores wait for this broadcast to finish (memory barrier), then calculate their own subset of the range to sum. For example, if Root broadcasts that there are 240 samples and 10 cores in the system, each core calculates that it need to perform 
+
+\begin{equation}
+240/10 = 24
+\end{equation} calculations starting from 
+\begin{equation}
+{ID_{CORE}} * 24
+\end{equation}
+For example, Core \#5 will start its 24 sample subset summation from
+\begin{equation}
+5 * 24 = 120
+\end{equation}
+effectively performing \verb|sum [120..123]|.
+
+\item All cores perform an intermediary summation over their subset of the range (serial part).
+\item All cores attempt to add their intermediary result to a global sum value in global shared memory (mutex).
+\item All cores halt, signalling that their work has been committed to the global shared memory and have finished the program.
+\end{enumerate}
+
+This program is written in assembly in the file \verb|sw/demos/asm/sum64.s| and can be compiled using the assembly compiler (developed for deliverable \ref{ed:compiler}) using the command below. The assembly compiler outputs the file \verb|asm.s.hex| containing hex instruction words for use in Verilog's \verb|$readmemh| function. This data is used for each core's instruction memory.
+\\
+\mintinline{bash}{                      python sw/asm.py sw/demos/asm/sum64.s}
+
+\subsection{Performance Measurements}
+The following metrics will be recorded to estimate general performance of the system-on-chip:
+\begin{itemize}
+\item Total program run-time.\\This is the time from when the reset signal is de-asserted to when all cores have halted. Each core has an output \verb|halt| signal which the SoC can use to determine if all cores have halted using \verb|wire all_halted = &core_halts;|. 
+
+\item Time spent on the serial part.\\The serial part of this scenario is each core performing it's intermediary summation of it's subset range.
+
+\item Time spent on communication.\\This includes time spent on thread synchronisation, i.e. waiting for the global memory to become available and waiting on the root to finish broadcast.
+\end{itemize}

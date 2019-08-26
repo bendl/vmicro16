@@ -3,7 +3,7 @@
 <!--                                                         -->
 <!-- Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.   -->
 
-<Project Version="7" Minor="40" Path="Z:/uni/vmicro16/vmicro16/proj/vivado/vivado.xpr">
+<Project Version="7" Minor="40" Path="E:/Projects/uni/vmicro16/vmicro16/proj/vivado/vivado.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="43660c48c00c40cbbfb673f11e2d8fe0"/>

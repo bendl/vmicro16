@@ -26,6 +26,14 @@ As discussed in \cref{sec:singlecore} \nameref{sec:singlecore}, each processor c
 
 As shown in \cref{fig:bram_limit}, as the number of processor cores increasing they eventually outnumber the available BRAM blocks, resulting in their memories being implemented in either distributed RAMs or ALMs, both of which can consume significant logic resources of the FPGA which reduces the maximum possible core count.
 
+\subsection{Maximum Frequency}
+\begin{figure}
+\centering
+\includegraphics[width=0.6\textwidth]{sizes_fmax}
+\caption{Cyclone V maximum design frequency for various core count configurations.}
+\label{fig:sizes_fmax}
+\end{figure}
+
 \section{Scenario Performance}
 To evaluate the performance of the system-on-chip, scenarios encompassing computational problems that are reflective of real-world applications are compiled and ran on the design.
 

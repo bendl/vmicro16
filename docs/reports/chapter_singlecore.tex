@@ -27,7 +27,7 @@ A small reduction in size within the single-core will result in substantial size
 The 16-bit instruction set listing is shown in \cref{fig:isa}.
 \end{quotation}
 
-In this proposed architecture, most instructions are \textit{destructive}, meaning that source operands also act as the destination, hence effectively \textit{destroying} the original source operand. This design decision reduces the complexity of the ISA as traditional three operand instructions, for example \verb|add r0, r0, r1|, can be encoded using only two operands \verb|add r0, r1|. However, this does increase the complexity of compilers as they may need to make temporary copies of registers as the instructions will \textit{destroy} the original source data.
+In this proposed architecture, most instructions are \textit{destructive} meaning that source operands also act as the destination, hence effectively \textit{destroying} the original source data. This design decision reduces the complexity of the ISA as traditional three operand instructions, for example \verb|add r0, r0, r1|, can be encoded using only two operands \verb|add r0, r1|. However, this does increase the complexity of compilers as they may need to make temporary copies of registers as the instructions will \textit{destroy} the original source data.
 
 The instruction set is split into 7 categories (highlighted by colours in \cref{fig:isa}):
 \begin{itemize}
@@ -152,7 +152,7 @@ In \cref{fig:vdecoder}, it can be seen that the first 4 opcode cases (BR, MULT, 
 
 
 \subsection{Pipelining}
-In the interim progress update, the processor design featured \textit{instruction pipelining} to meet requirement \ref{ed:ipc}. Instruction pipelining allows instructions executions to be overlapped in the pipeline, resulting in higher throughput (up to one instruction per clock) at the expense of 5-6 clocks of latency and \textit{significant} code complexity. As the development of the project shifted from single-core to multi-core, it became obvious that the complexity of the pipelined processor would inhibit the integration of multi-core functionality. It was decided to remove the instruction pipelining functionality and use a simpler state-machine based pipeline that is much simpler to extend and would cause fewer challenges later in the project. 
+In the interim progress update, the processor design featured \textit{instruction pipelining} to meet requirement \ref{ed:ipc}. Instruction pipelining allows instructions executions to be overlapped in the pipeline, resulting in higher throughput (up to one instruction per clock) at the expense of 5-6 clocks of latency and \textit{significant} code complexity. As the development of the project shifted from single-core to multi-core, it became obvious that the complexity of the pipelined processor would inhibit the integration of the multi-core functionality. It was decided to remove the instruction pipelining functionality and use a simpler state-machine based pipeline that is much simpler to extend and would cause fewer challenges later in the project. 
 
 \subsection{Design Optimisations}
 In a design that has many instantiations of the same component, a small resource saving improvement within the component can have a significant overall savings improvement if it is instantiated many times. Project requirement \ref{cd:vendor} requires the design to be compiled for a range of FPGA sizes, and so space saving optimisations are considered. 

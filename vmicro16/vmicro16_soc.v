@@ -129,6 +129,21 @@ module vmicro16_soc (
         .M_PREADY   (M_PREADY)
     );
 
+    vmicro16_psel_err_apb error_apb (
+        .clk        (clk),
+        .reset      (),
+        // apb slave to master interface
+        .S_PADDR    (),
+        .S_PWRITE   (),
+        .S_PSELx    (M_PSELx[`APB_PSELX_PERR0]),
+        .S_PENABLE  (M_PENABLE),
+        .S_PWDATA   (),
+        .S_PRDATA   (),
+        .S_PREADY   (M_PREADY[`APB_PSELX_PERR0]),
+
+        .wdreset    (wdreset)
+    );
+
 `ifdef DEF_USE_WATCHDOG
     vmicro16_watchdog_apb # (
         .BUS_WIDTH  (`APB_WIDTH),

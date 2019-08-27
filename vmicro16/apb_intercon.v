@@ -44,6 +44,10 @@ module addr_dec # (
     assign sel[`APB_PSELX_WDOG0] = ((addr >= `DEF_MMU_WDOG0_S) 
                                  && (addr <= `DEF_MMU_WDOG0_E));
 
+    // PERR0
+    // Bus error recovery for bad PADDR mmu addresses.
+    assign sel[`APB_PSELX_PERR0] = ~( |sel[`APB_PSELX_WDOG0:`APB_PSELX_GPIO0] );
+
     // binary number output
     always @(*)
         if      ((addr >= `DEF_MMU_GPIO0_S) && (addr <= `DEF_MMU_GPIO0_E))
@@ -62,6 +66,8 @@ module addr_dec # (
             seli = `APB_PSELX_TIMR0;
         else if ((addr >= `DEF_MMU_WDOG0_S) && (addr <= `DEF_MMU_WDOG0_E))
             seli = `APB_PSELX_WDOG0;
+        else if (sel[`APB_PSELX_PERR0])
+            seli = `APB_PSELX_PERR0;
         else
             seli = 0;
 endmodule

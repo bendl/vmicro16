@@ -3,6 +3,31 @@
 `include "vmicro16_soc_config.v"
 `include "formal.v"
 
+// PSEL signal error detection peripheral
+// No action is taken however.
+module vmicro16_psel_err_apb (
+    input clk,
+    input reset,
+
+    // APB Slave to master interface
+    input  [0:0]                    S_PADDR, // not used (optimised out)
+    input                           S_PWRITE,
+    input                           S_PSELx,
+    input                           S_PENABLE,
+    input  [0:0]                    S_PWDATA,
+    
+    // prdata not used
+    output [0:0]                    S_PRDATA,
+    output                          S_PREADY,
+
+    // output an error interrupt signal
+    output err_i
+);
+    assign S_PREADY = (S_PSELx & S_PENABLE) ? 1'b1 : 1'b0;
+    assign err_i    = S_PREADY;
+endmodule
+
+
 // Simple watchdog peripheral
 module vmicro16_watchdog_apb # (
     parameter BUS_WIDTH  = 16,

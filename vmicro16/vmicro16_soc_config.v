@@ -7,7 +7,7 @@
 
 `define FORMAL
 
-`define CORES           16
+`define CORES           32
 `define SLAVES          9
 
 ///////////////////////////////////////////////////////////

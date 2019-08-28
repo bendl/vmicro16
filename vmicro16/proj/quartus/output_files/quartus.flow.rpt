@@ -1,5 +1,5 @@
 Flow report for quartus
-Mon Aug 26 18:42:04 2019
+Tue Aug 27 17:24:47 2019
 Quartus Prime Version 17.1.0 Build 590 10/25/2017 SJ Lite Edition
 
 
@@ -40,25 +40,25 @@ refer to the applicable agreement for further details.
 +-------------------------------------------------------------------------------+
 ; Flow Summary                                                                  ;
 +---------------------------------+---------------------------------------------+
-; Flow Status                     ; Successful - Mon Aug 26 18:41:05 2019       ;
+; Flow Status                     ; Successful - Tue Aug 27 17:24:47 2019       ;
 ; Quartus Prime Version           ; 17.1.0 Build 590 10/25/2017 SJ Lite Edition ;
 ; Revision Name                   ; quartus                                     ;
 ; Top-level Entity Name           ; top_ms                                      ;
 ; Family                          ; Cyclone V                                   ;
 ; Device                          ; 5CSEMA5F31C6                                ;
 ; Timing Models                   ; Final                                       ;
-; Logic utilization (in ALMs)     ; 13,262 / 32,070 ( 41 % )                    ;
-; Total registers                 ; 14485                                       ;
-; Total pins                      ; 58 / 457 ( 13 % )                           ;
+; Logic utilization (in ALMs)     ; N/A                                         ;
+; Total registers                 ; 13692                                       ;
+; Total pins                      ; 58                                          ;
 ; Total virtual pins              ; 0                                           ;
-; Total block memory bits         ; 188,416 / 4,065,280 ( 5 % )                 ;
-; Total DSP Blocks                ; 34 / 87 ( 39 % )                            ;
+; Total block memory bits         ; 188,416                                     ;
+; Total DSP Blocks                ; 34                                          ;
 ; Total HSSI RX PCSs              ; 0                                           ;
 ; Total HSSI PMA RX Deserializers ; 0                                           ;
 ; Total HSSI TX PCSs              ; 0                                           ;
 ; Total HSSI PMA TX Serializers   ; 0                                           ;
-; Total PLLs                      ; 0 / 6 ( 0 % )                               ;
-; Total DLLs                      ; 0 / 4 ( 0 % )                               ;
+; Total PLLs                      ; 0                                           ;
+; Total DLLs                      ; 0                                           ;
 +---------------------------------+---------------------------------------------+
 
 
@@ -67,7 +67,7 @@ refer to the applicable agreement for further details.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 08/26/2019 18:33:00 ;
+; Start date & time ; 08/27/2019 17:23:04 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; quartus             ;
 +-------------------+---------------------+
@@ -78,7 +78,7 @@ refer to the applicable agreement for further details.
 +--------------------------------------+----------------------------------------+---------------+-------------+-----------------+
 ; Assignment Name                      ; Value                                  ; Default Value ; Entity Name ; Section Id      ;
 +--------------------------------------+----------------------------------------+---------------+-------------+-----------------+
-; COMPILER_SIGNATURE_ID                ; 10995770589191.156684077907096         ; --            ; --          ; --              ;
+; COMPILER_SIGNATURE_ID                ; 10995770589191.156692298314812         ; --            ; --          ; --              ;
 ; EDA_DESIGN_INSTANCE_NAME             ; NA                                     ; --            ; --          ; tb_vmicro16_soc ;
 ; EDA_NATIVELINK_SIMULATION_TEST_BENCH ; tb_vmicro16_soc                        ; --            ; --          ; eda_simulation  ;
 ; EDA_OUTPUT_DATA_FORMAT               ; Verilog Hdl                            ; --            ; --          ; eda_simulation  ;
@@ -100,38 +100,29 @@ refer to the applicable agreement for further details.
 +--------------------------------------+----------------------------------------+---------------+-------------+-----------------+
 
 
-+-------------------------------------------------------------------------------------------------------------------------------+
-; Flow Elapsed Time                                                                                                             ;
-+---------------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Module Name               ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
-+---------------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis      ; 00:02:01     ; 1.8                     ; 5197 MB             ; 00:02:36                           ;
-; Fitter                    ; 00:05:38     ; 1.5                     ; 6968 MB             ; 00:08:48                           ;
-; Assembler                 ; 00:00:16     ; 1.0                     ; 5051 MB             ; 00:00:16                           ;
-; TimeQuest Timing Analyzer ; 00:00:57     ; 3.2                     ; 5610 MB             ; 00:01:48                           ;
-; Total                     ; 00:08:52     ; --                      ; --                  ; 00:13:28                           ;
-+---------------------------+--------------+-------------------------+---------------------+------------------------------------+
++--------------------------------------------------------------------------------------------------------------------------+
+; Flow Elapsed Time                                                                                                        ;
++----------------------+--------------+-------------------------+---------------------+------------------------------------+
+; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
++----------------------+--------------+-------------------------+---------------------+------------------------------------+
+; Analysis & Synthesis ; 00:01:40     ; 2.0                     ; 5209 MB             ; 00:01:49                           ;
+; Total                ; 00:01:40     ; --                      ; --                  ; 00:01:49                           ;
++----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
-+-----------------------------------------------------------------------------------------+
-; Flow OS Summary                                                                         ;
-+---------------------------+------------------+------------+------------+----------------+
-; Module Name               ; Machine Hostname ; OS Name    ; OS Version ; Processor type ;
-+---------------------------+------------------+------------+------------+----------------+
-; Analysis & Synthesis      ; BEN-SSD          ; Windows 10 ; 10.0       ; x86_64         ;
-; Fitter                    ; BEN-SSD          ; Windows 10 ; 10.0       ; x86_64         ;
-; Assembler                 ; BEN-SSD          ; Windows 10 ; 10.0       ; x86_64         ;
-; TimeQuest Timing Analyzer ; BEN-SSD          ; Windows 10 ; 10.0       ; x86_64         ;
-+---------------------------+------------------+------------+------------+----------------+
++------------------------------------------------------------------------------------+
+; Flow OS Summary                                                                    ;
++----------------------+------------------+------------+------------+----------------+
+; Module Name          ; Machine Hostname ; OS Name    ; OS Version ; Processor type ;
++----------------------+------------------+------------+------------+----------------+
+; Analysis & Synthesis ; BEN-SSD          ; Windows 10 ; 10.0       ; x86_64         ;
++----------------------+------------------+------------+------------+----------------+
 
 
 ------------
 ; Flow Log ;
 ------------
 quartus_map --read_settings_files=on --write_settings_files=off quartus -c quartus
-quartus_fit --read_settings_files=off --write_settings_files=off quartus -c quartus
-quartus_asm --read_settings_files=off --write_settings_files=off quartus -c quartus
-quartus_sta quartus -c quartus
 
 
 

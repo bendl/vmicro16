@@ -1,4 +1,4 @@
-\chapter{Analysis \& Results}
+\chapter{Critical Analysis \& Results}
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 \noindent\\
@@ -27,7 +27,7 @@ As discussed in \cref{sec:singlecore} \nameref{sec:singlecore}, each processor c
 As shown in \cref{fig:bram_limit}, as the number of processor cores increasing they eventually outnumber the available BRAM blocks, resulting in their memories being implemented in either distributed RAMs or ALMs, both of which can consume significant logic resources of the FPGA which reduces the maximum possible core count.
 
 \subsection{Maximum Frequency}
-\begin{figure}
+\begin{figure}[h]
 \centering
 \includegraphics[width=0.6\textwidth]{sizes_fmax}
 \caption{Cyclone V maximum design frequency for various core count configurations.}
@@ -78,7 +78,12 @@ Behavioural simulation will be used to measure the following metrics to estimate
 \item Time spent fetching instructions.\\Instruction fetches occur during stage \verb|STAGE_IF| of the pipeline. The behavioural test bench will record the number of clock cycles each core spends in this state, then calculate the average time spent fetching instructions. 
 \end{itemize}
 
+These measurements are recorded using non-synthesisable Verilog code in both the testbench and module code (\verb|vmicro16_soc.v|).
+
 \subsection{Performance Results}
+The scenario program was simulated on system configuration with 1 to 30 cores with a 50 MHz clock.
+\cref{fig:alg_time} shows the time breakdown of the multi-core system-on-chip running the scenario problem with various core counts. In these measurements all cores feature a small instruction memory which is accessed in constant time (one clock), and so is not shown in the chart. 
+
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.7\textwidth]{alg_time}
@@ -86,12 +91,41 @@ Behavioural simulation will be used to measure the following metrics to estimate
 \label{fig:alg_time}
 \end{figure}
 
+The chart shows the expected shape for software parallel performance -- as the number of cores increase, each core's problem space is reduced resulting in faster completion of the summation part, and an increasing amount of time is spent on thread communication. This result matches my CUDA and MPI parallelism performance analysis results conducted in 2018 \cite{soft354}.
+
+It can be seen that the total run-time is fastest near 8 cores and increases at this point when using more cores. This is likely due to the small summation range per core -- with 30 cores just 8 samples per core are summed, which is extremely overkill and not representative of what a 30-core plus system should be used for.
+
+If a much larger summation range was used (effectively representing a more appropriate scenario for systems with high core counts), the chart shape would stretch horizontally, resulting in the fastest time being on a higher core count than 8.
+
+With high-core counts (16+) it can be seen that the communication time (Tbus\_T) increases significantly. This is likely due to the rotating arbiter design. As discussed in \cref{sec:multimaster}, the arbiter grants bus access to the next core incrementally after the previous core finishes. For large core systems, this can result in large time penalties. For example, if core \#30 is blocking all other cores and the arbiter is lagging behind granting access to core \#5, it will take a significant amount of time for the arbiter to reach core 30 to unblock the system.
+
+\section{Analysis Review}
+There are several takeaways from these results:
+\begin{enumerate}
+\item Use an appropriate number of cores for the dataset size.\\Too few cores result in longer work times and shorter communication times, and too many cores results in shorter work times and longer communication times.
+
+\item Use an appropriate arbitration scheme to prevent blocking the system for too long.\\
+In this design, and likely others, the blocking core is known by the global shared memory (via the locking cells) meaning that this information can be passed to the arbiter to give priority, while still avoiding deadlocks, to the blocking core.
+
+\item Use an appropriate number of cores and still have space for other business logic.
+
+\item More cores may result in lower clock frequencies.\\From \cref{fig:sizes_fmax}, the single-core design can be ran at $\approx$95 MHz while the 4-core design only $\approx$65 MHz (a $\approx$45\% increase). The parallel speed improvements from having more cores may be less than a single fast core.
+\end{enumerate}
+
+System designers should experiment with their algorithm and these takeaways to determine the approximate number of processor cores for their requirements, be that algorithm time, size, clock frequency, or compilation time.
+
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.7\textwidth]{alg_time_shared}
 \caption{Similar to \cref{fig:alg_time} but using shared instruction memory to reduce block memory requirements per core.}
 \label{fig:alg_time_shared}
 \end{figure}
+
+
+
+\chapter{Conclusion}
+\section{Future Work}
+\section{Conclusion}
 
 
 

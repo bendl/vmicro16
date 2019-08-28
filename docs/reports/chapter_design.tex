@@ -90,6 +90,7 @@ The interconnect should allow for easy scalability of master and slave interface
 
 \newpage
 \subsection{Multi-master Support}
+\label{sec:multimaster}
 In this design, each processor can act as an APB master to communicate with peripherals, for example to write a value to UART or to the shared memory peripheral. Because each core runs independently from other cores, it is likely, especially is many-core systems, that two or more processors will want to use the peripheral bus at the same time.
 
 As the peripheral and instruction interconnects use a shared one-to-many (one master to many slaves) bus architecture, only one master can use the bus at any-time. To enable multiple masters to use the bus, a device called an \textit{arbiter} must be used to control which master gets access to drive the shared interconnect.

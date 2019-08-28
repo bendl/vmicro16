@@ -140,8 +140,8 @@ module vmicro16_soc (
         .S_PWDATA   (),
         .S_PRDATA   (),
         .S_PREADY   (M_PREADY[`APB_PSELX_PERR0]),
-
-        .wdreset    (wdreset)
+        // Error interrupt to reset the bus
+        .err_i      ()
     );
 
 `ifdef DEF_USE_WATCHDOG

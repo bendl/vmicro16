@@ -53,6 +53,11 @@
     linktoc=all
 }
 
+\usepackage[acronym]{glossaries}
+\newglossaryentry{utc}{name=UTC, description={Coordinated Universal Time}}
+\newglossaryentry{FPGA}{name=FPGA, description={Field Programmable Gate Array}}
+\makeglossaries
+
 \usepackage[nameinlink,capitalise,noabbrev]{cleveref}
 
 % includegraphics
@@ -124,11 +129,12 @@
 %  {\normalfont\sffamily\Large\bfseries}
 %  {\thesection}{1em}{}
 
-
 \begin{document}
+
 \include{chapter_title}
 \include{chapter_info}
 
+%TC:ignore
 \newpage
 %\newgeometry{voffset=-4cm,bottom=-4cm}
 \renewcommand*\contentsname{Table of Contents}
@@ -137,13 +143,19 @@
 \listoftables
 \listoflistings
 
+\glsaddall
+\glsaddall
+\glsadd{FPGA}
+
+\printglossaries
+%TC:endignore
+
 \include{chapter_int_intro}
 \include{chapter_proj}
 \include{chapter_singlecore}
 \include{chapter_design}
 \include{chapter_software}
 \include{chapter_results}
-\include{chapter_improv}
 
 %TC:ignore
 \clearpage

@@ -1,17 +1,13 @@
 \chapter{Analysis \& Results}
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
-\noindent\\
-So far the system's design, implementation, and example usage, has been presented and discussed.
 
-\section{Introduction}
-This chapter presents analytic information
+\section{Analysis}
+%This section analysis the synthesised and implemented system-on-chip design to see the effect of increasing core counts.
+%This section discusses the area, memory, and performance, of the multi-core system-on-chip design.
+So far the system's design, implementation, and example usage, has been presented and discussed. This chapter presents a critical discussion of the synthesised top-level implementation of the design and potential improvements. 
 
-\section{Implementation Analysis}
-This section analysis the synthesised and implemented system-on-chip design to see the effect of increasing core counts.
-
-\subsection{Design Size}
-\subsubsection{Implementation}
+\subsection{Design Area/Size Requirements}
 On a minimal system-on-chip configuration, with one core and minimal peripherals and features (no reprogramming, no interrupts, no UART), the design requires as few as 700 LUTs with the processor core requiring approximately 300-400 LUTs.
 
 \subsubsection{Memory Constraints}
@@ -30,7 +26,7 @@ As discussed in \cref{sec:singlecore} \nameref{sec:singlecore}, each processor c
   \caption{DE1-SoC (Cyclone V) resource utilisation with various core counts.}
   \label{fig:bram_limitb}
 \end{subfigure}
-\caption{}
+\caption{Per-core instruction memory schematic and performance.}
 \label{fig:bram_limit}
 \end{figure}
 
@@ -58,7 +54,7 @@ As shown in \cref{fig:bram_limit_solb}, the resource requirements using this sha
   \caption{DE1-SoC (Cyclone V) resource utilisation with various core counts using shared instruction memory.}
   \label{fig:bram_limit_solb}
 \end{subfigure}
-\caption{}
+\caption{Shared instruction memory schematic and performance.}
 \label{fig:bram_limit_sol}
 \end{figure}
 
@@ -171,8 +167,6 @@ In this design, and likely others, the blocking core is known by the global shar
 
 System designers should experiment with their algorithm and these takeaways to determine the approximate number of processor cores for their requirements, be that algorithm time, size, clock frequency, or compilation time.
 
-
-
 \chapter{Conclusion}
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
@@ -252,6 +246,8 @@ This will allow for higher throughput and larger data transfers between these de
 \item Re-add instruction pipelining to each processor.\\While this was removed due to it's complexity and fears of hindering multi-core and interrupt integration, now that these features have been accomplished and understood, instruction pipelining should be added to improve instruction throughput.
 
 \item As discussed in \cref{sec:multimaster}, a more complex arbiter that features priority and inputs from the global shared memory would have resulted in significantly lower wait times and therefore performance.
+
+\item As discussed in \cref{sec:result_results} \nameref{sec:result_results}, using a shared memory significantly reduces design size but results in lower performance. To overcome this, a design could \textit{cluster} cores into groups, where each group has a instruction memory that it's core use. This would reduce the demand on a single instruction memory from all the cores to only a few. This is a trade-off using the advantages and disadvantages of both designs.
 \end{enumerate}
 
 

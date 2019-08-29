@@ -68,55 +68,54 @@ The project stages are shown in Table \ref{tb:stages}.
 
 \begin{table}[h]
     \small
-    \begin{tabularx}{\textwidth}{|l|l|l|l|l|X|}
+    \begin{tabularx}{\textwidth}{|l|l|l|l|X|}
     \hline
-    Stage & Title & Start Date & Days & Core & Applicable Deliverables
+    Stage & Title & Start Date & Core & Status
     \\ \specialrule{2pt}{-2pt}{0pt}
-    1.0 & Research & Feb 04 & 7 & x & 
+    1.0 & Research & Feb 04 & x & Completed
     \\ \hline
-    1.1 & Requirement gathering/review & Feb 11 & 14 & x & 
+    1.1 & Requirement gathering/review & Feb 11 & x & Completed
 	\\ \hline
-    1.1 & Processor specification, architecture, ISA & Feb 18 & 100 & x & \ref{cd:isa}
+    1.1 & Processor specification, architecture, ISA & Feb 18 & x & Completed
 	\\ \hline
-    1.2 & Stage/Time Allocation Planning & Feb 25 & 7 & x & 
+    1.2 & Stage/Time Allocation Planning & Feb 25 & x & Completed
     \\ \specialrule{2pt}{-2pt}{0pt}
-    2.1 & Decoder, Register Set, impl \& integration & Feb 25 & 14 & x & \ref{cd:core}
+    2.1 & Decoder, Register Set, impl \& integration & Feb 25 & x & Completed
 	\\ \hline
-    2.2 & Register set impl \& integration & Mar 04 & 14 & x & \ref{cd:core}
+    2.2 & Register set impl \& integration & Mar 04 & x & Completed
 	\\ \hline
-    2.3 & Local memory impl \& integration & Mar 11 & 14 & x & \ref{cd:core}
+    2.3 & Local memory impl \& integration & Mar 11 & x & Completed
     \\ \specialrule{2pt}{-2pt}{0pt}
-    3.1 & Memory mapped register layout \& impl & Apr 01 & 21 &  & \ref{ed:mmu}
+    3.1 & Memory mapped register layout \& impl & Apr 01 &  & On-going
 	\\ \hline
-    3.2 & AMBA APB peripheral bus connected to MMU & Apr 08 & 21 &  & \ref{ed:mmu}
+    3.2 & Wishbone peripheral bus connected to MMU & Apr 08 &  & On-going
 	\\ \hline
-    3.3 & Pipelined implementation and verification & Apr 15 & 21 &  & \ref{ed:pipeline}
+    3.3 & Pipeline implementation and verification & Apr 15 &  & On-going
 	\\ \hline
-    3.4 & Cache memory design \& impl & Apr 22 & 28 &  & \ref{ed:pipeline}
+    3.4 & Cache memory design \& impl & \st{Apr 22} &  & Cancelled
     \\ \specialrule{2pt}{-2pt}{0pt}
-    4.1 & Multi-core communication interface & TBD & TBD & x & \ref{cd:interconnect}
+    4.1 & Multi-core communication interface & Jun 05 & x & Planned
 	\\ \hline
-    4.2 & Shared-memory controller & TBD & TBD & x & \ref{cd:interconnect}
+    4.2 & Shared-memory controller & Jun 05 & x &Planned
 	\\ \hline
-    4.3 & Scalable multi-core interface (10s of cores) & TBD & TBD & x & \ref{cd:interconnect}
+    4.3 & Scalable multi-core interface (10s of cores) & Jul 01 & x & Planned
 	\\ \hline
-    4.4 & Multi-core example program (reduction) & TBD & TBD & x & \ref{cd:software}
+    4.4 & Multi-core example program (reduction) & Jul 10 & x & Planned
     \\ \specialrule{2pt}{-2pt}{0pt}
-    5.1 & SPI-FPGA interface for OTG programming & TBD & TBD &  & \ref{ed:flash}
+    5.1 & SPI-FPGA interface for OTG programming & \st{TBD} &  & Cancelled
 	\\ \hline
-    5.2 & FPGA-PC interfacing & TBD & TBD &  & \ref{ed:debug}
+    5.2 & FPGA-PC interfacing & \st{TBD} &  & Cancelled
 	\\ \hline
-    5.3 & FPGA-PC debugging (instruction breakpoints) & TBD & TBD &  & \ref{ed:debug}
+    5.3 & FPGA-PC debugging (instruction breakpoints) & \st{TBD} & & Cancelled
     \\ \specialrule{2pt}{-2pt}{0pt}
-    6.1 & Compiler backend for vmicro16 & TBD & TBD &  & \ref{ed:compiler}
+    6.1 & Compiler backend for vmicro16 & TBD &  & Unknown
 	\\ \hline
-    6.2 & Compiler support for multi-core codegen & TBD & TBD &  & \ref{ed:compiler}
+    6.2 & Compiler support for multi-core codegen & TBD &  & Unknown 
     \\ \specialrule{2pt}{-2pt}{0pt}
-    7.1 & AMBA APB peripherals for demo & TBD & TBD & x & \ref{cd:software}
+    7.1 & Wishbone peripherals for demo & Aug 01 & x & Planned
     \\ \specialrule{2pt}{-2pt}{0pt}
-    8.1 & Final Report & TBD & TBD & x & 
-	\\ \hline
-    \end{tabularx}
+    8.1 & Final Report & Jun 05 & x & Planned
+	\\ \hline    \end{tabularx}
     \caption{Project stages throughout the life cycle of the project.}
     \label{tb:stages}
 \end{table}

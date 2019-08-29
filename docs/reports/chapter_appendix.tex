@@ -195,7 +195,6 @@ Defaults with empty/blank values signifies that the preprocessor define is comme
 \section{System-on-Chip Configuration Options}
 \begin{table}[H]
 \centering
-\label{tab:isa}
 \begin{tabularx}{\textwidth}{l|l|p{8cm}}
 Macro      & Default & Purpose                         \\ 
 \hline
@@ -223,7 +222,6 @@ FIX\_T3                    & //      & Enable a T3 state for the APB transaction
 DEF\_USE\_REPROG           & //      & Programme instruction memory via UART0. Requires DEF\_GLOBAL\_RESET. Enabling this will reserve the UART0 RX port for exclusive use for programming the instruction memory. Software reads of UART0 RX will return 0.\\
 \end{tabular}
 \caption{Core Options}
-\label{tab:isa}
 \end{table}
 
 \section{Peripheral Options}
@@ -261,7 +259,6 @@ DEF\_MMU\_TIMR0\_S & 16'h0200 & Shared timer peripheral start/end address       
 DEF\_MMU\_TIMR0\_E & 16'h0202 & "                                                   
 \end{tabular}
 \caption{Peripheral Options}
-\label{tab:isa}
 \end{table}
 
 \chapter{Viva Demonstration Examples}
@@ -359,8 +356,9 @@ Outputs: \verb|asm.s.hex| file in the PWD.
     baselinestretch=0.8,
 ]{python}{../../sw/asm.py}
 
+\newpage
 \section{Text Compiler Listing}
-A text-based programming language compiler was also used to write high-level software code for the Vmicro16 processor. The PRCO304 \cite{prco304} compiler was extended to support the Vmicro16 instruction set architecture and some extra language features (arrays, inline assembly, pointer writing, etc.). However, the compiler ended up not being not used.
+A text-based programming language compiler was also used to write high-level software code for the Vmicro16 processor. The PRCO304 \cite{prco304} compiler was extended to support the Vmicro16 instruction set architecture and some extra language features (arrays, inline assembly, pointer writing, etc.). However, the compiler ended up not being not used in favour of the assembly compiler which could be easily used to write multi-threaded code.
 \\\\
 The code changes to extend the compiler are available as a \verb|.patch| for users to patch the compiler themselves. The patch is available from: \url{https://github.com/bendl/vmicro16/tree/master/sw/patch}.
 \\\\

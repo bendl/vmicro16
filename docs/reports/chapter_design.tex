@@ -14,17 +14,18 @@ Previous peripheral interface designs of mine have been directly connected to a 
 It can be seen that many of the peripherals need similar inputs and outputs (for example read and write data signals, write enables, and addresses), and because of this, a standard interface can be used to interface with each peripheral. Using a standard interface can reduce logic requirements as each peripheral can be driven by a single driver.
 
 \subsection{Comparison of On-chip Buses}
-The choice of on-chip interconnect has changed multiple times over the life-cycle of this project, primary due to ease of implementation and resource requirements. 
-
-Originally, it was planned to use the Wishbone bus \cite{wishbone} due to it's popularity within open-source FPGA modules and good quality documentation.
+The choice of on-chip interconnect has changed multiple times over the life-cycle of this project, primary due to ease of implementation and documentation quality. 
+Originally, it was planned to use the Wishbone bus \cite{wishbone} due to it's popularity within open-source FPGA modules, primarily available from \url{opencores.org}, and good quality documentation. This choice would enable easier integration with common peripherals, such as SRAM, UARTs, and timers.
 
 Late in the project, it was decided to use the AMBA APB protocol \cite {ambaapb} as it is more commonly used in large commercial designs and understanding how the interface worked would better benefit myself. APB describes an intuitive and easy to implement 2-state interface aimed at communicating with low-throughput devices, such as UARTs, timers, and watchdogs.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.7\textwidth]{apb_wave}
+\includegraphics[width=0.8\textwidth]{apb_wave}
 \caption{Waveform showing an APB read transaction.}
 \end{figure}
+
+Although AMBA AHB-Lite \cite{armahb} might be better suited for processor-to-processor and processor-to-memory transactions due to it's higher throughput and data bursts, the complexity of the interconnect is significantly greater and implementing it from scratch is out of scope for this project's timeline.
 
 \section{Overview}
 The system-on-chip design is split into 3 main parts: peripheral interconnect (red), CPU array (gray), and the instruction memory interconnect (green).
@@ -52,13 +53,17 @@ The interconnect should allow for easy scalability of master and slave interface
 \end{itemize}
 
 \section{Interfaces}
+The master and slave interface ports shown in \cref{fig:watchdog} are each similar to the AMBA AHB schematic shown in \cref{fig:ahb}. This project's interconnect bus requires multi-master support which the figure does not show.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.7\textwidth]{ahb}
+\caption{Source: \cite{armahb}}
+\label{fig:ahb}
 \end{figure}
 
-\subsection{Master to Slave Interface}
+In our multi-master design, the interface between masters and slaves use the signals shown in \cref{fig:vapb}. The interface extends the AMBA APB interface to provide more information regarding the owner of the transaction and any special operations.
+
 \begin{figure}[H]
 \centering
 \begin{bytefield}[bitwidth=3.5ex, rightcurly=., rightcurlyspace=0pt]{21}
@@ -82,13 +87,43 @@ The interconnect should allow for easy scalability of master and slave interface
 \bitbox{20}{\color{lightgray}\rule{\width}{\height}} & \bitbox{1}{\rotatebox{90}{\small WE}}
 \end{rightwordgroup}\\
 
+\begin{rightwordgroup}{PSELx[0:0]}
+\bitbox{20}{\color{lightgray}\rule{\width}{\height}} & \bitbox{1}{\rotatebox{90}{}}
+\end{rightwordgroup}\\
+
 \begin{rightwordgroup}{PENABLE[0:0]}
 \bitbox{20}{\color{lightgray}\rule{\width}{\height}} & \bitbox{1}{\rotatebox{90}{\small EN}}
+\end{rightwordgroup}\\
+
+\begin{rightwordgroup}{PREADY[0:0]}
+\bitbox{20}{\color{lightgray}\rule{\width}{\height}} & \bitbox{1}{\rotatebox{90}{}}
 \end{rightwordgroup}
 \end{bytefield}
+\caption{Vmicro16 master/slave interface using AMBA APB}
+\label{fig:vapb}
 \end{figure}
 
-\newpage
+This interface is designed to be backwards compatible with existing APB interfaces -- the additional data parts are after the MSB of the data width. The \verb|CORE_ID| parameter is the unsigned numerical representation of the core's ID that originated the transaction. \verb|SE|, store exclusive, and \verb|LE|, load exclusive, are two parameters used to distinguish between the \verb|SW/LW| instructions and their exclusive counterparts, as they share the same bus. These extra parameters showin in \cref{fig:vapb} (from [20:16]) are only used by the global shared memory peripheral to provide memory exclusivity. The decoding of the LE and SE parameters are shown in \cref{tab:vapb}.
+
+\begin{table}
+\centering
+\begin{tabular}{|l|l|l|} 
+\hline
+LE & SE & Operation                  \\ 
+\hline
+0  & 0  & LW/SW depending on PWRITE  \\ 
+\hline
+0  & 1  & SWEX                       \\ 
+\hline
+1  & 0  & LWEX                       \\ 
+\hline
+1  & 1  & Not valid                  \\
+\hline
+\end{tabular}
+\caption{Decoding of the LE and SE parameters to determine the global shared memory operation.}
+\label{tab:vapb}
+\end{table}
+
 \subsection{Multi-master Support}
 \label{sec:multimaster}
 In this design, each processor can act as an APB master to communicate with peripherals, for example to write a value to UART or to the shared memory peripheral. Because each core runs independently from other cores, it is likely, especially is many-core systems, that two or more processors will want to use the peripheral bus at the same time.
@@ -107,23 +142,9 @@ In this scheme, access to the bus is given incrementally to each master port, ev
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{multimaster}
-\caption{Foo}
+\caption{Multi-master schematic for the Vmicro16 system-on-chip.}
 \label{fig:multimaster}
 \end{figure}
-
-
-
-\begin{figure}[H]
-\centering
-\begin{bytefield}[bitwidth=.5em, rightcurly=., rightcurlyspace=0pt]{84}
-\bitheader[endianness=big]{0,20,41,62,83} \\
-\bitbox{21}{Core $N$-$1$} & 
-\bitbox{21}{$\cdots$} & 
-\bitbox{21}{Core 1} & 
-\bitbox{21}{Core 0}
-\end{bytefield}
-\end{figure}
-
 
 \section{Further Work}
 The submitted design is acceptable for a multi-core system as it fulfils the following requirements:

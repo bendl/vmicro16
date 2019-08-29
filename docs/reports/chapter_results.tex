@@ -155,6 +155,7 @@ As previous discussed in \cref{sec:anal_memory}, using a shared instruction memo
 
 As with Figure \ref{fig:alg_time}, using too many cores for a small data set can result in the scenario taking longer than a single core.
 
+\clearpage
 \section{Analysis Review}
 There are several takeaways from these results:
 \begin{enumerate}
@@ -176,9 +177,13 @@ System designers should experiment with their algorithm and these takeaways to d
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 
+\section{Overview}
+This project's primary goal was to explore and understand the design considerations of multi-core systems designing and implementing one from scratch. A 16-bit processor core was created and connected to a scalable multi-master bus interconnect to enable communication to peripherals. More processor cores were added and software was written to implement multi-threaded communication primitives, such as mutexes and memory barriers, to enable core-to-core communication.
+
 \section{Review Against Project Deliverables}
+This section will compare against the project deliverables initially outlined in \cref{sect:goals} \nameref{sect:goals}.
 \subsection{Core Deliverables}
-This project has achieved all core deliverables outlined in \cref{sect:goals} \nameref{sect:goals}.
+This project has achieved all core deliverables. A brief overview of each accomplishment is described below.
 
 \begin{enumerate}[leftmargin=2\parindent, label=\bfseries CD\arabic*]
 \item{\textbf{Design a compact 16-bit RISC instruction set architecture.}\\
@@ -237,7 +242,17 @@ This project has achieved all core deliverables outlined in \cref{sect:goals} \n
 
 
 \section{Future Work}
-There are several aspects to this project which could be improved. First, 
+There are two types of improvements that could be performed to improve the project. The first is to perform various refinements to existing project features to produce a higher quality, more efficient and performant design.  The second is to add features for the purpose of gaining knowledge.
+
+A few of these improvements are described below:
+\begin{enumerate}
+\item Use AMBA AHB for processor-to-processor and processor-to-memory communication.\\
+This will allow for higher throughput and larger data transfers between these devices. If instructions can be fetched in bulk from the instruction memory via AHB, it would enable more processor optimisations such as out-of-order execution and branch prediction. The AMBA APB interface would still be used for communicating with the peripherals.
+
+\item Re-add instruction pipelining to each processor.\\While this was removed due to it's complexity and fears of hindering multi-core and interrupt integration, now that these features have been accomplished and understood, instruction pipelining should be added to improve instruction throughput.
+
+\item As discussed in \cref{sec:multimaster}, a more complex arbiter that features priority and inputs from the global shared memory would have resulted in significantly lower wait times and therefore performance.
+\end{enumerate}
 
 
 

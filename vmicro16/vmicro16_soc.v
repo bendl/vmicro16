@@ -55,6 +55,9 @@ module vmicro16_soc (
     //   Passed to pow_reset to generate a longer reset pulse
     wire wdreset;
     wire prog_prog;
+    // Set high if a bus stall or error occurs.
+    // This will reset the whole SoC!
+    wire bus_reset;
 
     // soft register reset hold for brams and registers
     wire soft_reset;
@@ -65,7 +68,12 @@ module vmicro16_soc (
         ) por_inst (
             .clk        (clk),
             `ifdef DEF_USE_WATCHDOG
-            .reset      (reset | wdreset | prog_prog),
+            .reset      (reset | wdreset | prog_prog
+                `ifdef DEF_USE_BUS_RESET
+                    | bus_reset),
+                `else
+                    ),
+            `endif
             `else
             .reset      (reset),
             `endif
@@ -129,6 +137,7 @@ module vmicro16_soc (
         .M_PREADY   (M_PREADY)
     );
 
+`ifdef DEF_USE_BUS_RESET
     vmicro16_psel_err_apb error_apb (
         .clk        (clk),
         .reset      (),
@@ -141,8 +150,9 @@ module vmicro16_soc (
         .S_PRDATA   (),
         .S_PREADY   (M_PREADY[`APB_PSELX_PERR0]),
         // Error interrupt to reset the bus
-        .err_i      ()
+        .err_i      (bus_reset)
     );
+`endif
 
 `ifdef DEF_USE_WATCHDOG
     vmicro16_watchdog_apb # (

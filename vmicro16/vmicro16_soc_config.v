@@ -46,6 +46,10 @@
 // Enable a watch dog timer to reset the soc if threadlocked
 //`define DEF_USE_WATCHDOG
 
+// Enable to detect bus communication stalls or errors.
+//   If detected, the whole SoC will be soft-reset, as if by a watchdog
+//`define DEF_USE_BUS_RESET
+
 // Enables instruction memory programming via UART0
 //`define DEF_USE_REPROG
 

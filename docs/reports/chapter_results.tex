@@ -67,6 +67,8 @@ Whilst this is a significant resource saving opportunity, it does have significa
 
 
 \subsection{Maximum Frequency}
+\cref{fig:sizes_fmax} below shows the maximum clock frequency for the design (Fmax) on the Cyclone V on the DE1-SoC. As expected, having more cores results in more logic and thus a longer  propagation delays to each core. System designers should consider the number of cores in their design as having fewer, faster, cores may outperform having more, slower, cores in some use-cases.
+
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.6\textwidth]{sizes_fmax}
@@ -171,10 +173,69 @@ System designers should experiment with their algorithm and these takeaways to d
 
 
 \chapter{Conclusion}
+\startcontents[chapters]
+\printcontents[chapters]{}{1}{}
 
-\section{Conclusion}
+\section{Overview}
 
+\section{Review Against Project Deliverables}
+\subsection{Core Deliverables}
+This project has achieved all core deliverables outlined in \cref{sect:goals} \nameref{sect:goals}.
 
+\begin{enumerate}[leftmargin=2\parindent, label=\bfseries CD\arabic*]
+\item{\textbf{Design a compact 16-bit RISC instruction set architecture.}\\
+\textit{Achieved}. A new 16-bit instruction set has been designed and implemented, nicknamed \textit{Vmicro16} (Verilog microprocessor 16-bits).
+}
+
+\item{\textbf{Design and implement a Verilog RISC core that implements the ISA in \ref{cd:isa}.}\\
+\textit{Achieved}. The implementation is found in \verb|vmicro16.v|.
+}
+
+\item{\textbf{Design and implement an on-chip interconnect for multi-core processing (2 to 32 cores) using the RISC core from \ref{cd:core}.}\\
+\textit{Achieved}. The AMBA APB bus was chosen and adapted for multi-master support. While the design is simple and lacks in performance, it does not consume a significant amount of area, leaving space for more cores and peripherals.
+}
+
+\item{\textbf{Analyse performance of serial and parallel software algorithms, such as parallel DFT, on the processor.}\\
+\textit{Achieved}. A summation computation was chosen to demonstrate effectiveness in various parallel computational problems, such as subset calculation, thread communication, and broadcast/gather procedures.
+}
+
+\item{\textbf{Allow the RISC core to be easily compiled to multiple FPGA vendors (Xilinx, Altera).}\\
+\textit{Achieved}. The design has been successfully compiled on Quartus Prime, Xilinx Vivado, Xilinx ISE, ModelSim, and Icarus Verilog. The design has been succesfully implemented on the Cyclone V and Spartan-6 FPGA devices.
+}
+\end{enumerate}
+
+\subsection{Extended Deliverables}
+\begin{enumerate}[leftmargin=2\parindent, label=\bfseries ED\arabic*]
+
+    \item{\textbf{Design a RISC core with an instructions-per-clock (IPC) rating of at least 1.0 (a single-cycle CPU).}\\
+    \textit{Not achieved}. Although present in the interim update, it was decided to remove this feature due to it's complexity and possibility of it hindering multi-core and interrupt integration.
+    }
+    
+    \item{\textbf{Design a RISC core with a pipe-lined data path to increase the design's clock speed.}\\
+    \textit{Achieved}. Data in the processor's pipeline is clocked through stages of flip-flops to reduce the critical path.
+    }
+    
+    \item{\textbf{Design a scalable multi-core interconnect supporting arbitrary (more than 32) RISC core instances (manycore) using Network-on-Chip (NoC) architecture.}\\
+    \textit{Not achieved}. The implemented design uses traditional multi-core communication techniques (shared memory communication, mutexes, etc.) rather than a NoC architecture. While the NoC design would be more scalable, it would be of much higher complexity and therefore out-of-scope for this project's timeline.}
+    
+    \item{\textbf{Design a compiler-backend for the PRCO304 \cite{prco304} compiler to support the ISA from \ref{cd:isa}. This will make it easier to build complex multi-core software for the processor.}\\
+    \textit{Somewhat achieved.} While a compiler backend was produced that allowed high-level code to be compiled and run on the Vmicro16 processor, it lacked many multi-core and interrupt features. In addition, many unforeseen bugs were found in the original compiler, and it was decided instead to build and use a simpler text-assembly based compiler, \verb|asm.py|.
+    }
+    \item{\textbf{The RISC core can communicate to peripherals via a memory-mapped addresses using the Wishbone bus.}\\
+    \textit{Achieved.} Although not Wishbone, AMBA APB was used instead as I it's interface is more intuitive.}
+    
+    \item{\textbf{Implement various memory-mapped peripherals such as UART, GPIO, LCD, to aid visual representation of the processor during the demonstration viva.}\\
+    \textit{Somewhat achieved.} Modular UART, GPIO, watchdog, bus recovery, and memory peripherals were created to visually demonstrate features of the design. An LCD peripheral was not made due to time-constraints, however it would have been beneficial to do so to demonstrate conditional compilation for different development boards. A collection of software demos utilising these modules can be found in \cref{sec:vivademos}.}
+    
+    \item{\textbf{Store instruction memory in SPI flash.}\\
+    \textit{Not achieved.}}
+    
+    \item{\textbf{Reprogram instruction memory at runtime from host computer.}\\
+    \textit{Achieved.} The global instruction memory (if enabled, see \cref{sect:config}) supported run-time programming over the UART0 interface. An example host-programmer application is provided in \verb|sw/prog.py|.}
+    
+    \item{\textbf{Processor external debugger using host-processor link.}\\
+    \textit{Not achieved}.}
+\end{enumerate}
 
 
 \section{Future Work}

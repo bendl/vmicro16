@@ -1,4 +1,5 @@
 \begin{appendices}
+\crefalias{chapter}{appendix}
 \startcontents[chapters]
 
 \chapter{Peripheral Information}
@@ -191,7 +192,7 @@ The following configuration options are defined in \verb|vmicro16_soc_config.v|.
 Defaults with empty/blank values signifies that the preprocessor define is commented out/not defined/disabled by default/computed by other parameters.
 \end{quote}
 
-\section{System-on-chip Configuration Options}
+\section{System-on-Chip Configuration Options}
 \begin{table}[H]
 \centering
 \label{tab:isa}
@@ -199,8 +200,8 @@ Defaults with empty/blank values signifies that the preprocessor define is comme
 Macro      & Default & Purpose                         \\ 
 \hline
 CORES  & 4       & Number of CPU cores in the SoC  \\
-SLAVES & 8       & Number of peripherals  \\    
-DEF\_USE\_WATCHDOG & //  & Enable watchdog module to recover from deadlocks and infinite loops \\    
+SLAVES & 9       & Number of peripherals  \\    
+DEF\_USE\_WATCHDOG & //  & Enable watchdog module to recover from deadlocks and infinite loops. Requires DEF\_GLOBAL\_RESET. \\    
 DEF\_GLOBAL\_RESET           & //      & Enable synchronous reset logic. Will consume more LUT resources. Does not reset BRAM blocks.\\
 \end{tabularx}
 \caption{SoC Configuration Options}
@@ -216,8 +217,8 @@ DATA\_WIDTH                & 16      & Width of CPU registers in bits           
 DEF\_CORE\_HAS\_INSTR\_MEM & //      & Enable a per core instruction memory cache  \\
 DEF\_MEM\_INSTR\_DEPTH     & 64      & Instruction memory cache per core           \\
 DEF\_MEM\_SCRATCH\_DEPTH   & 64      & RW RAM per core                             \\
-DEF\_ALU\_HW\_MULT        & 1       & Enable/disable HW multiply (1 clock)        \\
-FIX\_T3                    & //      & Enable a T3 state for the APB transaction \\
+DEF\_ALU\_HW\_MULT        & 1       & Enable/disable HW multiply (1 clock)         \\
+FIX\_T3                    & //      & Enable a T3 state for the APB transaction   \\
 DEF\_USE\_REPROG           & //      & Programme instruction memory via UART0. Requires DEF\_GLOBAL\_RESET. Enabling this will reserve the UART0 RX port for exclusive use for programming the instruction memory. Software reads of UART0 RX will return 0.\\
 \end{tabular}
 \caption{Core Options}
@@ -263,6 +264,7 @@ DEF\_MMU\_TIMR0\_E & 16'h0202 & "
 \end{table}
 
 \chapter{Viva Demonstration Examples}
+\label{sec:vivademos}
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 

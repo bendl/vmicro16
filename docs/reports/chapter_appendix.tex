@@ -142,7 +142,7 @@ On the DE1-SoC board, GPIO0 is assigned to the LEDs, and GPIO1 and GPIO2 to the 
 \end{description}
 
 \begin{quote}
-Note: If \verb|DEF_USE_REPROG| is enabled in \verb|vmicro16_soc_config.v| then the receiver port will be reserved for programming the instruction memory, resulting in reads and writes to addresses 0x00A1 and 0x00A2 to return 0.
+Note: If \verb|DEF_USE_REPROG| is enabled in \verb|vmicro16_soc_config.v| then the Receive Data register will be reserved for programming the instruction memory, resulting in reads and writes to addresses 0x00A1 and 0x00A2 to return 0.
 \end{quote}
 
 
@@ -201,8 +201,9 @@ Macro      & Default & Purpose                         \\
 \hline
 CORES  & 4       & Number of CPU cores in the SoC  \\
 SLAVES & 9       & Number of peripherals  \\    
-DEF\_USE\_WATCHDOG & //  & Enable watchdog module to recover from deadlocks and infinite loops. Requires DEF\_GLOBAL\_RESET. \\    
+DEF\_USE\_WATCHDOG & //  & Enable watchdog module to recover from deadlocks and infinite loops. Requires DEF\_GLOBAL\_RESET. \\
 DEF\_GLOBAL\_RESET           & //      & Enable synchronous reset logic. Will consume more LUT resources. Does not reset BRAM blocks.\\
+DEF\_USE\_BUS\_RESET & //      & Detect bus stalls or errors to soft-reset the whole design. Requires DEF\_USE\_WATCHDOG.\\
 \end{tabularx}
 \caption{SoC Configuration Options}
 \end{table}

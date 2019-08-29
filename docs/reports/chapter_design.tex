@@ -196,6 +196,7 @@ The address decoding methods discussed above are examples of \textit{full-addres
 \label{fig:partial}
 \end{figure}
 
+\newpage
 \section{Memory Map}
 The system-on-chip's memory map is shown below in \cref{fig:memmap}. The addresses for each peripheral have been carefully chosen for both:
 \begin{itemize}
@@ -206,7 +207,7 @@ The system-on-chip's memory map is shown below in \cref{fig:memmap}. The address
 \begin{figure}[H]
 \centering
 \begin{bytefield}{24}
-	\memsection{1FFF}{1000}{8}{Shared Memory with Global Monitor \\ \vspace{.5cm} \tiny See vmicro16\_soc\_config.v}\\
+	\memsection{1FFF}{1000}{5}{Shared Memory with Global Monitor \\ \vspace{.5cm} \tiny See vmicro16\_soc\_config.v}\\
 	\bitbox[]{16}{} & \bitbox[]{16}{$\vdots$ \\[1ex]} \\
 	
 	\begin{rightwordgroup}{Shared peripherals}
@@ -235,7 +236,7 @@ The system-on-chip's memory map is shown below in \cref{fig:memmap}. The address
 	
 	\begin{rightwordgroup}{Per-core instances}
 	\memsection{008F}{0080}{3}{16 Special Registers}\\
-	\memsection{007F}{0000}{8}{Scratch Memory \\ \vspace{.5cm} \tiny See vmicro16\_soc\_config.v}
+	\memsection{007F}{0000}{5}{Scratch Memory \\ \vspace{.5cm} \tiny See vmicro16\_soc\_config.v}
 	\end{rightwordgroup}\\
 	
 \end{bytefield}

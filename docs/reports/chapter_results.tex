@@ -1,4 +1,4 @@
-\chapter{Critical Analysis \& Results}
+\chapter{Analysis \& Results}
 \startcontents[chapters]
 \printcontents[chapters]{}{1}{}
 \noindent\\
@@ -12,19 +12,59 @@ This section analysis the synthesised and implemented system-on-chip design to s
 
 \subsection{Design Size}
 \subsubsection{Implementation}
-On a minimal system-on-chip configuration, with one core and minimal peripherals and features (no reprogramming, no interrupts, no UART), the design requires as few as 500 LUTs with the processor core requiring approximately 300-400 LUTs.
+On a minimal system-on-chip configuration, with one core and minimal peripherals and features (no reprogramming, no interrupts, no UART), the design requires as few as 700 LUTs with the processor core requiring approximately 300-400 LUTs.
 
-\subsubsection{Constraints}
+\subsubsection{Memory Constraints}
 As discussed in \cref{sec:singlecore} \nameref{sec:singlecore}, each processor core features two memories: instruction and scratch memory, which can both map onto synchronous, single-port, FPGA BRAM blocks. While this will reduce LUT requirements in designs with few cores, it becomes a non-trivial problem as the core counts increase. FPGAs have a fixed number of hard-BRAM blocks available for inference by the HDL compiler, for example the low-end Xilinx Spartan-6 XC6SLX9 FGPA features 32 18 Kb BRAM blocks \cite[p.~2]{s6fam}, and the Cyclone V 5CSEMA5F31C6N (used in the DE1-SoC) has 397 10 Kb blocks \cite[p.~22]{cvfam}.
 
 \begin{figure}[h]
-\centering
-\includegraphics[width=0.5\textwidth]{bram_limit}
-\caption{A theoretical FPGA device with 3 BRAM blocks running a 4-core design. Each core can map onto a BRAM block, however as there are more cores than BRAM blocks available, some core memories will be implemented as distributed RAM, or in the worse case using ALMs.}
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.7\linewidth]{bram_limit}
+  \caption{A theoretical FPGA device with 3 BRAM blocks running a 4-core design. Each core can map onto a BRAM block, however as there are more cores than BRAM blocks available, some core memories will be implemented as distributed RAM, or in the worse case using ALMs.}
+  \label{fig:bram_limita}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=1.2\linewidth]{sizes_regs}
+  \caption{DE1-SoC (Cyclone V) resource utilisation with various core counts.}
+  \label{fig:bram_limitb}
+\end{subfigure}
+\caption{}
 \label{fig:bram_limit}
 \end{figure}
 
-As shown in \cref{fig:bram_limit}, as the number of processor cores increasing they eventually outnumber the available BRAM blocks, resulting in their memories being implemented in either distributed RAMs or ALMs, both of which can consume significant logic resources of the FPGA which reduces the maximum possible core count.
+As shown in \cref{fig:bram_limita}, as the number of processor cores increases, they eventually outnumber the available BRAM blocks resulting in their memories being implemented in either distributed RAMs or ALMs, both of which can consume significant logic resources of the FPGA which reduces the maximum possible core count.
+
+Figure \cref{fig:bram_limitb} shows the FPGA resource requirements for the DE1-SoC board featuring the Cyclone V FPGA. Approximately 32 cores can be instantiated before the all the available registers and ALMs are consumed.
+
+\subsubsection{Reducing Memory Requirements}
+\label{sec:anal_memory}
+As shown in \cref{fig:bram_limita}, each core has it's own instruction read-only memory. These memories have identical contents which presents an opportunity for optimisation. In the proposed design in \cref{fig:bram_limit_sola}, this memory is removed from each core and is instead available through a dedicated shared bus. This approach can be configured to be used in the Vmicro16 SoC through the \verb|DEF_CORE_HAS_INSTR_MEM| parameter in \verb|vmicro16_soc_config.v|, which enables the \textit{Instruction Memory Interconnect} shown in \cref{fig:watchdog}.
+
+As shown in \cref{fig:bram_limit_solb}, the resource requirements using this shared memory approach is significantly less than having an instruction memory per-core. On the DE1-SoC, 64 cores can now be instantiated with a few thousand regs and ALMs left for other logic.
+
+
+\begin{figure}[H]
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.7\linewidth]{bram_limit_sol}
+  \caption{A multi-core architecture where each core must fetch instructions externally from a global memory.}
+  \label{fig:bram_limit_sola}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=1.2\linewidth]{sizes_regs_shared}
+  \caption{DE1-SoC (Cyclone V) resource utilisation with various core counts using shared instruction memory.}
+  \label{fig:bram_limit_solb}
+\end{subfigure}
+\caption{}
+\label{fig:bram_limit_sol}
+\end{figure}
+
+Whilst this is a significant resource saving opportunity, it does have significant drawbacks. In the shared instruction memory approach, each core must now fetch it's instruction from the instruction memory interconnect which is subject to the arbiter and it's scheduling algorithm. The arbiter uses the same algorithm as the peripheral interconnect arbiter meaning that cores receive access incrementally, and as discussed in \cref{sec:multimaster}, this results in significant delays in many-core designs. This drawback is further explained in \cref{sec:result_results}.
+
+
 
 \subsection{Maximum Frequency}
 \begin{figure}[h]
@@ -38,6 +78,7 @@ As shown in \cref{fig:bram_limit}, as the number of processor cores increasing t
 To evaluate the performance of the system-on-chip, scenarios encompassing computational problems that are reflective of real-world applications are compiled and ran on the design.
 
 \subsection{Scenario Overview}
+\label{sec:scenario}
 The scenario is a software program that runs a parallel implementation of the summation function, i.e. \verb|sum [1..10]| which returns 55. While this may seem too simple at first to measure performance of a multi-core system-on-chip, the function is actually quite appropriate as it encompasses various parallel problems, such as: a fixed time/size serial part; broadcasting of the data set (in this case the range of the summation); thread synchronisation (to know when the data is ready and to schedule gathering of intermediary results); and is highly scalable.
 \\\\
 The summation task flow is as follows:
@@ -67,7 +108,7 @@ This program is written in assembly in the file \verb|sw/demos/asm/sum64.s| and 
 \mintinline{bash}{                      python sw/asm.py sw/demos/asm/sum64.s}
 
 \subsection{Performance Measurements}
-Behavioural simulation will be used to measure the following metrics to estimate general performance of the system-on-chip:
+Behavioural simulation is used to measure the following metrics to estimate general performance of the system-on-chip:
 \begin{itemize}
 \item Total program run-time.\\This is the time from when the reset signal is de-asserted to when all cores have halted. Each core has an output \verb|halt| signal which the SoC can use to determine if all cores have halted using \verb|wire all_halted = &core_halts;|. 
 
@@ -81,8 +122,9 @@ Behavioural simulation will be used to measure the following metrics to estimate
 These measurements are recorded using non-synthesisable Verilog code in both the testbench and module code (\verb|vmicro16_soc.v|).
 
 \subsection{Performance Results}
+\label{sec:result_results}
 The scenario program was simulated on system configuration with 1 to 30 cores with a 50 MHz clock.
-\cref{fig:alg_time} shows the time breakdown of the multi-core system-on-chip running the scenario problem with various core counts. In these measurements all cores feature a small instruction memory which is accessed in constant time (one clock), and so is not shown in the chart. 
+\cref{fig:alg_time} shows the time breakdown of the multi-core system-on-chip running the scenario problem with various core counts. In these measurements all cores feature a small instruction memory which is accessed in constant time (one clock), and so this fetch time is not shown in the chart. 
 
 \begin{figure}[h]
 \centering
@@ -99,6 +141,17 @@ If a much larger summation range was used (effectively representing a more appro
 
 With high-core counts (16+) it can be seen that the communication time (Tbus\_T) increases significantly. This is likely due to the rotating arbiter design. As discussed in \cref{sec:multimaster}, the arbiter grants bus access to the next core incrementally after the previous core finishes. For large core systems, this can result in large time penalties. For example, if core \#30 is blocking all other cores and the arbiter is lagging behind granting access to core \#5, it will take a significant amount of time for the arbiter to reach core 30 to unblock the system.
 
+\subsection{Memory}
+As previous discussed in \cref{sec:
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{alg_time_shared}
+\caption{Similar to \cref{fig:alg_time} but using shared instruction memory to reduce block memory requirements per core.}
+\label{fig:alg_time_shared}
+\end{figure}
+
+
 \section{Analysis Review}
 There are several takeaways from these results:
 \begin{enumerate}
@@ -109,17 +162,10 @@ In this design, and likely others, the blocking core is known by the global shar
 
 \item Use an appropriate number of cores and still have space for other business logic.
 
-\item More cores may result in lower clock frequencies.\\From \cref{fig:sizes_fmax}, the single-core design can be ran at $\approx$95 MHz while the 4-core design only $\approx$65 MHz (a $\approx$45\% increase). The parallel speed improvements from having more cores may be less than a single fast core.
+\item More cores may result in lower clock frequencies.\\From \cref{fig:sizes_fmax}, the single-core design can be ran at $\approx$95 MHz while the 4-core design only $\approx$65 MHz (a $\approx$30\% decrease). The parallel speed improvements from having more cores may be less than a single fast core.
 \end{enumerate}
 
 System designers should experiment with their algorithm and these takeaways to determine the approximate number of processor cores for their requirements, be that algorithm time, size, clock frequency, or compilation time.
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.7\textwidth]{alg_time_shared}
-\caption{Similar to \cref{fig:alg_time} but using shared instruction memory to reduce block memory requirements per core.}
-\label{fig:alg_time_shared}
-\end{figure}
 
 
 

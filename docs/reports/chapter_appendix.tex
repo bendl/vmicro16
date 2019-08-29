@@ -342,5 +342,24 @@ Various memory-mapped APB peripherals, such as GPIO, UART, timers, and memory.
 ]{verilog}{../../vmicro16/vmicro16_periph.v}
 
 
+\section{Assembly Compiler Listing}
+The following python3 program is a text assembly to hex compiler for the Vmicro16's instruction. Users can include the compiled hex-stream in their SoC design by using \verb|$readmemh| on the file into the instruction memories (\verb|mem_instr| or \verb|instr_rom_apb| (shared)).
 
+All assembly programs shown in this report can be compiled by this compiler.
+\\\\
+Usage: \verb|python3 asm.py <filename.s>|\\
+Outputs: \verb|asm.s.hex| file in the PWD.
+
+\inputminted[
+    linenos,
+    fontsize=\scriptsize,
+    baselinestretch=0.8,
+]{python}{../../sw/asm.py}
+
+\section{Text Compiler Listing}
+A text-based programming language compiler was also used to write high-level software code for the Vmicro16 processor. The PRCO304 \cite{prco304} compiler was extended to support the Vmicro16 instruction set architecture and some extra language features (arrays, inline assembly, pointer writing, etc.). However, the compiler ended up not being not used.
+\\\\
+The code changes to extend the compiler are available as a \verb|.patch| for users to patch the compiler themselves. The patch is available from: \url{https://github.com/bendl/vmicro16/tree/master/sw/patch}.
+\\\\
+Code files are found in \verb|sw/demos/prco/*.prco|.
 \end{appendices}

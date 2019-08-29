@@ -17,6 +17,7 @@
 
 \usepackage{microtype}
 \usepackage{wrapfig}
+\usepackage{subcaption}
 
 \usepackage[sort,numbers,sectionbib]{natbib}
 %\usepackage{natbib}
@@ -71,6 +72,7 @@
 % https://tex.stackexchange.com/questions/161124/how-to-make-a-minted-code-listing-centered-on-a-page
 % WARNING MAKES LONG CODE on 1 page!
 %\RecustomVerbatimEnvironment{Verbatim}{BVerbatim}{}
+\setminted[python]{linenos,baselinestretch=0.5,frame=single,framesep=10pt}
 \setminted[verilog]{linenos,baselinestretch=0.5,frame=single,framesep=10pt}
 \setminted[arm]{linenos,baselinestretch=0.5,frame=single,framesep=10pt}
 

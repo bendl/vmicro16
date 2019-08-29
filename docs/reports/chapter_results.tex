@@ -139,10 +139,10 @@ It can be seen that the total run-time is fastest near 8 cores and increases at 
 
 If a much larger summation range was used (effectively representing a more appropriate scenario for systems with high core counts), the chart shape would stretch horizontally, resulting in the fastest time being on a higher core count than 8.
 
-With high-core counts (16+) it can be seen that the communication time (Tbus\_T) increases significantly. This is likely due to the rotating arbiter design. As discussed in \cref{sec:multimaster}, the arbiter grants bus access to the next core incrementally after the previous core finishes. For large core systems, this can result in large time penalties. For example, if core \#30 is blocking all other cores and the arbiter is lagging behind granting access to core \#5, it will take a significant amount of time for the arbiter to reach core 30 to unblock the system.
+With high-core counts (16+) it can be seen that the communication time (Tbus\_T) increases significantly. This is likely due to the rotating arbiter design. As discussed in \cref{sec:multimaster}, the arbiter grants bus access to the next core incrementally after the previous core finishes. For large core systems, this can result in large time penalties. For example, if core \#30 is blocking all other cores and the arbiter is lagging behind granting access to core \#5, it will take a significant amount of time for the arbiter to reach core \#30 to unblock the system.
 
-\subsection{Memory}
-As previous discussed in \cref{sec:
+\subsection{Shared Instruction Memory Impact}
+As previous discussed in \cref{sec:anal_memory}, using a shared instruction memory approach reduces the size of the design but will result in increasingly long instruction fetches as the core count increases. \cref{fig:alg_time_shared} below shows the same scenario but using shared instruction memory. The shape of the chart remains similar, however the total run-time is close to double the time of the per-core instruction memory results, and increases significantly with more cores.
 
 \begin{figure}[h]
 \centering
@@ -151,6 +151,7 @@ As previous discussed in \cref{sec:
 \label{fig:alg_time_shared}
 \end{figure}
 
+As with Figure \ref{fig:alg_time}, using too many cores for a small data set can result in the scenario taking longer than a single core.
 
 \section{Analysis Review}
 There are several takeaways from these results:
@@ -170,10 +171,14 @@ System designers should experiment with their algorithm and these takeaways to d
 
 
 \chapter{Conclusion}
-\section{Future Work}
+
 \section{Conclusion}
 
 
+
+
+\section{Future Work}
+There are several aspects to this project which could be improved. First, 
 
 
 
